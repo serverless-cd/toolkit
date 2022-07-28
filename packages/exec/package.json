@@ -1,12 +1,15 @@
 {
-  "name": "@serverless-cd/core",
+  "name": "@serverless-cd/exec",
   "version": "0.0.1",
-  "description": "sevrerless-cd核心包",
+  "description": "sevrerless-cd exec lib",
   "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@serverless-cd/core": "0.0.1"
+  }
 }
