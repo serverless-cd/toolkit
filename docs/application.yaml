@@ -1,0 +1,9 @@
+name: "actions/checkout"
+description: "dankun测试应用"
+author: "Dankun"
+inputs:
+  fetch_depth:
+    required: true
+    description: "User name"
+    
+# https://github.com/actions/checkout/blob/main/src/main.ts
