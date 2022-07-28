@@ -1,5 +1,5 @@
 function getInput() {
-  return "input";
+  return 'input'
 }
 
-export default getInput;
+export default getInput
