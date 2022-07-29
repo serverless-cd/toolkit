@@ -1,4 +1,5 @@
 import fse from 'fs-extra';
+import { get } from 'lodash';
 
 export default class logger {
   static enableDebug() {
@@ -13,24 +14,28 @@ export default class logger {
     return process.env.enable_logger_debug === 'true';
   }
   
-  static debug(message: string, filePath: string) {
+  static debug(message: string, stepId: string) {
     if (this.isDebug()) {
-      this.appendFile(filePath, message);
+      this.appendFile(stepId, message);
       console.log(message);
     }
   }
 
-  static info(message: string, filePath: string) {
-    this.appendFile(filePath, message);
+  static info(message: string, stepId: string) {
+    this.appendFile(stepId, message);
     console.log(message);
   }
 
-  static error(message: string, filePath: string) {
-    this.appendFile(filePath, message);
+  static error(message: string, stepId: string) {
+    this.appendFile(stepId, message);
     console.log(message);
   }
 
-  private static appendFile(message: string, filePath: string) {
+  private static appendFile(message: string, stepId: string) {
+    const filePath = get(process.env, stepId, '');
+    if (!filePath) {
+      throw new Error(`Unable to find step id path ${stepId}`);
+    }
     fse.appendFileSync(filePath, message);
   }
 }
