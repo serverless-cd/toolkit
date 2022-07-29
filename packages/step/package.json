@@ -1,0 +1,14 @@
+{
+  "name": "@serverless-cd/step",
+  "version": "0.0.1",
+  "description": "sevrerless-cd step lib",
+  "main": "./lib/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@serverless-cd/core": "0.0.1"
+  }
+}
