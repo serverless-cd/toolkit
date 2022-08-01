@@ -1,5 +1,5 @@
 import fse from 'fs-extra';
-import { get } from 'lodash';
+import path from 'path';
 
 export default class logger {
   static enableDebug() {
@@ -13,29 +13,27 @@ export default class logger {
   static isDebug() {
     return process.env.enable_logger_debug === 'true';
   }
-  
+
   static debug(message: string, stepId: string) {
     if (this.isDebug()) {
-      this.appendFile(stepId, message);
+      this.appendFile(message, stepId);
       console.log(message);
     }
   }
 
   static info(message: string, stepId: string) {
-    this.appendFile(stepId, message);
+    this.appendFile(message, stepId);
     console.log(message);
   }
 
   static error(message: string, stepId: string) {
-    this.appendFile(stepId, message);
+    this.appendFile(message, stepId);
     console.log(message);
   }
 
   private static appendFile(message: string, stepId: string) {
-    const filePath = get(process.env, stepId, '');
-    if (!filePath) {
-      throw new Error(`Unable to find step id path ${stepId}`);
-    }
-    fse.appendFileSync(filePath, message);
+    const filePath = path.isAbsolute(stepId) ? stepId : path.join(process.cwd(), stepId);
+    fse.ensureFileSync(filePath);
+    fse.appendFileSync(filePath, `${message}\n`);
   }
 }
