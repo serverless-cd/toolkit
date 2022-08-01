@@ -16,5 +16,9 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@types/lodash": "^4.14.182"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "a5bcb3dabf954efb111a5b94a5787787941e7844"
 }
