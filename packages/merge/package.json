@@ -1,5 +1,5 @@
 {
-  "name": "@serverless-cd/checkout",
+  "name": "@serverless-cd/merge",
   "version": "0.0.1",
   "description": "sevrerless-cd checkout lib",
   "main": "./lib/index.js",
