@@ -1,5 +1,6 @@
 {
   "name": "@serverless-cd/step",
+  "private": true,
   "version": "0.0.1-alpha.2",
   "description": "sevrerless-cd step lib",
   "main": "./lib/index.js",
