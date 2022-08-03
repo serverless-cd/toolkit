@@ -1,5 +1,6 @@
 import fse from 'fs-extra';
 import path from 'path';
+import { getServerlessCdVariable } from './variable';
 
 export default class logger {
   static enableDebug() {
@@ -14,26 +15,28 @@ export default class logger {
     return process.env.enable_logger_debug === 'true';
   }
 
-  static debug(message: string, stepId: string) {
+  static debug(message: string, filePath: string) {
     if (this.isDebug()) {
-      this.appendFile(message, stepId);
+      this.appendFile(message, filePath);
       console.log(message);
     }
   }
 
-  static info(message: string, stepId: string) {
-    this.appendFile(message, stepId);
+  static info(message: string, filePath: string) {
+    this.appendFile(message, filePath);
     console.log(message);
   }
 
-  static error(message: string, stepId: string) {
-    this.appendFile(message, stepId);
+  static error(message: string, filePath: string) {
+    this.appendFile(message, filePath);
     console.log(message);
   }
 
-  private static appendFile(message: string, stepId: string) {
-    const filePath = path.isAbsolute(stepId) ? stepId : path.join(process.cwd(), stepId);
-    fse.ensureFileSync(filePath);
-    fse.appendFileSync(filePath, `${message}\n`);
+  private static appendFile(message: string, filePath: string) {
+    const _filePath = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(getServerlessCdVariable('LOG_PATH'), filePath);
+    fse.ensureFileSync(_filePath);
+    fse.appendFileSync(_filePath, `${message}\n`);
   }
 }
