@@ -49,7 +49,7 @@ class Logger extends logger {
 
   error(message: string) {
     const time = timeFmt(new Date(), C_TIME.s);
-    logger.error(`${time}【ERROR】message`, this.logPath);
+    logger.error(`${time}【ERROR】${message}`, this.logPath);
   }
 }
 

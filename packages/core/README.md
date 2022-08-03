@@ -16,13 +16,20 @@ core.info('Inside try block');
 core.notice('Inside try block');
 ```
 
-3. exportEnvVariable
+3. 
+- setEnvVariable
    将变量导出到环境变量中，
 
 ```
-core.exportEnvVariable('envVar', 'Val');
+core.setEnvVariable('envVar', 'Val');
 ```
 
+- setServerlessCdVariable
+  将变量导出到 SERVERLESS_CD 环境变量中
+```
+core.settEnvVariable('log_path', path.join(process.cwd(), 'log', `${Data.now()}.log`)');
+
+```
 4. setFailed
    将操作结果显示设置为失败
 

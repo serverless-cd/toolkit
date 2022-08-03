@@ -1,4 +1,5 @@
 import * as Interface from './interface';
+import { getServerlessCdVariable } from '@serverless-cd/core';
 
 function getInputs(logger: any, execDir: string): Interface.IInputs {
   /**
@@ -9,18 +10,18 @@ function getInputs(logger: any, execDir: string): Interface.IInputs {
   const inputs: any = {
     logger,
     execDir,
-    provider: process.env['provider'] || '',
-    path_with_namespace: process.env['path_with_namespace'] || '',
-    token: process.env['token'] || '',
-    username: process.env['username'] || '',
-    uri: process.env['uri'] || '',
+    provider: getServerlessCdVariable('provider'),
+    path_with_namespace: getServerlessCdVariable('path_with_namespace'),
+    token: getServerlessCdVariable('token'),
+    username: getServerlessCdVariable('username'),
+    uri: getServerlessCdVariable('uri'),
   };
-  const tag = process.env['tag'] || '';
+  const tag = getServerlessCdVariable('tag');
   if (tag) {
     inputs['tag'] = tag;
   } else {
-    inputs['commit'] = process.env['commit'] || '';
-    inputs['branch'] = process.env['branch'] || '';
+    inputs['commit'] = getServerlessCdVariable('commit');
+    inputs['branch'] = getServerlessCdVariable('branch');
   }
 
   for (let i in inputs) {
