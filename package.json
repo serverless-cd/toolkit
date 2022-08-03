@@ -4,8 +4,8 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "prepublish": "lerna run build",
-    "publish": "lerna publish",
+    "prepub": "lerna run build",
+    "pub": "lerna publish",
     "format": "prettier --write packages/**/*.ts",
     "format-check": "prettier --check packages/**/*.ts",
     "test": "jest --testTimeout 10000",
