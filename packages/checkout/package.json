@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@serverless-cd/core": "^0.0.1-alpha.2"
+    "@serverless-cd/core": "^0.0.1-alpha.2",
+    "simple-git": "^3.11.0"
   }
 }
