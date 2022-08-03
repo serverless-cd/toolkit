@@ -1,0 +1,25 @@
+name: "On Push master"
+on:
+  push:
+    branches:
+      - master
+job:
+  runtime: nodejs12
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    FIRST_NAME: Mona
+    LAST_NAME: Octocat
+  steps:
+    # - uses: '@xsahxl/app-cd'
+    #   with:
+    #     name: xiaoming
+    - name: 'list files'
+      run: |
+        ls -la
+      working-directory: ./
+    - run: |
+        npm install
+      working-directory: ./
+    - run: |
+        npm --version
+      working-directory: ./
