@@ -9,7 +9,8 @@
     "format": "prettier --write packages/**/*.ts",
     "format-check": "prettier --check packages/**/*.ts",
     "test": "jest --testTimeout 10000",
-    "test-one": "jest --testTimeout 10000 packages/step"
+    "test:step": "jest --testTimeout 10000 packages/step",
+    "test:core": "jest --testTimeout 10000 packages/core"
   },
   "workspaces": [
     "packages/*"
