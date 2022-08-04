@@ -13,7 +13,6 @@ function sign(secret: string, stringToSign: string) {
 }
 
 function verify(token: string, sign: string) {
-  console.log('token: string, sign: string', token, sign);
   if (!token) {
     return hasError('No X-Gitee-Token found on request');
   }
