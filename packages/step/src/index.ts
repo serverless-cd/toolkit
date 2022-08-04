@@ -4,8 +4,8 @@ import * as path from 'path';
 import { command } from 'execa';
 
 async function step() {
-  const doc = getYamlContent();
-  const steps = get(doc, 'job.steps', []).map((o: any) => {
+  const pipelineContent = getYamlContent();
+  const steps = get(pipelineContent, 'job.steps', []).map((o: any) => {
     o.id = uniqueId();
     return o;
   });
