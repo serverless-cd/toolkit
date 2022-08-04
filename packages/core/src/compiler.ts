@@ -10,7 +10,7 @@ class Compiler {
 }
 const compiler = new Compiler();
 const p: any = process;
-if (p.SERVERLESS_CD) {
+if (!p.SERVERLESS_CD) {
   p.SERVERLESS_CD = compiler;
 }
 
