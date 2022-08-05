@@ -7,6 +7,6 @@ https://docs.github.com/cn/actions/using-workflows/workflow-syntax-for-github-ac
 - 根路径下 npm i 进行安装 （删除node_modules和package-lock.json文件）
 - 根路径下 npm run build 对每个package进行打包
 - npm run test 对所有package进行测试
-- npm run test-one 对指定package进行测试 
-    - core："test-one": "jest --testTimeout 10000 packages/core"
-    - step："test-one": "jest --testTimeout 10000 packages/step"
+- npm run test-core 对指定package进行测试 
+    - core："test-core": "jest --testTimeout 10000 packages/core"
+    - step："test-step": "jest --testTimeout 10000 packages/step"

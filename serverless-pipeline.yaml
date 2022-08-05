@@ -10,9 +10,6 @@ job:
     FIRST_NAME: Mona
     LAST_NAME: Octocat
   steps:
-    # - uses: '@xsahxl/app-cd'
-    #   with:
-    #     name: xiaoming
     - name: 'list files'
       run: |
         ls -la

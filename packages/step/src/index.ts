@@ -1,16 +1,17 @@
 import { logger, getYamlContent } from '@serverless-cd/core';
-import { get, has, uniqueId } from 'lodash';
+import { get, map, has, uniqueId } from 'lodash';
 import * as path from 'path';
 import { command } from 'execa';
 
 async function step() {
   const pipelineContent = getYamlContent();
-  const steps = get(pipelineContent, 'job.steps', []).map((o: any) => {
-    o.id = uniqueId();
-    return o;
+  const steps = map(get(pipelineContent, 'job.steps', []), (item: any) => {
+    item.stepCount = uniqueId();
+    return item;
   });
+
   for (const item of steps) {
-    const logFile = `step${item.id}.log`;
+    const logFile = `step_${item.stepCount}.log`;
     if (has(item, 'run')) {
       let execPath = get(item, 'working-directory') ? item['working-directory'] : process.cwd();
       execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
