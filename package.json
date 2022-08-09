@@ -10,7 +10,7 @@
     "format-check": "prettier --check packages/**/*.ts",
     "test": "jest --testTimeout 10000",
     "test:step": "jest --testTimeout 10000 packages/step",
-    "test:core": "jest --testTimeout 10000 packages/core",
+    "test:core": "jest --testTimeout 10000 packages/core --watchAll",
     "test:action": "jest --testTimeout 10000 packages/action"
   },
   "workspaces": [
