@@ -17,7 +17,7 @@ test('isDebug', () => {
   expect(logger.isDebug()).toBeTruthy();
 });
 
-describe('logger write data', () => {
+describe('日志写入文件', () => {
   const filePath = path.join(__dirname, 'log.txt');
   beforeAll(() => {
     logger.enableDebug();

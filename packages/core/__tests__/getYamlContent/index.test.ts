@@ -1,13 +1,13 @@
 import { getYamlContent } from '../../src';
 import * as path from 'path';
 
-test('yaml not found', () => {
+test('yaml文件未找到', () => {
   const TEMPLATE_YAML = 'serverless-pipeline-no.yaml';
   process.env['TEMPLATE_PATH'] = path.join(__dirname, TEMPLATE_YAML);
   expect(() => getYamlContent()).toThrow(`${TEMPLATE_YAML} not found`);
 });
 
-test('yaml format is incorrect', () => {
+test('yaml文件内容格式不正确', () => {
   const TEMPLATE_YAML = 'serverless-pipeline-error.yaml';
   process.env['TEMPLATE_PATH'] = path.join(__dirname, TEMPLATE_YAML);
   expect.assertions(1);
@@ -18,7 +18,7 @@ test('yaml format is incorrect', () => {
   }
 });
 
-test('read yaml successfully', () => {
+test('成功的读取yaml文件', () => {
   process.env['TEMPLATE_PATH'] = path.join(__dirname, 'serverless-pipeline.yaml');
   expect(getYamlContent()).toBeDefined();
 });
