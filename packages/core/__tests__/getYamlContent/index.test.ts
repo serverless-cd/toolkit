@@ -18,7 +18,7 @@ test('yaml format is incorrect', () => {
   }
 });
 
-test('get yaml successful', () => {
+test('read yaml successfully', () => {
   process.env['TEMPLATE_PATH'] = path.join(__dirname, 'serverless-pipeline.yaml');
   expect(getYamlContent()).toBeDefined();
 });

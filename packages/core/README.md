@@ -6,29 +6,49 @@ core 方法可以作用在插件体系中
 ## getInput
 获取 input 的输入值
 
-## logging
-构建过程的日志是需要时时输出的，同时需要持久化保存。
-
-```
-const core = require('@serverless-cd/core');
-core.debug('Inside try block');
-core.info('Inside try block');
-core.notice('Inside try block');
-```
-
 ##  setEnvVariable
-将变量导出到环境变量中，
+将变量导出到环境变量中
 
-```
+```js
+const core = require("@serverless-cd/core");
 core.setEnvVariable('envVar', 'Val');
+```
+##  getEnvVariable
+从环境变量中获取某个值
+
+```js
+const core = require("@serverless-cd/core");
+core.getEnvVariable('envVar');
 ```
 
 ## setServerlessCdVariable
-将变量导出到 SERVERLESS_CD 环境变量中
+将变量导出到`SERVERLESS_CD环境变量`中
 
+```js
+const core = require("@serverless-cd/core");
+core.settEnvVariable('LOG_PATH', path.join(process.cwd(), 'log', `${Data.now()}.log`)');
 ```
-core.settEnvVariable('log_path', path.join(process.cwd(), 'log', `${Data.now()}.log`)');
 
+##  getServerlessCdVariable
+从`SERVERLESS_CD环境变量`中获取某个值
+
+```js
+const core = require("@serverless-cd/core");
+core.getServerlessCdVariable('LOG_PATH');
+```
+
+## logger(message, filePath)
+构建过程的日志是需要时时输出的，同时需要持久化保存。
+- message: 日出输出信息
+- filePath: 日志文件保存路径，值为绝对路径时取当前值，值为相对路径时取 `path.join(getServerlessCdVariable('LOG_PATH'), filePath)`
+
+```ts
+const { logger } = require("@serverless-cd/core");
+logger.info('info message');
+logger.error('error message');
+// 开启debug
+logger.enableDebug();
+logger.debug('debug message');
 ```
 ## setFailed
 将操作结果显示设置为失败
