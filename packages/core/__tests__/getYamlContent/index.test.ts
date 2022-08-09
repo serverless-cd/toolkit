@@ -18,7 +18,7 @@ test('yaml文件内容格式不正确', () => {
   }
 });
 
-test('成功的读取yaml文件', () => {
+test('yaml文件内容读取成功', () => {
   process.env['TEMPLATE_PATH'] = path.join(__dirname, 'serverless-pipeline.yaml');
   expect(getYamlContent()).toBeDefined();
 });

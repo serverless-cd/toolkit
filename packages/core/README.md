@@ -42,7 +42,7 @@ core.getServerlessCdVariable('LOG_PATH');
 - message: 日出输出信息
 - filePath: 日志文件保存路径，值为绝对路径时取当前值，值为相对路径时取 `path.join(getServerlessCdVariable('LOG_PATH'), filePath)`
 
-```ts
+```js
 const { logger } = require("@serverless-cd/core");
 logger.info('info message');
 logger.error('error message');
@@ -53,7 +53,8 @@ logger.debug('debug message');
 ## setFailed
 将操作结果显示设置为失败
 
-```
+```js
+const core = require("@serverless-cd/core");
 try {
   core.info(`Hello world`);
 } catch (error) {
@@ -63,13 +64,18 @@ try {
 ## getYamlContent
 获取yaml文件的内容，您可以通过环境变量 `TEMPLATE_PATH` 指定文件路径，默认取 `process.cwd()` 下的 `serverless-pipeline.yaml`文件
 
-```
+```js
+const core = require("@serverless-cd/core");
 process.env['TEMPLATE_PATH'] = path.join(__dirname, 'serverless-pipeline.yaml');
-const pipelineContent = getYamlContent()
+const pipelineContent = core.getYamlContent()
 ```
+## switchNodeVersion
+切换node版本，可接收参数为`12、14、16`，默认版本为 `v14.20.0`
 
-
-
+```js
+const core = require("@serverless-cd/core");
+core.switchNodeVersion('16')
+```
 ## 参考
 
 - https://github.com/actions/toolkit/tree/main/packages/core
