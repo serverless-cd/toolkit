@@ -1,11 +1,12 @@
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
+import { getServerlessCdVariable } from './variable';
 
 const TEMPLATE_YAML = 'serverless-pipeline.yaml';
 
 function getYamlContent() {
-  const templatePath = process.env['TEMPLATE_PATH'];
+  const templatePath = getServerlessCdVariable('TEMPLATE_PATH');
   const filePath = templatePath || path.join(process.cwd(), TEMPLATE_YAML);
   const filename = path.basename(filePath);
 

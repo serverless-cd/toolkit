@@ -1,5 +1,5 @@
 import { logger } from '@serverless-cd/core';
-import { createMachine, interpret, assign } from 'xstate';
+import { createMachine, interpret } from 'xstate';
 import { IStepOptions, IRunOptions, IUsesOptions } from './types';
 import { isEmpty, get, each } from 'lodash';
 import { command } from 'execa';
@@ -72,7 +72,7 @@ const doSrc = async (item: IStepOptions, context: any) => {
     const cp = command(`npm i ${usesItem.uses} --save`);
     await onFinish(cp, logFile);
     try {
-      await require(usesItem.uses).run(usesItem.with);
+      return await require(usesItem.uses).run(usesItem.with);
     } catch (e) {
       logger.error(e as string, logFile);
     }
