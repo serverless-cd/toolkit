@@ -60,7 +60,7 @@ export default function getHookKeyword (headers: { [key: string]: string }, secr
     return {
       signatureKey: 'x-codeup-token',
       eventKey: 'x-codeup-event',
-      idKey: 'x-codeup-timestamp',
+      idKey: 'x-codeup-timestamp', // TODO: 关键字
       verify: verifyCodeup,
     }
   }

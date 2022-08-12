@@ -4,7 +4,7 @@ import { checkType, findHandler, handlerEvents, commonEvent } from './utile';
 import getHookKeyword from './git/hookKeyword';
 const { BufferListStream } = require('bl');
 
-export { default as event } from './events';
+export { default as events } from './events';
 
 export default class WebHook extends EventEmitter {
   initOptions: ListenConfig | ListenConfig[];
@@ -38,7 +38,7 @@ export default class WebHook extends EventEmitter {
     }
 
     const hookKeyword = getHookKeyword(headers, secret);
-    console.log('get hookKeyword payloda:: ', hookKeyword);
+    console.log('get hookKeyword payload:: ', hookKeyword);
     const { signatureKey, eventKey, idKey, verify } = hookKeyword;
     
     const {
@@ -112,3 +112,5 @@ export default class WebHook extends EventEmitter {
   }
 };
 
+module.exports = WebHook;
+// export default (options: ListenConfig | ListenConfig[]) => new WebHook(options);
