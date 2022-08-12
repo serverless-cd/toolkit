@@ -3,7 +3,7 @@ import Verify from "./verify";
 export default function getHookKeyword (headers: { [key: string]: string }, secret: string) {
   // get platform
   const ua: string = headers['user-agent'] || '';
-  const { verifyGithub, verifyGiteaGogs, verifyGitee, verifyGitlab } = new Verify(secret);
+  const { verifyGithub, verifyGiteaGogs, verifyGitee, verifyGitlab, verifyCodeup } = new Verify(secret);
 
   // github
   if (ua.startsWith('GitHub-Hookshot')) {
@@ -52,6 +52,16 @@ export default function getHookKeyword (headers: { [key: string]: string }, secr
       eventKey: 'x-gogs-event',
       idKey: 'x-gogs-delivery',
       verify: verifyGiteaGogs,
+    }
+  }
+
+  // codeup
+  if (headers['x-codeup-token']) {
+    return {
+      signatureKey: 'x-codeup-token',
+      eventKey: 'x-codeup-event',
+      idKey: 'x-codeup-timestamp',
+      verify: verifyCodeup,
     }
   }
 

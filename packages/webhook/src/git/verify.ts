@@ -38,7 +38,7 @@ export default class Verify {
     return Buffer.from(expected).equals(Buffer.from(signature))
   }
 
-  verifyCodeup() {
-    
+  verifyCodeup(signature: string) {
+    return signature === this.secret;
   }
 }

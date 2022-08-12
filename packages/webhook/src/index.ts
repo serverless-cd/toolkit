@@ -37,7 +37,9 @@ export default class WebHook extends EventEmitter {
       return callback();
     }
 
-    const { signatureKey, eventKey, idKey, verify } = getHookKeyword(headers, secret);
+    const hookKeyword = getHookKeyword(headers, secret);
+    console.log('get hookKeyword payloda:: ', hookKeyword);
+    const { signatureKey, eventKey, idKey, verify } = hookKeyword;
     
     const {
       [signatureKey]: signature,
