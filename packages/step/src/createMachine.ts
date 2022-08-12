@@ -12,7 +12,7 @@ export default (steps: IStepOptions[]) => {
     const states: any = {
       init: {
         on: {
-          INIT: get(steps, '[0].stepCount'),
+          INIT: get(steps, '[0].$stepCount'),
         },
       },
       final: {
@@ -24,12 +24,37 @@ export default (steps: IStepOptions[]) => {
     };
 
     each(steps, (item, index) => {
-      const target = steps[index + 1] ? get(steps, `[${index + 1}].stepCount`) : 'final';
-      states[item.stepCount] = {
+      const target = steps[index + 1] ? get(steps, `[${index + 1}].$stepCount`) : 'final';
+      states[item.$stepCount] = {
         invoke: {
-          id: item.stepCount,
-          src: async (context: any) => {
-            return await doSrc(item, context);
+          id: item.$stepCount,
+          src: (context: any) => {
+            return doSrc(item)
+              .then((response: any) => {
+                // $stepCount 添加状态
+                context[item.$stepCount] = {
+                  status: 'success',
+                };
+                // id 添加状态
+                if (item.id) {
+                  context[item.id] = {
+                    status: 'success',
+                    output: response,
+                  };
+                }
+              })
+              .catch((err: any) => {
+                context[item.$stepCount] = {
+                  status: 'failure',
+                };
+                if (item.id) {
+                  context[item.id] = {
+                    status: 'failure',
+                    output: err,
+                  };
+                }
+                throw err;
+              });
           },
           onDone: {
             target,
@@ -47,28 +72,28 @@ export default (steps: IStepOptions[]) => {
       states,
     });
     const stepService = interpret(fetchMachine)
-      .onTransition((state) => console.log(state.value))
+      .onTransition((state) => console.log(state.value, state.context))
       .start();
     stepService.send('INIT');
   });
 };
 
-const doSrc = async (item: IStepOptions, context: any) => {
-  const logFile = `step_${item.stepCount}.log`;
+const doSrc = async (item: IStepOptions) => {
+  const logFile = `step_${item.$stepCount}.log`;
   const runItem = item as IRunOptions;
   const usesItem = item as IUsesOptions;
   // run
   if (runItem.run) {
     let execPath = runItem['working-directory'] || process.cwd();
     execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
-    logger.info(runItem.name || runItem.run, logFile);
+    logger.info(runItem.name || `Run ${runItem.run}`, logFile);
     const cp = command(runItem.run, { cwd: execPath });
     const res = await onFinish(cp, logFile);
     return res;
   }
   // uses
   if (usesItem.uses) {
-    logger.info(usesItem.name || usesItem.uses, logFile);
+    logger.info(usesItem.name || `Run ${usesItem.uses}`, logFile);
     const cp = command(`npm i ${usesItem.uses} --save`);
     await onFinish(cp, logFile);
     try {
@@ -97,11 +122,11 @@ function onFinish(cp: any, logFile: string) {
       stdout.length
         ? resolve({
             code: code,
-            stdout: Buffer.concat(stdout),
+            stdout: Buffer.concat(stdout).toString(),
           })
         : reject({
             code: code,
-            stderr: Buffer.concat(stderr),
+            stderr: Buffer.concat(stderr).toString(),
           });
     });
   });

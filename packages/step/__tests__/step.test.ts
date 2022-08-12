@@ -1,13 +1,13 @@
 import step from '../src';
 import * as path from 'path';
 import * as core from '@serverless-cd/core';
+import { get } from 'lodash';
 
-test('执行step成功', async () => {
+test.only('执行step全部成功，获取step id为demo的output', async () => {
   core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'serverless-pipeline.yaml'));
   core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
   const res = await step();
-  // TODO: context 目前是空对象。
-  expect(res).toEqual({});
+  expect(get(res, 'demo.output')).toEqual({ code: 0, stdout: '"hello"\n' });
 });
 
 test('执行step失败', async () => {

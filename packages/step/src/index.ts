@@ -6,13 +6,10 @@ import { IStepOptions } from './types';
 async function step() {
   const pipelineContent = getYamlContent();
   const steps: IStepOptions[] = map(get(pipelineContent, 'job.steps', []), (item: IStepOptions) => {
-    item.stepCount = uniqueId();
+    item.$stepCount = uniqueId();
     return item;
   });
   return await createMachine(steps);
 }
-
-// setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
-// step();
 
 export default step;

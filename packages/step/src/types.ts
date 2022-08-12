@@ -1,6 +1,7 @@
 export interface IRunOptions {
   run: string;
-  stepCount: string;
+  $stepCount: string;
+  id?: string;
   name?: string;
   if?: string;
   'working-directory'?: string;
@@ -8,7 +9,8 @@ export interface IRunOptions {
 
 export interface IUsesOptions {
   uses: string;
-  stepCount: string;
+  $stepCount: string;
+  id?: string;
   name?: string;
   if?: string;
   with?: { [key: string]: any };
