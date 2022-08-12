@@ -6,13 +6,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "esbuild": "ri -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=lib/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bl": "^5.0.0",
+    "crypto": "^1.0.1"
   },
   "devDependencies": {
+    "@types/bl": "^5.0.2",
+    "@types/node": "^18.7.1",
+    "esbuild": "^0.14.54"
   },
   "publishConfig": {
     "access": "public"

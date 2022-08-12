@@ -1,7 +1,6 @@
-export type SingleOrArray<T> = T[] | T;
 
-export interface CreateHandlerOptions {
-    path: string;
-    secret: string;
-    events?: string | string[];
+export interface ListenConfig {
+	path: string;
+	secret: string;
+	events?: string | string[];
 }
