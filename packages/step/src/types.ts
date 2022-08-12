@@ -4,6 +4,7 @@ export interface IRunOptions {
   id?: string;
   name?: string;
   if?: string;
+  'continue-on-error'?: boolean;
   'working-directory'?: string;
 }
 
@@ -13,6 +14,7 @@ export interface IUsesOptions {
   id?: string;
   name?: string;
   if?: string;
+  'continue-on-error'?: boolean;
   with?: { [key: string]: any };
 }
 

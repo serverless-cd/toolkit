@@ -10,7 +10,10 @@ job:
     FIRST_NAME: Mona
     LAST_NAME: Octocat
   steps:
-    - run: ls -la
     - run: echo "hello"
       id: xhello
+    - run: npm run error
+      id: xerror
+      continue-on-error: true
     - run: echo "world"
+      id: xworld

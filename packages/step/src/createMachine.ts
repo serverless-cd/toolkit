@@ -44,16 +44,18 @@ export default (steps: IStepOptions[]) => {
                 }
               })
               .catch((err: any) => {
+                const status =
+                  item['continue-on-error'] === true ? 'error-with-continue' : 'failure';
                 context[item.$stepCount] = {
-                  status: 'failure',
+                  status,
                 };
                 if (item.id) {
                   context[item.id] = {
-                    status: 'failure',
+                    status,
                     output: err,
                   };
                 }
-                throw err;
+                if (item['continue-on-error'] !== true) throw err;
               });
           },
           onDone: {

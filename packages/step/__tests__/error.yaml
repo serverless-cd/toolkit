@@ -10,13 +10,9 @@ job:
     FIRST_NAME: Mona
     LAST_NAME: Octocat
   steps:
-    - name: 'list files'
-      run: |
-        aa
-      working-directory: ./
-    - run: |
-        npm install
-      working-directory: ./
-    - run: |
-        npm --version
-      working-directory: ./
+    - run: echo "hello"
+      id: xhello
+    - run: npm run error
+      id: xerror
+    - run: echo "world"
+      id: xworld
