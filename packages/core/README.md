@@ -62,11 +62,11 @@ try {
 }
 ```
 ## getYamlContent
-获取yaml文件的内容，您可以通过环境变量 `TEMPLATE_PATH` 指定文件路径，默认取 `process.cwd()` 下的 `serverless-pipeline.yaml`文件
+获取yaml文件的内容，您可以通过 `core.setServerlessCdVariable('TEMPLATE_PATH', value)`指定文件路径，默认取 `process.cwd()` 下的 `serverless-pipeline.yaml`文件
 
 ```js
 const core = require("@serverless-cd/core");
-process.env['TEMPLATE_PATH'] = path.join(__dirname, 'serverless-pipeline.yaml');
+core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'serverless-pipeline.yaml'))
 const pipelineContent = core.getYamlContent()
 ```
 ## switchNodeVersion
