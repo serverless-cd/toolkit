@@ -3,6 +3,7 @@ import { createMachine, interpret } from 'xstate';
 import { IStepOptions, IRunOptions, IUsesOptions } from './types';
 import { isEmpty, get, each, replace } from 'lodash';
 import { command } from 'execa';
+import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
 const artTemplate = require('art-template');
 
@@ -34,24 +35,24 @@ export default (steps: IStepOptions[]) => {
               // 替换 failure()
               item.if = replace(
                 item.if,
-                'failure()',
-                context.$status === 'failure' ? 'true' : 'false',
+                STEP_IF.FAILURE,
+                context.$status === STEP_STATUS.FAILURE ? 'true' : 'false',
               );
               // 替换 success()
               item.if = replace(
                 item.if,
-                'success()',
-                context.$status !== 'failure' ? 'true' : 'false',
+                STEP_IF.SUCCESS,
+                context.$status !== STEP_STATUS.FAILURE ? 'true' : 'false',
               );
               // 替换 success()
-              item.if = replace(item.if, 'always()', 'true');
+              item.if = replace(item.if, STEP_IF.ALWAYS, 'true');
               const ifCondition = artTemplate.compile(item.if);
               return ifCondition(context) === 'true'
                 ? handleSrc(item, context)
                 : doSkip(item, context);
             }
             // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skip
-            if (context.$status === 'failure') {
+            if (context.$status === STEP_STATUS.FAILURE) {
               return doSkip(item, context);
             }
             return handleSrc(item, context);
@@ -86,30 +87,31 @@ const handleSrc = async (item: IStepOptions, context: any) => {
     .then((response: any) => {
       // 记录全局的执行状态
       if (context.$editStatusAble) {
-        context.$status = 'success';
+        context.$status = STEP_STATUS.SUCCESS;
       }
       // $stepCount 添加状态
       context[item.$stepCount] = {
-        status: 'success',
+        status: STEP_STATUS.SUCCESS,
       };
       // id 添加状态
       if (item.id) {
         context.steps = {
           ...context.steps,
           [item.id]: {
-            status: 'success',
+            status: STEP_STATUS.SUCCESS,
             output: response,
           },
         };
       }
     })
     .catch((err: any) => {
-      const status = item['continue-on-error'] === true ? 'error-with-continue' : 'failure';
+      const status =
+        item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
       // 记录全局的执行状态
       if (context.$editStatusAble) {
         context.$status = status;
       }
-      if (status === 'failure') {
+      if (status === STEP_STATUS.FAILURE) {
         // 全局的执行状态一旦失败，便不可修改
         context.$editStatusAble = false;
       }
@@ -158,14 +160,14 @@ const doSrc = async (item: IStepOptions) => {
 const doSkip = async (item: IStepOptions, context: any) => {
   // $stepCount 添加状态
   context[item.$stepCount] = {
-    status: 'skip',
+    status: STEP_STATUS.SKIP,
   };
   // id 添加状态
   if (item.id) {
     context.steps = {
       ...context.steps,
       [item.id]: {
-        status: 'skip',
+        status: STEP_STATUS.SKIP,
       },
     };
   }
@@ -177,7 +179,7 @@ function logName(item: IStepOptions, context?: any) {
   const logFile = `step_${item.$stepCount}.log`;
   const runItem = item as IRunOptions;
   const usesItem = item as IUsesOptions;
-  const isSkip = get(context, `${item.$stepCount}.status`) === 'skip';
+  const isSkip = get(context, `${item.$stepCount}.status`) === STEP_STATUS.SKIP;
   if (runItem.run) {
     const msg = runItem.name || `Run ${runItem.run}`;
     return logger.info(isSkip ? `[skipped] ${msg}` : msg, logFile);
