@@ -1,4 +1,4 @@
-import { getYamlContent, setServerlessCdVariable } from '@serverless-cd/core';
+import { getYamlContent } from '@serverless-cd/core';
 import { get, map, uniqueId } from 'lodash';
 import createMachine from './createMachine';
 import { IStepOptions } from './types';
