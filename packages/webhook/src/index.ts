@@ -2,12 +2,12 @@ import EventEmitter from 'events';
 import { ListenConfig } from './types';
 import { checkType, findHandler, handlerEvents, commonEvent } from './utile';
 import getHookKeyword from './git/hookKeyword';
-const { BufferListStream } = require('bl');
+import events from './events';
 
-export { default as events } from './events';
-
-export default class WebHook extends EventEmitter {
+class WebHook extends EventEmitter {
   initOptions: ListenConfig | ListenConfig[];
+
+  static events = events;
 
   constructor(initOptions: ListenConfig | ListenConfig[]) {
     if (Array.isArray(initOptions)) {
@@ -22,8 +22,8 @@ export default class WebHook extends EventEmitter {
     this.initOptions = initOptions;
   }
 
-  handler (req: any, res: any, callback: Function) {
-    const { url, method, headers, protocol } = req;
+  handler (req: any, callback: Function = () => {}) {
+    const { url, method, headers, protocol, body } = req;
     console.log('req payload: ', { method, url, headers });
 
     const listenConfig: ListenConfig = findHandler(url, this.initOptions);
@@ -31,6 +31,7 @@ export default class WebHook extends EventEmitter {
 
     const { events: listenEvents, path, secret } = listenConfig;
     const events = handlerEvents(listenEvents || []);
+    console.log('监听的事件: ', events);
     const reqPath = url.split('?').shift();
 
     if (reqPath !== path || method !== 'POST') {
@@ -48,69 +49,59 @@ export default class WebHook extends EventEmitter {
     } = headers;
 
     if (!signature) {
-      return this.hasError(`No ${signatureKey} found on request`, req, res, callback);
+      return this.hasError(`No ${signatureKey} found on request`, callback);
     }
 
     if (!event) {
-      return this.hasError(`No ${event} found on request`, req, res, callback);
+      return this.hasError(`No ${event} found on request`, callback);
     }
 
     if (!id) {
-      return this.hasError(`No ${id} found on request`, req, res, callback);
+      return this.hasError(`No ${id} found on request`, callback);
     }
 
     if (events.length && events.includes(event)) {
-      return this.hasError(`No ${event} found on request`, req, res, callback);
+      return this.hasError(`No ${event} found on request`, callback);
     }
 
-    req.pipe(BufferListStream((err: Error, data: any) => {
-      if (err) {
-        return this.hasError(err.message, req, res, callback);
-      }
+    let obj;
+    try {
+      obj = JSON.parse(body.toString());
+    } catch(e: any) {
+      return this.hasError(e.toString(), callback);
+    }
 
-      let obj;
-      try {
-        obj = JSON.parse(data.toString());
-      } catch(e: any) {
-        return this.hasError(e.toString(), req, res, callback);
-      }
+    if (!verify(signature, body, obj)) {
+      return this.hasError(`${signatureKey} does not match blob signature`, callback);
+    }
 
-      if (!verify(signature, data, obj)) {
-        return this.hasError(`${signatureKey} does not match blob signature`, req, res, callback);
-      }
+    const emitData = {
+      path,
+      event,
+      id,
+      protocol,
+      url,
+      payload: obj,
+      host: headers.host,
+    };
+    console.log('emitData:: ', emitData);
 
-      const emitData = {
-        path,
-        event,
-        id,
-        protocol,
-        url,
-        payload: obj,
-        host: headers.host,
-      };
-      console.log('emitData:: ', emitData);
+    const emitEvent = commonEvent(event);
+    console.log('emitEvent:: ', emitEvent);
 
-      const emitEvent = commonEvent(event);
-      console.log('emitEvent:: ', emitEvent);
+    this.emit(emitEvent, emitData);
+    if (!events.length) {
+      this.emit('*', emitData);
+    }
 
-      res.writeHead(200, { 'content-type': 'application/json' })
-      res.end('{"ok":true}')
-
-      this.emit(emitEvent, emitData)
-      this.emit('*', emitData)
-    }))
+    callback(null, emitData);
   }
 
-  private hasError (msg: string, req: any, res: any, callback: Function) {
-    res.writeHead(400, { 'content-type': 'application/json' })
-    res.end(JSON.stringify({ error: msg }))
-
-    const err = new Error(msg)
-
-    this.emit('error', err, req);
-    callback(err)
+  private hasError (msg: string, callback: Function) {
+    const err = new Error(msg);
+    this.emit('error', err);
+    callback(err);
   }
 };
 
-module.exports = WebHook;
-// export default (options: ListenConfig | ListenConfig[]) => new WebHook(options);
+export = WebHook;
