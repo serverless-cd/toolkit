@@ -45,7 +45,7 @@ test('执行step全部成功，模版可以识别{{steps.xhello.output.code === 
   expect(get(res, 'steps.xend.status')).toBe('success');
 });
 
-test.only('执行step全部成功，模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code !== 0}}', async () => {
+test('执行step全部成功，模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code !== 0}}', async () => {
   core.setServerlessCdVariable(
     'TEMPLATE_PATH',
     path.join(__dirname, 'if-many-condition-false.yaml'),
@@ -61,14 +61,14 @@ test.only('执行step全部成功，模版可以识别{{steps.xhello.output.code
   expect(get(res, 'steps.xend')).toBeUndefined();
 });
 
-test('某一步执行失败, 后续步骤不在执行', async () => {
+test.only('某一步执行失败, 后续步骤执行状态为skip', async () => {
   core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'error.yaml'));
   core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
   const res = await step();
   // 步骤2 状态是 failure
   expect(get(res, 'steps.xerror.status')).toBe('failure');
-  // 步骤3 未执行
-  expect(get(res, 'steps.xworld')).toBeUndefined();
+  // 步骤3 未执行, 状态为 skip
+  expect(get(res, 'steps.xworld.status')).toBe('skip');
 });
 
 test('某一步执行失败，但该步骤添加了continue-on-error: true，后续步骤正常执行', async () => {
@@ -79,12 +79,4 @@ test('某一步执行失败，但该步骤添加了continue-on-error: true，后
   expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
   // 步骤3 依然会执行
   expect(get(res, 'steps.xworld.status')).toBe('success');
-});
-
-test.skip('执行step失败且加了if字段', async () => {
-  core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'if.yaml'));
-  core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
-  const res = await step();
-  // TODO: context 目前是空对象。
-  expect(res).toEqual({});
 });
