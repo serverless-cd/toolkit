@@ -70,6 +70,7 @@ export default (steps: IStepOptions[]) => {
       initial: 'init',
       context: {
         $status: 'init',
+        $editStatusAble: true, // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
       },
       states,
     });
@@ -84,7 +85,9 @@ const handleSrc = async (item: IStepOptions, context: any) => {
   return doSrc(item)
     .then((response: any) => {
       // 记录全局的执行状态
-      context.$status = 'success';
+      if (context.$editStatusAble) {
+        context.$status = 'success';
+      }
       // $stepCount 添加状态
       context[item.$stepCount] = {
         status: 'success',
@@ -103,7 +106,13 @@ const handleSrc = async (item: IStepOptions, context: any) => {
     .catch((err: any) => {
       const status = item['continue-on-error'] === true ? 'error-with-continue' : 'failure';
       // 记录全局的执行状态
-      context.$status = status;
+      if (context.$editStatusAble) {
+        context.$status = status;
+      }
+      if (status === 'failure') {
+        // 全局的执行状态一旦失败，便不可修改
+        context.$editStatusAble = false;
+      }
       context[item.$stepCount] = {
         status,
       };

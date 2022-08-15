@@ -121,3 +121,27 @@ test('某一步执行失败, 后续某步骤标记了if: {{ failure() && steps.x
   // 步骤4 未执行, 状态为 skip
   expect(get(res, 'steps.xend.status')).toBe('skip');
 });
+
+test('某一步执行失败, 后续某步骤标记了if: {{ success() }}', async () => {
+  core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'success.yaml'));
+  core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
+  const res = await step();
+  // 步骤2 状态是 failure
+  expect(get(res, 'steps.xerror.status')).toBe('failure');
+  // 步骤3 未执行, 状态为 skip
+  expect(get(res, 'steps.xworld.status')).toBe('skip');
+  // 步骤4 未执行, 状态为 skip
+  expect(get(res, 'steps.xend.status')).toBe('skip');
+});
+
+test.only('某一步执行失败, 后续某步骤标记了if: {{ always() }}', async () => {
+  core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'always.yaml'));
+  core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
+  const res = await step();
+  // 步骤2 状态是 failure
+  expect(get(res, 'steps.xerror.status')).toBe('failure');
+  // 步骤3 依然执行
+  expect(get(res, 'steps.xworld.status')).toBe('success');
+  // 步骤4 未执行, 状态为 skip
+  expect(get(res, 'steps.xend.status')).toBe('skip');
+});
