@@ -7,7 +7,58 @@ test('执行step全部成功，获取某一步的output', async () => {
   core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'serverless-pipeline.yaml'));
   core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
   const res = await step();
-  expect(get(res, 'xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+  expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+});
+
+test('执行step全部成功，模版可以识别{{steps.xhello.output.code === 0}}', async () => {
+  core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'if-condition-true.yaml'));
+  core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
+  const res = await step();
+  // 获取步骤1的output
+  expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+  // 步骤2执行成功说明模版识别成功
+  expect(get(res, 'steps.xworld.status')).toBe('success');
+});
+
+test('执行step全部成功，模版可以识别{{steps.xhello.output.code !== 0}}', async () => {
+  core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'if-condition-false.yaml'));
+  core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
+  const res = await step();
+  // 获取步骤1的output
+  expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+  // 步骤2未执行说明模版识别成功
+  expect(get(res, 'steps.xworld')).toBeUndefined();
+});
+
+test('执行step全部成功，模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code === 0}}', async () => {
+  core.setServerlessCdVariable(
+    'TEMPLATE_PATH',
+    path.join(__dirname, 'if-many-condition-true.yaml'),
+  );
+  core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
+  const res = await step();
+  // 获取步骤1的output
+  expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+  // 获取步骤2的output
+  expect(get(res, 'steps.xworld.output')).toEqual({ code: 0, stdout: '"world"\n' });
+  // 步骤3执行成功说明模版识别成功
+  expect(get(res, 'steps.xend.status')).toBe('success');
+});
+
+test.only('执行step全部成功，模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code !== 0}}', async () => {
+  core.setServerlessCdVariable(
+    'TEMPLATE_PATH',
+    path.join(__dirname, 'if-many-condition-false.yaml'),
+  );
+  core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
+  const res = await step();
+  // 获取步骤1的output
+  expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+  // 获取步骤2的output
+  expect(get(res, 'steps.xworld.output')).toEqual({ code: 0, stdout: '"world"\n' });
+  // 步骤3未执行说明模版识别成功
+  expect(get(res, 'steps.xworld.status')).toBe('success');
+  expect(get(res, 'steps.xend')).toBeUndefined();
 });
 
 test('某一步执行失败, 后续步骤不在执行', async () => {
@@ -15,22 +66,22 @@ test('某一步执行失败, 后续步骤不在执行', async () => {
   core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
   const res = await step();
   // 步骤2 状态是 failure
-  expect(get(res, 'xerror.status')).toBe('failure');
+  expect(get(res, 'steps.xerror.status')).toBe('failure');
   // 步骤3 未执行
-  expect(get(res, 'xworld')).toBeUndefined();
+  expect(get(res, 'steps.xworld')).toBeUndefined();
 });
 
-test.only('某一步执行失败，但该步骤添加了continue-on-error: true，后续步骤正常执行', async () => {
+test('某一步执行失败，但该步骤添加了continue-on-error: true，后续步骤正常执行', async () => {
   core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'continue-on-error.yaml'));
   core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
   const res = await step();
   // 步骤2 状态是 error-with-continue
-  expect(get(res, 'xerror.status')).toBe('error-with-continue');
+  expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
   // 步骤3 依然会执行
-  expect(get(res, 'xworld.status')).toBe('success');
+  expect(get(res, 'steps.xworld.status')).toBe('success');
 });
 
-test('执行step失败且加了if字段', async () => {
+test.skip('执行step失败且加了if字段', async () => {
   core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'if.yaml'));
   core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
   const res = await step();

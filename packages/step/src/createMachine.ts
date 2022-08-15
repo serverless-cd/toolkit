@@ -4,6 +4,8 @@ import { IStepOptions, IRunOptions, IUsesOptions } from './types';
 import { isEmpty, get, each } from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
+const artTemplate = require('art-template');
+
 const ALWAYS = '${{ always() }}';
 
 export default (steps: IStepOptions[]) => {
@@ -29,34 +31,13 @@ export default (steps: IStepOptions[]) => {
         invoke: {
           id: item.$stepCount,
           src: (context: any) => {
-            return doSrc(item)
-              .then((response: any) => {
-                // $stepCount 添加状态
-                context[item.$stepCount] = {
-                  status: 'success',
-                };
-                // id 添加状态
-                if (item.id) {
-                  context[item.id] = {
-                    status: 'success',
-                    output: response,
-                  };
-                }
-              })
-              .catch((err: any) => {
-                const status =
-                  item['continue-on-error'] === true ? 'error-with-continue' : 'failure';
-                context[item.$stepCount] = {
-                  status,
-                };
-                if (item.id) {
-                  context[item.id] = {
-                    status,
-                    output: err,
-                  };
-                }
-                if (item['continue-on-error'] !== true) throw err;
-              });
+            if (item.if) {
+              const ifCondition = artTemplate.compile(item.if);
+              return ifCondition(context.steps) === 'true'
+                ? handleSrc(item, context)
+                : Promise.resolve();
+            }
+            return handleSrc(item, context);
           },
           onDone: {
             target,
@@ -74,10 +55,48 @@ export default (steps: IStepOptions[]) => {
       states,
     });
     const stepService = interpret(fetchMachine)
-      .onTransition((state) => console.log(state.value, state.context))
+      .onTransition((state) =>
+        console.log(`state.value=${state.value}`, `state.context=${JSON.stringify(state.context)}`),
+      )
       .start();
     stepService.send('INIT');
   });
+};
+
+const handleSrc = async (item: IStepOptions, context: any) => {
+  return doSrc(item)
+    .then((response: any) => {
+      // $stepCount 添加状态
+      context[item.$stepCount] = {
+        status: 'success',
+      };
+      // id 添加状态
+      if (item.id) {
+        context.steps = {
+          ...context.steps,
+          [item.id]: {
+            status: 'success',
+            output: response,
+          },
+        };
+      }
+    })
+    .catch((err: any) => {
+      const status = item['continue-on-error'] === true ? 'error-with-continue' : 'failure';
+      context[item.$stepCount] = {
+        status,
+      };
+      if (item.id) {
+        context.steps = {
+          ...context.steps,
+          [item.id]: {
+            status,
+            output: err,
+          },
+        };
+      }
+      if (item['continue-on-error'] !== true) throw err;
+    });
 };
 
 const doSrc = async (item: IStepOptions) => {

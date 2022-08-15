@@ -6,10 +6,13 @@ on:
 job:
   runtime: nodejs12
   env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     FIRST_NAME: Mona
     LAST_NAME: Octocat
   steps:
     - run: echo "hello"
       id: xhello
     - run: echo "world"
+      id: xworld
+    - run: echo "end"
+      if: '{{ xhello.output.code === 0 && xworld.output.code === 0 }}'
+      id: xend

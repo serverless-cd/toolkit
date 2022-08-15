@@ -5,9 +5,8 @@ import { getServerlessCdVariable } from './variable';
 
 const TEMPLATE_YAML = 'serverless-pipeline.yaml';
 
-function getYamlContent() {
-  const templatePath = getServerlessCdVariable('TEMPLATE_PATH');
-  const filePath = templatePath || path.join(process.cwd(), TEMPLATE_YAML);
+export function getYamlContent() {
+  const filePath = getYamlPath();
   const filename = path.basename(filePath);
 
   if (!fs.existsSync(filePath)) {
@@ -25,4 +24,8 @@ function getYamlContent() {
     throw new Error(message);
   }
 }
-export default getYamlContent;
+
+export function getYamlPath() {
+  const templatePath = getServerlessCdVariable('TEMPLATE_PATH');
+  return templatePath || path.join(process.cwd(), TEMPLATE_YAML);
+}

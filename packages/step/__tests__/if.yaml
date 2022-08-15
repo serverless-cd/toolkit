@@ -10,9 +10,8 @@ job:
     FIRST_NAME: Mona
     LAST_NAME: Octocat
   steps:
-    - run: npm run xxx
     - run: echo "hello"
+      id: xhello
     - run: echo "world"
-      if: ${{ failure() }}
-    - run: echo "end"
-      if: ${{ success() }}
+      id: xworld
+      if: {{steps.xhello.output}}
