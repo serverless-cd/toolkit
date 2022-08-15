@@ -12,6 +12,10 @@ job:
   steps:
     - run: echo "hello"
       id: xhello
+    - run: npm run error
+      id: xerror
     - run: echo "world"
       id: xworld
-      if: {{steps.xhello.output}}
+    - run: echo "end"
+      id: xend
+      if: '{{ failure() && steps.xerror.output.code === 0 }}'

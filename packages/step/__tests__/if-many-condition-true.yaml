@@ -14,5 +14,5 @@ job:
     - run: echo "world"
       id: xworld
     - run: echo "end"
-      if: '{{ xhello.output.code === 0 && xworld.output.code === 0 }}'
+      if: '{{ steps.xhello.output.code === 0 && steps.xworld.output.code === 0 }}'
       id: xend

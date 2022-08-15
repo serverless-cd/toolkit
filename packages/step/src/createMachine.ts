@@ -1,7 +1,7 @@
 import { logger } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import { IStepOptions, IRunOptions, IUsesOptions } from './types';
-import { isEmpty, get, each } from 'lodash';
+import { isEmpty, get, each, replace } from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
 const artTemplate = require('art-template');
@@ -31,28 +31,28 @@ export default (steps: IStepOptions[]) => {
           src: (context: any) => {
             // 先判断if条件，成功则执行该步骤。
             if (item.if) {
+              // 替换 failure()
+              item.if = replace(
+                item.if,
+                'failure()',
+                context.$status === 'failure' ? 'true' : 'false',
+              );
+              // 替换 success()
+              item.if = replace(
+                item.if,
+                'success()',
+                context.$status !== 'failure' ? 'true' : 'false',
+              );
+              // 替换 success()
+              item.if = replace(item.if, 'always()', 'true');
               const ifCondition = artTemplate.compile(item.if);
-              return ifCondition(context.steps) === 'true'
+              return ifCondition(context) === 'true'
                 ? handleSrc(item, context)
-                : Promise.resolve();
+                : doSkip(item, context);
             }
             // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skip
             if (context.$status === 'failure') {
-              // $stepCount 添加状态
-              context[item.$stepCount] = {
-                status: 'skip',
-              };
-              // id 添加状态
-              if (item.id) {
-                context.steps = {
-                  ...context.steps,
-                  [item.id]: {
-                    status: 'skip',
-                  },
-                };
-              }
-              logName(item, context);
-              return Promise.resolve();
+              return doSkip(item, context);
             }
             return handleSrc(item, context);
           },
@@ -74,12 +74,7 @@ export default (steps: IStepOptions[]) => {
       states,
     });
     const stepService = interpret(fetchMachine)
-      .onTransition((state) =>
-        console.log(
-          `state.value=${state.value}\n`,
-          `state.context=${JSON.stringify(state.context, null, 2)}`,
-        ),
-      )
+      .onTransition((state) => console.log(state.value, state.context))
       .start();
     stepService.send('INIT');
   });
@@ -149,6 +144,24 @@ const doSrc = async (item: IStepOptions) => {
       logger.error(e as string, logFile);
     }
   }
+};
+
+const doSkip = async (item: IStepOptions, context: any) => {
+  // $stepCount 添加状态
+  context[item.$stepCount] = {
+    status: 'skip',
+  };
+  // id 添加状态
+  if (item.id) {
+    context.steps = {
+      ...context.steps,
+      [item.id]: {
+        status: 'skip',
+      },
+    };
+  }
+  logName(item, context);
+  return Promise.resolve();
 };
 
 function logName(item: IStepOptions, context?: any) {
