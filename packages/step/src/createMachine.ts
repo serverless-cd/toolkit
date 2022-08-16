@@ -19,7 +19,7 @@ export default (steps: IStepOptions[]) => {
       final: {
         type: 'final',
         invoke: {
-          src: (context: any) => resolve(context),
+          src: (context: any) => resolve({ status: context.$status, steps: context.steps }),
         },
       },
     };
