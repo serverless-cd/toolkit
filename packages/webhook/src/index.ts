@@ -60,7 +60,7 @@ class WebHook extends EventEmitter {
       return this.hasError(`No ${id} found on request`, callback);
     }
 
-    if (events.length && events.includes(event)) {
+    if (events.length && !events.includes(event)) {
       return this.hasError(`No ${event} found on request`, callback);
     }
 

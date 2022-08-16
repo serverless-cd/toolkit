@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "watch": "tsc -w",
+    "start": "tsc -w",
+    "watch": "esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=example/lib/index.js --watch",
     "esbuild": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=lib/index.js",
     "postesbuild": "rm -rf example/lib && cp -rf lib example/lib"
   },
