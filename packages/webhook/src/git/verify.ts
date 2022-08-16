@@ -5,15 +5,21 @@ export default class Verify {
 
   constructor(secret: string) {
     this.secret = secret;
+
+    this.verifyGithub = this.verifyGithub.bind(this);
+    this.verifyGitee = this.verifyGitee.bind(this);
+    this.verifyGitlab = this.verifyGitlab.bind(this);
+    this.verifyGiteaGogs = this.verifyGiteaGogs.bind(this);
+    this.verifyCodeup = this.verifyCodeup.bind(this);
   }
 
   verifyGithub (signature: string, data: BinaryLike) {
-    const sig = Buffer.from(signature)
+    const sig = Buffer.from(signature);
     const signed = Buffer.from(`sha1=${crypto.createHmac('sha1', this.secret).update(data).digest('hex')}`)
     if (sig.length !== signed.length) {
-      return false
+      return false;
     }
-    return crypto.timingSafeEqual(sig, signed)
+    return crypto.timingSafeEqual(sig, signed);
   }
 
   verifyGitee (signature: string, _data?: BinaryLike, json?: { [key: string]: any }) {
