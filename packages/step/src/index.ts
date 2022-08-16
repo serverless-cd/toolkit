@@ -4,11 +4,17 @@ import createMachine from './createMachine';
 import { IStepOptions } from './types';
 
 async function step() {
-  const pipelineContent = getYamlContent();
-  const steps: IStepOptions[] = map(get(pipelineContent, 'job.steps', []), (item: IStepOptions) => {
-    item.$stepCount = uniqueId();
-    return item;
-  });
+  const pipelineContent: any = getYamlContent();
+  const jobs = get(pipelineContent, 'jobs', {});
+  let steps = [] as IStepOptions[];
+  for (const key in jobs) {
+    steps = map(get(jobs[key], 'steps', []), (item: IStepOptions) => {
+      item.$stepCount = uniqueId();
+      return item;
+    });
+    // 暂时只支持一个job
+    break;
+  }
   return await createMachine(steps);
 }
 

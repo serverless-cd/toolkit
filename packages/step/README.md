@@ -29,10 +29,10 @@ await step();
 ```
 steps:
    - run: echo "hello"
-   id: xhello
+     id: xhello
    - run: echo "world"
-   if: '{{ steps.xhello.output.code === 0 }}'
-   id: xworld
+     if: '{{ steps.xhello.output.code === 0 }}'
+     id: xworld
 ```
 
 ### 状态检查函数
@@ -48,10 +48,10 @@ steps:
 ```
 steps:
    - run: npm run error
-   id: xerror
+     id: xerror
    - run: echo "world"
-   if: '{{ failure() }}'
-   id: xworld
+     if: '{{ failure() }}'
+     id: xworld
 ```
 
 当然，状态检测函数也可以和其它step的输出结果一起作为条件来判断当前步骤是否执行
@@ -59,12 +59,12 @@ steps:
 ```
 steps:
    - run: echo "hello"
-   id: xhello
+     id: xhello
    - run: npm run error
-   id: xerror
+     id: xerror
    - run: echo "world"
-   if: '{{ failure() && steps.xerror.output.code !== 0 }}'
-   id: xworld
+     if: '{{ failure() && steps.xerror.output.code !== 0 }}'
+     id: xworld
 ```
 
 #### always
@@ -73,10 +73,10 @@ steps:
 ```
 steps:
    - run: npm run error
-   id: xerror
+     id: xerror
    - run: echo "world"
-   if: '{{ always() }}'
-   id: xworld
+     if: '{{ always() }}'
+     id: xworld
 ```
 
 
@@ -86,12 +86,12 @@ steps:
 ```
 steps:
    - run: echo "hello"
-   id: xhello
+     id: xhello
    - run: npm run error
-   id: xerror
-   continue-on-error: true
+     id: xerror
+     continue-on-error: true
    - run: echo "world"
-   id: xworld
+     id: xworld
 ```
 
 

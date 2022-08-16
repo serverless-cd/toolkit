@@ -3,16 +3,17 @@ on:
   push:
     branches:
       - master
-job:
-  runtime: nodejs12
-  env:
-    FIRST_NAME: Mona
-    LAST_NAME: Octocat
-  steps:
-    - run: echo "hello"
-      id: xhello
-    - run: echo "world"
-      id: xworld
-    - run: echo "end"
-      if: '{{ steps.xhello.output.code === 0 && steps.xworld.output.code !== 0 }}'
-      id: xend
+jobs:
+  my_first_job:
+    runtime: nodejs12
+    env:
+      FIRST_NAME: Mona
+      LAST_NAME: Octocat
+    steps:
+      - run: echo "hello"
+        id: xhello
+      - run: echo "world"
+        id: xworld
+      - run: echo "end"
+        if: '{{ steps.xhello.output.code === 0 && steps.xworld.output.code !== 0 }}'
+        id: xend

@@ -3,19 +3,20 @@ on:
   push:
     branches:
       - master
-job:
-  runtime: nodejs12
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    FIRST_NAME: Mona
-    LAST_NAME: Octocat
-  steps:
-    - run: echo "hello"
-      id: xhello
-    - run: npm run error
-      id: xerror
-    - run: echo "world"
-      id: xworld
-    - run: echo "end"
-      id: xend
-      if: '{{ failure() }}'
+jobs:
+  my_first_job:
+    runtime: nodejs12
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      FIRST_NAME: Mona
+      LAST_NAME: Octocat
+    steps:
+      - run: echo "hello"
+        id: xhello
+      - run: npm run error
+        id: xerror
+      - run: echo "world"
+        id: xworld
+      - run: echo "end"
+        id: xend
+        if: '{{ failure() }}'
