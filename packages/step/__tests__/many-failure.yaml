@@ -15,6 +15,9 @@ jobs:
         id: xhello
       - run: npm run error
         id: xerror
-        continue-on-error: true
       - run: echo "world"
         id: xworld
+        if: '{{ failure() }}'
+      - run: echo "end"
+        id: xend
+        if: '{{ failure() }}'
