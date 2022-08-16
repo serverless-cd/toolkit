@@ -1,0 +1,19 @@
+name: "On Push master"
+on:
+  push:
+    branches:
+      - master
+job:
+  runtime: nodejs12
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    FIRST_NAME: Mona
+    LAST_NAME: Octocat
+  steps:
+    - run: echo "hello"
+      id: xhello
+    - run: npm run error
+      id: xerror
+      continue-on-error: true
+    - run: echo "world"
+      id: xworld
