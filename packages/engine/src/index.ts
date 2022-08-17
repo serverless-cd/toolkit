@@ -3,7 +3,7 @@ import { get, map, uniqueId } from 'lodash';
 import createMachine from './createMachine';
 import { IStepOptions } from './types';
 
-async function step() {
+async function engine() {
   const pipelineContent: any = getYamlContent();
   const jobs = get(pipelineContent, 'jobs', {});
   let steps = [] as IStepOptions[];
@@ -18,4 +18,4 @@ async function step() {
   return await createMachine(steps);
 }
 
-export default step;
+export default engine;
