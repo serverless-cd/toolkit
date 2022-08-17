@@ -1,4 +1,4 @@
-import engine from '../src';
+import Engine from '../src';
 import { IStepOptions } from '../src/types';
 import * as path from 'path';
 import * as core from '@serverless-cd/core';
@@ -19,22 +19,20 @@ function getStep() {
   return steps;
 }
 
-beforeAll(() => {
-  core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
-});
-
 describe('执行step全部成功', () => {
   test('获取某一步的output', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'serverless-pipeline.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
   });
 
   test('模版可以识别{{steps.xhello.output.code === 0}}', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'if-condition-true.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 获取步骤1的output
     expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
     // 步骤2执行成功说明模版识别成功
@@ -44,7 +42,8 @@ describe('执行step全部成功', () => {
   test('模版可以识别{{steps.xhello.output.code !== 0}}', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'if-condition-false.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 获取步骤1的output
     expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
     // 步骤2的执行状态为skip，说明模版识别成功
@@ -57,7 +56,8 @@ describe('执行step全部成功', () => {
       path.join(__dirname, 'if-many-condition-true.yaml'),
     );
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 获取步骤1的output
     expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
     // 获取步骤2的output
@@ -72,7 +72,8 @@ describe('执行step全部成功', () => {
       path.join(__dirname, 'if-many-condition-false.yaml'),
     );
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 获取步骤1的output
     expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
     // 获取步骤2的output
@@ -86,7 +87,8 @@ describe('某一步执行失败', () => {
   test('后续步骤执行状态为skip', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'error.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 未执行, 状态为 skip
@@ -96,7 +98,8 @@ describe('某一步执行失败', () => {
   test('但该步骤添加了continue-on-error: true，后续步骤正常执行', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'continue-on-error.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 步骤2 状态是 error-with-continue
     expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
     // 步骤3 依然会执行
@@ -106,7 +109,8 @@ describe('某一步执行失败', () => {
   test('后续某步骤标记了if: {{ failure() }}', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'failure.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 未执行, 状态为 skip
@@ -118,7 +122,8 @@ describe('某一步执行失败', () => {
   test('后续多个步骤标记了if: {{ failure() }}', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'many-failure.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 未执行, 状态为 skip
@@ -133,7 +138,8 @@ describe('某一步执行失败', () => {
       path.join(__dirname, 'failure-and-output-true.yaml'),
     );
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 未执行, 状态为 skip
@@ -148,7 +154,8 @@ describe('某一步执行失败', () => {
       path.join(__dirname, 'failure-and-output-false.yaml'),
     );
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 未执行, 状态为 skip
@@ -160,7 +167,8 @@ describe('某一步执行失败', () => {
   test('后续某步骤标记了if: {{ success() }}', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'success.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 未执行, 状态为 skip
@@ -172,7 +180,8 @@ describe('某一步执行失败', () => {
   test('后续某步骤标记了if: {{ always() }}', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'always.yaml'));
     const steps = getStep();
-    const res = await engine(steps);
+    const engine = new Engine(steps);
+    const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 依然执行
