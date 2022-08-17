@@ -17,48 +17,12 @@ test('isDebug', () => {
   expect(logger.isDebug()).toBeTruthy();
 });
 
-describe('通过绝对路径写入日志文件', () => {
-  const filePath = path.join(__dirname, 'log.txt');
-  beforeAll(() => {
-    logger.enableDebug();
+test('debug', (done) => {
+  logger.enableDebug();
+  const msg = 'debug message';
+  logger.on('data', (message: string) => {
+    expect(message).toBe(msg);
+    done();
   });
-  test('debug', () => {
-    logger.debug('debug message ', filePath);
-    expect(fs.existsSync(filePath)).toBeTruthy();
-  });
-  test('info', () => {
-    logger.info('info message ', filePath);
-    expect(fs.existsSync(filePath)).toBeTruthy();
-  });
-  test('error', () => {
-    logger.error('error message ', filePath);
-    expect(fs.existsSync(filePath)).toBeTruthy();
-  });
-  afterEach(() => {
-    fs.unlinkSync(filePath);
-  });
-});
-
-describe('通过环境变量LOG_PATH写入日志文件', () => {
-  const filePath = 'log2.txt';
-  beforeAll(() => {
-    setServerlessCdVariable('LOG_PATH', process.cwd());
-    logger.enableDebug();
-  });
-  test('debug', () => {
-    logger.debug('debug message ', filePath);
-    expect(fs.existsSync(filePath)).toBeTruthy();
-  });
-  test('info', () => {
-    logger.info('info message ', filePath);
-    expect(fs.existsSync(filePath)).toBeTruthy();
-  });
-  test('error', () => {
-    logger.error('error message ', filePath);
-    expect(fs.existsSync(filePath)).toBeTruthy();
-  });
-  afterEach(() => {
-    const deletePath = path.join(getServerlessCdVariable('LOG_PATH'), filePath);
-    fs.unlinkSync(deletePath);
-  });
+  logger.debug(msg);
 });

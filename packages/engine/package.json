@@ -1,8 +1,8 @@
 {
-  "name": "@serverless-cd/step",
+  "name": "@serverless-cd/engine",
   "private": true,
   "version": "0.0.1-alpha.4",
-  "description": "sevrerless-cd step lib",
+  "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
     "build": "tsc",
