@@ -19,3 +19,5 @@ export interface IUsesOptions {
 }
 
 export type IStepOptions = IRunOptions | IUsesOptions;
+
+export type IStepsStatus = IStepOptions & { status: string };

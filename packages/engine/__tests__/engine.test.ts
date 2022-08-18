@@ -1,18 +1,14 @@
 import Engine from '../src';
-import { IStepOptions } from '../src/types';
 import * as path from 'path';
 import * as core from '@serverless-cd/core';
-import { get, map, uniqueId } from 'lodash';
+import { get } from 'lodash';
 
 function getStep() {
   const pipelineContent: any = core.getYamlContent();
   const jobs = get(pipelineContent, 'jobs', {});
-  let steps = [] as IStepOptions[];
+  let steps = [];
   for (const key in jobs) {
-    steps = map(get(jobs[key], 'steps', []), (item: IStepOptions) => {
-      item.$stepCount = uniqueId();
-      return item;
-    });
+    steps = get(jobs[key], 'steps', []);
     // 暂时只支持一个job
     break;
   }
@@ -177,7 +173,7 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
 
-  test.only('后续某步骤标记了if: {{ always() }}', async () => {
+  test('后续某步骤标记了if: {{ always() }}', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'always.yaml'));
     const steps = getStep();
     const engine = new Engine(steps);
@@ -188,5 +184,85 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xworld.status')).toBe('success');
     // 步骤4 未执行, 状态为 skipped
     expect(get(res, 'steps.xend.status')).toBe('skipped');
+  });
+});
+
+test('cancel测试', (done) => {
+  const lazy = (fn: any) => {
+    setTimeout(() => {
+      console.log('3s后执行 callback');
+      fn();
+    }, 3000);
+  };
+  core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'cancel/cancel.yaml'));
+  const steps = getStep();
+  const engine = new Engine(steps);
+  const callback = jest.fn(() => {
+    engine.cancel();
+  });
+  lazy(callback);
+  engine.start();
+  setTimeout(() => {
+    expect(callback).toBeCalled();
+    expect(process.exitCode).toBe(2);
+    done();
+  }, 3001);
+});
+
+describe('执行终态emit测试', () => {
+  test('success', async () => {
+    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'emit-success.yaml'));
+    const steps = getStep();
+    const engine = new Engine(steps);
+    engine.on('success', (data) => {
+      expect(data).toEqual([
+        { run: 'echo "hello"', id: 'xhello', status: 'success' },
+        { run: 'echo "world"', status: 'success' },
+      ]);
+    });
+    await engine.start();
+  });
+  test('failure', async () => {
+    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'emit-failure.yaml'));
+    const steps = getStep();
+    const engine = new Engine(steps);
+    engine.on('failure', (data) => {
+      expect(data).toEqual([
+        { run: 'echo "hello"', id: 'xhello', status: 'success' },
+        { run: 'npm run error', id: 'xerror', status: 'failure' },
+      ]);
+    });
+    await engine.start();
+  });
+
+  test.skip('cancelled', (done) => {
+    const lazy = (fn: any) => {
+      setTimeout(() => {
+        console.log('3s后执行 callback');
+        fn();
+      }, 3000);
+    };
+    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'cancel/emit-cancel.yaml'));
+    const steps = getStep();
+    const engine = new Engine(steps);
+    const callback = jest.fn(() => {
+      engine.cancel();
+    });
+    lazy(callback);
+    // engine.on('cancelled', (data) => {
+    //   expect(data).toEqual([
+    //     { run: 'echo "hello"', id: 'xhello', status: 'success' },
+    //     {
+    //       run: 'node packages/engine/__tests__/cancel/testxx.js',
+    //       status: 'success',
+    //     },
+    //   ]);
+    // });
+    engine.start();
+    setTimeout(() => {
+      expect(callback).toBeCalled();
+      expect(process.exitCode).toBe(2);
+      done();
+    }, 3001);
   });
 });

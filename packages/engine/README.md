@@ -26,7 +26,6 @@ await step();
 ## step的终态
 - success
 - failure
-- error-with-continue
 - cancelled
 
 

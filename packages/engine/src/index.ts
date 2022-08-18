@@ -1,7 +1,7 @@
 import { logger } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
-import { IStepOptions, IRunOptions, IUsesOptions } from './types';
-import { isEmpty, get, each, replace } from 'lodash';
+import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus } from './types';
+import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
@@ -13,6 +13,10 @@ class Engine extends EventEmitter {
   private canceled = false;
   constructor(private steps: IStepOptions[]) {
     super();
+    this.steps = map(steps, (item: IStepOptions) => {
+      item.$stepCount = uniqueId();
+      return item;
+    });
   }
   async start() {
     if (isEmpty(this.steps)) return;
@@ -26,7 +30,10 @@ class Engine extends EventEmitter {
         final: {
           type: 'final',
           invoke: {
-            src: (context: any) => resolve({ status: context.$status, steps: context.steps }),
+            src: (context: any) => {
+              this.doEmit(context);
+              resolve({ status: context.$status, steps: context.steps });
+            },
           },
         },
       };
@@ -39,7 +46,7 @@ class Engine extends EventEmitter {
           invoke: {
             id: item.$stepCount,
             src: (context: any) => {
-              // 如果已经取消，则不执行
+              // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
               if (this.canceled) return this.doCancel(item, context);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
@@ -99,6 +106,15 @@ class Engine extends EventEmitter {
     each(this.childProcess, (item) => {
       item.kill();
     });
+  }
+  // 将执行终态进行emit
+  private doEmit(context: any) {
+    const data = map(this.steps, (item: IStepsStatus) => {
+      item.status = get(context, `${item.$stepCount}.status`);
+      const { $stepCount, ...rest } = item;
+      return rest;
+    });
+    this.emit(context.$status, data);
   }
   private async handleSrc(item: IStepOptions, context: any) {
     return this.doSrc(item)

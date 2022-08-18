@@ -1,0 +1,15 @@
+name: "On Push master"
+on:
+  push:
+    branches:
+      - master
+jobs:
+  my_first_job:
+    runtime: nodejs12
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      FIRST_NAME: Mona
+      LAST_NAME: Octocat
+    steps:
+      - run: echo "hello"
+      - run: node packages/engine/__tests__/cancel/test.js
