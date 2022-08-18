@@ -3,7 +3,7 @@ import { createMachine, interpret } from 'xstate';
 import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus, IContext, IStatus } from './types';
 import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
 import { command } from 'execa';
-import { STEP_STATUS, STEP_IF } from './constant';
+import { STEP_STATUS, STEP_IF, CODE } from './constant';
 import * as path from 'path';
 import EventEmitter from 'events';
 const artTemplate = require('art-template');
@@ -34,8 +34,14 @@ class Engine extends EventEmitter {
           type: 'final',
           invoke: {
             src: () => {
+              // 执行终态是 error-with-continue 的时候，改为 success
+              const status =
+                this.context.status === STEP_STATUS.ERROR_WITH_CONTINUE
+                  ? STEP_STATUS.SUCCESS
+                  : this.context.status;
+              this.context.status = status as IStatus;
               this.doEmit();
-              resolve({ status: this.context.status, steps: this.context.steps });
+              resolve({ status, steps: this.context.steps });
             },
           },
         },
@@ -101,8 +107,6 @@ class Engine extends EventEmitter {
   cancel() {
     this.context.status = STEP_STATUS.CANCEL as IStatus;
     this.context.editStatusAble = false;
-    // 终止退出码为2
-    process.exitCode = 2;
     each(this.childProcess, (item) => {
       item.kill();
     });
@@ -114,6 +118,8 @@ class Engine extends EventEmitter {
       const { $stepCount, ...rest } = item;
       return rest;
     });
+    // 退出码
+    process.exitCode = CODE[this.context.status];
     this.emit(this.context.status, data);
   }
   private async handleSrc(item: IStepOptions) {

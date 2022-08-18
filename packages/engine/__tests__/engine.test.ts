@@ -89,6 +89,7 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 未执行, 状态为 skipped
     expect(get(res, 'steps.xworld.status')).toBe('skipped');
+    expect(process.exitCode).toBe(1);
   });
 
   test('但该步骤添加了continue-on-error: true，后续步骤正常执行', async () => {
@@ -100,6 +101,21 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
     // 步骤3 依然会执行
     expect(get(res, 'steps.xworld.status')).toBe('success');
+  });
+
+  test('但该步骤添加了continue-on-error: true，但执行步骤的终态是success', async () => {
+    core.setServerlessCdVariable(
+      'TEMPLATE_PATH',
+      path.join(__dirname, 'continue-on-error-status.yaml'),
+    );
+    const steps = getStep();
+    const engine = new Engine(steps);
+    const res = await engine.start();
+    // 步骤2 状态是 error-with-continue
+    expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
+    // 步骤3 依然会执行
+    expect(get(res, 'status')).toBe('success');
+    expect(process.exitCode).toBe(0);
   });
 
   test('后续某步骤标记了if: {{ failure() }}', async () => {
@@ -204,7 +220,6 @@ test('cancel测试', (done) => {
   engine.start();
   setTimeout(() => {
     expect(callback).toBeCalled();
-    expect(process.exitCode).toBe(2);
     done();
   }, 3001);
 });
@@ -235,7 +250,7 @@ describe('执行终态emit测试', () => {
     await engine.start();
   });
 
-  test.only('cancelled', (done) => {
+  test('cancelled', (done) => {
     const lazy = (fn: any) => {
       setTimeout(() => {
         console.log('3s后执行 callback');
