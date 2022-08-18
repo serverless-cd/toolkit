@@ -40,7 +40,7 @@ class Engine extends EventEmitter {
             id: item.$stepCount,
             src: (context: any) => {
               // 如果已经取消，则不执行
-              if (this.canceled) return Promise.reject('canceled');
+              if (this.canceled) return this.doCancel(item, context);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
@@ -71,7 +71,7 @@ class Engine extends EventEmitter {
             onDone: {
               target,
             },
-            onError: this.canceled ? 'final' : target,
+            onError: target,
           },
         };
       });
@@ -188,6 +188,27 @@ class Engine extends EventEmitter {
         ...context.steps,
         [item.id]: {
           status: STEP_STATUS.SKIP,
+        },
+      };
+    }
+    this.logName(item, context);
+    return Promise.resolve();
+  }
+  private async doCancel(item: IStepOptions, context: any) {
+    // 记录全局的执行状态
+    if (context.$editStatusAble) {
+      context.$status = STEP_STATUS.CANCEL;
+    }
+    // $stepCount 添加状态
+    context[item.$stepCount] = {
+      status: STEP_STATUS.CANCEL,
+    };
+    // id 添加状态
+    if (item.id) {
+      context.steps = {
+        ...context.steps,
+        [item.id]: {
+          status: STEP_STATUS.CANCEL,
         },
       };
     }

@@ -14,13 +14,20 @@ await step();
 - 您可以通过 `core.setServerlessCdVariable('TEMPLATE_PATH', value)` 指定yaml文件路径
 - 您可以通过 `core.setServerlessCdVariable('LOG_PATH', value)` 指定日志文件的输出路径
 
-## step的执行状态
+## 每个step的执行状态
 我们可以通过 `steps[${step_id}].status` 来获取当前step的执行状态
 
 - success
 - failure
 - error-with-continue
-- skip
+- skipped
+- cancelled
+
+## step的终态
+- success
+- failure
+- error-with-continue
+- cancelled
 
 
 ## 当前step获取其它step的输出

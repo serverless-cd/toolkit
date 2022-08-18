@@ -47,7 +47,7 @@ describe('执行step全部成功', () => {
     // 获取步骤1的output
     expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
     // 步骤2的执行状态为skip，说明模版识别成功
-    expect(get(res, 'steps.xworld.status')).toBe('skip');
+    expect(get(res, 'steps.xworld.status')).toBe('skipped');
   });
 
   test('模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code === 0}}', async () => {
@@ -79,7 +79,7 @@ describe('执行step全部成功', () => {
     // 获取步骤2的output
     expect(get(res, 'steps.xworld.output')).toEqual({ code: 0, stdout: '"world"\n' });
     // 步骤3的执行状态为skip，说明模版识别成功
-    expect(get(res, 'steps.xend.status')).toBe('skip');
+    expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
 });
 
@@ -91,8 +91,8 @@ describe('某一步执行失败', () => {
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
-    // 步骤3 未执行, 状态为 skip
-    expect(get(res, 'steps.xworld.status')).toBe('skip');
+    // 步骤3 未执行, 状态为 skipped
+    expect(get(res, 'steps.xworld.status')).toBe('skipped');
   });
 
   test('但该步骤添加了continue-on-error: true，后续步骤正常执行', async () => {
@@ -113,8 +113,8 @@ describe('某一步执行失败', () => {
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
-    // 步骤3 未执行, 状态为 skip
-    expect(get(res, 'steps.xworld.status')).toBe('skip');
+    // 步骤3 未执行, 状态为 skipped
+    expect(get(res, 'steps.xworld.status')).toBe('skipped');
     // 步骤4 执行成功, 状态为 success
     expect(get(res, 'steps.xend.status')).toBe('success');
   });
@@ -126,7 +126,7 @@ describe('某一步执行失败', () => {
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
-    // 步骤3 未执行, 状态为 skip
+    // 步骤3 未执行, 状态为 skipped
     expect(get(res, 'steps.xworld.status')).toBe('success');
     // 步骤4 执行成功, 状态为 success
     expect(get(res, 'steps.xend.status')).toBe('success');
@@ -142,8 +142,8 @@ describe('某一步执行失败', () => {
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
-    // 步骤3 未执行, 状态为 skip
-    expect(get(res, 'steps.xworld.status')).toBe('skip');
+    // 步骤3 未执行, 状态为 skipped
+    expect(get(res, 'steps.xworld.status')).toBe('skipped');
     // 步骤4 执行成功, 状态为 success
     expect(get(res, 'steps.xend.status')).toBe('success');
   });
@@ -158,10 +158,10 @@ describe('某一步执行失败', () => {
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
-    // 步骤3 未执行, 状态为 skip
-    expect(get(res, 'steps.xworld.status')).toBe('skip');
-    // 步骤4 未执行, 状态为 skip
-    expect(get(res, 'steps.xend.status')).toBe('skip');
+    // 步骤3 未执行, 状态为 skipped
+    expect(get(res, 'steps.xworld.status')).toBe('skipped');
+    // 步骤4 未执行, 状态为 skipped
+    expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
 
   test('后续某步骤标记了if: {{ success() }}', async () => {
@@ -171,13 +171,13 @@ describe('某一步执行失败', () => {
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
-    // 步骤3 未执行, 状态为 skip
-    expect(get(res, 'steps.xworld.status')).toBe('skip');
-    // 步骤4 未执行, 状态为 skip
-    expect(get(res, 'steps.xend.status')).toBe('skip');
+    // 步骤3 未执行, 状态为 skipped
+    expect(get(res, 'steps.xworld.status')).toBe('skipped');
+    // 步骤4 未执行, 状态为 skipped
+    expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
 
-  test('后续某步骤标记了if: {{ always() }}', async () => {
+  test.only('后续某步骤标记了if: {{ always() }}', async () => {
     core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'always.yaml'));
     const steps = getStep();
     const engine = new Engine(steps);
@@ -186,7 +186,7 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 依然执行
     expect(get(res, 'steps.xworld.status')).toBe('success');
-    // 步骤4 未执行, 状态为 skip
-    expect(get(res, 'steps.xend.status')).toBe('skip');
+    // 步骤4 未执行, 状态为 skipped
+    expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
 });
