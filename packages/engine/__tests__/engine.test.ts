@@ -235,7 +235,7 @@ describe('执行终态emit测试', () => {
     await engine.start();
   });
 
-  test.skip('cancelled', (done) => {
+  test.only('cancelled', (done) => {
     const lazy = (fn: any) => {
       setTimeout(() => {
         console.log('3s后执行 callback');
@@ -249,15 +249,15 @@ describe('执行终态emit测试', () => {
       engine.cancel();
     });
     lazy(callback);
-    // engine.on('cancelled', (data) => {
-    //   expect(data).toEqual([
-    //     { run: 'echo "hello"', id: 'xhello', status: 'success' },
-    //     {
-    //       run: 'node packages/engine/__tests__/cancel/testxx.js',
-    //       status: 'success',
-    //     },
-    //   ]);
-    // });
+    engine.on('cancelled', (data) => {
+      expect(data).toEqual([
+        { run: 'echo "hello"', status: 'success' },
+        {
+          run: 'node packages/engine/__tests__/cancel/test.js',
+          status: 'cancelled',
+        },
+      ]);
+    });
     engine.start();
     setTimeout(() => {
       expect(callback).toBeCalled();

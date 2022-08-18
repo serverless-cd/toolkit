@@ -1,6 +1,6 @@
 import { logger } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
-import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus } from './types';
+import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus, IContext, IStatus } from './types';
 import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
@@ -10,7 +10,10 @@ const artTemplate = require('art-template');
 
 class Engine extends EventEmitter {
   private childProcess: any[] = [];
-  private canceled = false;
+  private context = {
+    status: 'success',
+    editStatusAble: true,
+  } as IContext;
   constructor(private steps: IStepOptions[]) {
     super();
     this.steps = map(steps, (item: IStepOptions) => {
@@ -30,9 +33,9 @@ class Engine extends EventEmitter {
         final: {
           type: 'final',
           invoke: {
-            src: (context: any) => {
-              this.doEmit(context);
-              resolve({ status: context.$status, steps: context.steps });
+            src: () => {
+              this.doEmit();
+              resolve({ status: this.context.status, steps: this.context.steps });
             },
           },
         },
@@ -45,35 +48,35 @@ class Engine extends EventEmitter {
         states[item.$stepCount] = {
           invoke: {
             id: item.$stepCount,
-            src: (context: any) => {
+            src: () => {
               // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
-              if (this.canceled) return this.doCancel(item, context);
+              if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
                 item.if = replace(
                   item.if,
                   STEP_IF.FAILURE,
-                  context.$status === STEP_STATUS.FAILURE ? 'true' : 'false',
+                  this.context.status === STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
                 // 替换 success()
                 item.if = replace(
                   item.if,
                   STEP_IF.SUCCESS,
-                  context.$status !== STEP_STATUS.FAILURE ? 'true' : 'false',
+                  this.context.status !== STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
                 // 替换 success()
                 item.if = replace(item.if, STEP_IF.ALWAYS, 'true');
                 const ifCondition = artTemplate.compile(item.if);
-                return ifCondition(context) === 'true'
-                  ? this.handleSrc(item, context)
-                  : this.doSkip(item, context);
+                return ifCondition({ steps: this.context.steps }) === 'true'
+                  ? this.handleSrc(item)
+                  : this.doSkip(item);
               }
               // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skip
-              if (context.$status === STEP_STATUS.FAILURE) {
-                return this.doSkip(item, context);
+              if (this.context.status === STEP_STATUS.FAILURE) {
+                return this.doSkip(item);
               }
-              return this.handleSrc(item, context);
+              return this.handleSrc(item);
             },
             onDone: {
               target,
@@ -87,20 +90,17 @@ class Engine extends EventEmitter {
         predictableActionArguments: true,
         id: 'step',
         initial: 'init',
-        context: {
-          $status: 'init',
-          $editStatusAble: true, // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
-        },
         states,
       });
       const stepService = interpret(fetchMachine)
-        .onTransition((state) => console.log(state.value, state.context))
+        .onTransition((state) => console.log(state.value, this.context))
         .start();
       stepService.send('INIT');
     });
   }
   cancel() {
-    this.canceled = true;
+    this.context.status = STEP_STATUS.CANCEL as IStatus;
+    this.context.editStatusAble = false;
     // 终止退出码为2
     process.exitCode = 2;
     each(this.childProcess, (item) => {
@@ -108,29 +108,32 @@ class Engine extends EventEmitter {
     });
   }
   // 将执行终态进行emit
-  private doEmit(context: any) {
+  private doEmit() {
     const data = map(this.steps, (item: IStepsStatus) => {
-      item.status = get(context, `${item.$stepCount}.status`);
+      item.status = get(this.context, `${item.$stepCount}.status`);
       const { $stepCount, ...rest } = item;
       return rest;
     });
-    this.emit(context.$status, data);
+    this.emit(this.context.status, data);
   }
-  private async handleSrc(item: IStepOptions, context: any) {
+  private async handleSrc(item: IStepOptions) {
     return this.doSrc(item)
       .then((response: any) => {
+        // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
+        if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
+
         // 记录全局的执行状态
-        if (context.$editStatusAble) {
-          context.$status = STEP_STATUS.SUCCESS;
+        if (this.context.editStatusAble) {
+          this.context.status = STEP_STATUS.SUCCESS as IStatus;
         }
         // $stepCount 添加状态
-        context[item.$stepCount] = {
+        this.context[item.$stepCount] = {
           status: STEP_STATUS.SUCCESS,
         };
         // id 添加状态
         if (item.id) {
-          context.steps = {
-            ...context.steps,
+          this.context.steps = {
+            ...this.context.steps,
             [item.id]: {
               status: STEP_STATUS.SUCCESS,
               output: response,
@@ -144,19 +147,19 @@ class Engine extends EventEmitter {
             ? STEP_STATUS.ERROR_WITH_CONTINUE
             : STEP_STATUS.FAILURE;
         // 记录全局的执行状态
-        if (context.$editStatusAble) {
-          context.$status = status;
+        if (this.context.editStatusAble) {
+          this.context.status = status as IStatus;
         }
         if (status === STEP_STATUS.FAILURE) {
           // 全局的执行状态一旦失败，便不可修改
-          context.$editStatusAble = false;
+          this.context.editStatusAble = false;
         }
-        context[item.$stepCount] = {
+        this.context[item.$stepCount] = {
           status,
         };
         if (item.id) {
-          context.steps = {
-            ...context.steps,
+          this.context.steps = {
+            ...this.context.steps,
             [item.id]: {
               status,
               output: err,
@@ -193,49 +196,45 @@ class Engine extends EventEmitter {
       }
     }
   }
-  private async doSkip(item: IStepOptions, context: any) {
+  private async doSkip(item: IStepOptions) {
     // $stepCount 添加状态
-    context[item.$stepCount] = {
+    this.context[item.$stepCount] = {
       status: STEP_STATUS.SKIP,
     };
     // id 添加状态
     if (item.id) {
-      context.steps = {
-        ...context.steps,
+      this.context.steps = {
+        ...this.context.steps,
         [item.id]: {
           status: STEP_STATUS.SKIP,
         },
       };
     }
-    this.logName(item, context);
+    this.logName(item);
     return Promise.resolve();
   }
-  private async doCancel(item: IStepOptions, context: any) {
-    // 记录全局的执行状态
-    if (context.$editStatusAble) {
-      context.$status = STEP_STATUS.CANCEL;
-    }
+  private async doCancel(item: IStepOptions) {
     // $stepCount 添加状态
-    context[item.$stepCount] = {
+    this.context[item.$stepCount] = {
       status: STEP_STATUS.CANCEL,
     };
     // id 添加状态
     if (item.id) {
-      context.steps = {
-        ...context.steps,
+      this.context.steps = {
+        ...this.context.steps,
         [item.id]: {
           status: STEP_STATUS.CANCEL,
         },
       };
     }
-    this.logName(item, context);
+    this.logName(item);
     return Promise.resolve();
   }
-  private logName(item: IStepOptions, context?: any) {
+  private logName(item: IStepOptions) {
     const logFile = `step_${item.$stepCount}.log`;
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
-    const isSkip = get(context, `${item.$stepCount}.status`) === STEP_STATUS.SKIP;
+    const isSkip = get(this.context, `${item.$stepCount}.status`) === STEP_STATUS.SKIP;
     if (runItem.run) {
       const msg = runItem.name || `Run ${runItem.run}`;
       return logger.info(isSkip ? `[skipped] ${msg}` : msg, logFile);
