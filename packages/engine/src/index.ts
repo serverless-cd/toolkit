@@ -9,6 +9,8 @@ import EventEmitter from 'events';
 const artTemplate = require('art-template');
 
 class Engine extends EventEmitter {
+  private childProcess: any[] = [];
+  private canceled = false;
   constructor(private steps: IStepOptions[]) {
     super();
   }
@@ -37,6 +39,8 @@ class Engine extends EventEmitter {
           invoke: {
             id: item.$stepCount,
             src: (context: any) => {
+              // 如果已经取消，则不执行
+              if (this.canceled) return Promise.reject('canceled');
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
@@ -67,7 +71,7 @@ class Engine extends EventEmitter {
             onDone: {
               target,
             },
-            onError: target,
+            onError: this.canceled ? 'final' : target,
           },
         };
       });
@@ -86,6 +90,14 @@ class Engine extends EventEmitter {
         .onTransition((state) => console.log(state.value, state.context))
         .start();
       stepService.send('INIT');
+    });
+  }
+  cancel() {
+    this.canceled = true;
+    // 终止退出码为2
+    process.exitCode = 2;
+    each(this.childProcess, (item) => {
+      item.kill();
     });
   }
   private async handleSrc(item: IStepOptions, context: any) {
@@ -148,6 +160,7 @@ class Engine extends EventEmitter {
       execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
       this.logName(item);
       const cp = command(runItem.run, { cwd: execPath });
+      this.childProcess.push(cp);
       const res = await this.onFinish(cp, logFile);
       return res;
     }
@@ -155,6 +168,7 @@ class Engine extends EventEmitter {
     if (usesItem.uses) {
       this.logName(item);
       const cp = command(`npm i ${usesItem.uses} --save`);
+      this.childProcess.push(cp);
       await this.onFinish(cp, logFile);
       try {
         return await require(usesItem.uses).run(usesItem.with);
