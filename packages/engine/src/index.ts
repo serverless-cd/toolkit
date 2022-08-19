@@ -1,7 +1,7 @@
 import { logger } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus, IContext, IStatus } from './types';
-import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
+import { isEmpty, get, each, replace, map, uniqueId, merge } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
@@ -42,7 +42,7 @@ class Engine extends EventEmitter {
                   : this.context.status;
               this.context.status = status as IStatus;
               this.doEmit();
-              resolve({ status, steps: this.context.steps });
+              resolve(this.getFilterContext());
             },
           },
         },
@@ -58,6 +58,8 @@ class Engine extends EventEmitter {
             src: () => {
               // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
               if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
+              // 合并环境变量
+              this.context.env = merge({}, process.env, item.env);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
@@ -75,7 +77,7 @@ class Engine extends EventEmitter {
                 // 替换 success()
                 item.if = replace(item.if, STEP_IF.ALWAYS, 'true');
                 const ifCondition = artTemplate.compile(item.if);
-                return ifCondition({ steps: this.context.steps }) === 'true'
+                return ifCondition(this.getFilterContext()) === 'true'
                   ? this.handleSrc(item)
                   : this.doSkip(item);
               }
@@ -111,6 +113,9 @@ class Engine extends EventEmitter {
     each(this.childProcess, (item) => {
       item.kill();
     });
+  }
+  private getFilterContext() {
+    return { status: this.context.status, steps: this.context.steps, env: this.context.env };
   }
   // 将执行终态进行emit
   private doEmit() {
@@ -200,7 +205,7 @@ class Engine extends EventEmitter {
       const run = require(usesItem.uses).default;
       return await run({
         inputs: get(usesItem, 'with', {}),
-        context: { status: this.context.status, steps: this.context.steps },
+        context: this.getFilterContext(),
       });
     }
   }

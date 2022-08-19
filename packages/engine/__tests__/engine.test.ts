@@ -364,3 +364,46 @@ test('测试获取所有log', async () => {
   await engine.start();
   expect(fs.readFileSync(logFile, 'utf8')).not.toBeUndefined();
 });
+
+describe('环境变量', () => {
+  test('测试process.env, if成立', async () => {
+    process.env.name = 'xiaoming';
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'echo "world"', id: 'xworld', if: '{{ env.name === "xiaoming" }}' },
+    ] as IStepOptions[];
+    const engine = new Engine(steps);
+    const res = await engine.start();
+    // 步骤3执行状态成功，说明if成立
+    expect(get(res, 'steps.xworld.status')).toBe('success');
+  });
+
+  test('测试process.env, if失败', async () => {
+    process.env.name = 'xiaoming';
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'echo "world"', id: 'xworld', if: '{{ env.name !== "xiaoming" }}' },
+    ] as IStepOptions[];
+    const engine = new Engine(steps);
+    const res = await engine.start();
+    // 步骤3执行状态skipped，说明if失败
+    expect(get(res, 'steps.xworld.status')).toBe('skipped');
+  });
+
+  test('测试process.env和step env', async () => {
+    process.env.name = 'xiaoming';
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      {
+        run: 'echo "world"',
+        id: 'xworld',
+        if: '{{ env.name === "xiaohong" }}',
+        env: { name: 'xiaohong' },
+      },
+    ] as IStepOptions[];
+    const engine = new Engine(steps);
+    const res = await engine.start();
+    // env.name 是 xiaohong
+    expect(get(res, 'env.name')).toBe('xiaohong');
+  });
+});
