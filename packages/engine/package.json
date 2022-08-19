@@ -1,7 +1,7 @@
 {
   "name": "@serverless-cd/engine",
   "private": true,
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@serverless-cd/core": "^0.0.1-alpha.4",
+    "@serverless-cd/core": "^0.0.1-alpha.5",
     "art-template": "^4.13.2",
     "execa": "^5.1.1",
     "lodash": "^4.17.21",
