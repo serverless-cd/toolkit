@@ -198,7 +198,10 @@ class Engine extends EventEmitter {
         await this.onFinish(cp, logFile);
       }
       const run = require(usesItem.uses).default;
-      return await run({ inputs: usesItem.with });
+      return await run({
+        inputs: get(usesItem, 'with', {}),
+        context: { status: this.context.status, steps: this.context.steps },
+      });
     }
   }
   private async doSkip(item: IStepOptions) {
@@ -264,12 +267,7 @@ class Engine extends EventEmitter {
       });
 
       cp.on('exit', (code: number) => {
-        stdout.length
-          ? resolve({
-              code: code,
-              stdout: null,
-            })
-          : reject(Buffer.concat(stderr).toString());
+        stdout.length ? resolve({}) : reject(Buffer.concat(stderr).toString());
       });
     });
   }

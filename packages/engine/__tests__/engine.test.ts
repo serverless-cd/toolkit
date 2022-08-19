@@ -9,88 +9,87 @@ describe('执行step全部成功', () => {
   test('获取某一步的outputs', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
+      { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
       { run: 'echo "world"' },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
-    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
+    expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
   });
 
-  test('模版可以识别{{steps.xhello.outputs.code === 0}}', async () => {
+  test('模版可以识别{{steps.xhello.status === "success"}}', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       {
         run: 'echo "world"',
-        if: '{{ steps.xhello.outputs.code === 0 }}',
+        if: '{{ steps.xhello.status === "success" }}',
         id: 'xworld',
       },
       { run: 'echo "end"', id: 'xend' },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
-    // 获取步骤1的outputs
-    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
+    // 获取步骤1的status
+    expect(get(res, 'steps.xhello.status')).toBe('success');
     // 步骤2执行成功说明模版识别成功
     expect(get(res, 'steps.xworld.status')).toBe('success');
   });
 
-  test('模版可以识别{{steps.xhello.outputs.code !== 0}}', async () => {
+  test('模版可以识别{{steps.xhello.status !== "success"}}', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       {
         run: 'echo "world"',
-        if: '{{ steps.xhello.outputs.code !== 0 }}',
+        if: '{{ steps.xhello.status !== "success" }}',
         id: 'xworld',
       },
       { run: 'echo "end"', id: 'xend' },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
-    // 获取步骤1的outputs
-    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
+    // 获取步骤1的status
+    expect(get(res, 'steps.xhello.status')).toBe('success');
     // 步骤2的执行状态为skip，说明模版识别成功
     expect(get(res, 'steps.xworld.status')).toBe('skipped');
   });
 
-  test('模版可以识别{{steps.xhello.outputs.code === 0 && steps.xworld.outputs.code === 0}}', async () => {
+  test("模版可以识别{{ steps.xhello.status === 'success' && steps.xworld.status === 'success' }}", async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'echo "world"', id: 'xworld' },
       {
         run: 'echo "end"',
-        if: '{{ steps.xhello.outputs.code === 0 && steps.xworld.outputs.code === 0 }}',
+        if: "{{ steps.xhello.status === 'success' && steps.xworld.status === 'success' }}",
         id: 'xend',
       },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
-    // 获取步骤1的outputs
-    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
-    // 获取步骤2的outputs
-    expect(get(res, 'steps.xworld.outputs.code')).toBe(0);
-
+    // 获取步骤1的状态
+    expect(get(res, 'steps.xhello.status')).toBe('success');
+    // 获取步骤2的状态
+    expect(get(res, 'steps.xworld.status')).toBe('success');
     // 步骤3执行成功说明模版识别成功
     expect(get(res, 'steps.xend.status')).toBe('success');
   });
 
-  test('模版可以识别{{steps.xhello.outputs.code === 0 && steps.xworld.outputs.code !== 0}}', async () => {
+  test("模版可以识别{{ steps.xhello.status === 'success' && steps.xworld.status !== 'success' }}", async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'echo "world"', id: 'xworld' },
       {
         run: 'echo "end"',
-        if: '{{ steps.xhello.outputs.code === 0 && steps.xworld.outputs.code !== 0 }}',
+        if: "{{ steps.xhello.status === 'success' && steps.xworld.status !== 'success' }}",
         id: 'xend',
       },
     ] as IStepOptions[];
 
     const engine = new Engine(steps);
     const res = await engine.start();
-    // 获取步骤1的outputs
-    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
-
-    // 获取步骤2的outputs
-    expect(get(res, 'steps.xworld.outputs.code')).toBe(0);
+    // 获取步骤1的状态
+    expect(get(res, 'steps.xhello.status')).toBe('success');
+    // 获取步骤2的状态
+    expect(get(res, 'steps.xworld.status')).toBe('success');
     // 步骤3的执行状态为skip，说明模版识别成功
     expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
@@ -338,11 +337,10 @@ describe('执行终态emit测试', () => {
   });
 });
 
-//TODO：后续可以用真实应用测试
-test.skip('uses：应用测试返回值', async () => {
+test('uses：应用测试返回值', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: '/Users/shihuali/workspace/typescript-app-template/lib/index.js', id: 'xuse' },
+    { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
   ] as IStepOptions[];
   const engine = new Engine(steps);
   const res = await engine.start();
@@ -351,10 +349,10 @@ test.skip('uses：应用测试返回值', async () => {
   // expect(get(res, 'steps.xuse.errorMessage').toString()).toMatch('Error');
 });
 
-test.skip('测试获取所有log', async () => {
+test('测试获取所有log', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: '/Users/shihuali/workspace/typescript-app-template/lib/index.js', id: 'xuse' },
+    { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
     { run: 'npm run error', id: 'xerror' },
   ] as IStepOptions[];
   const logFile = path.join(__dirname, 'logs.log');
