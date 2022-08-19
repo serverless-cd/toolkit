@@ -339,7 +339,7 @@ describe('执行终态emit测试', () => {
 });
 
 //TODO：后续可以用真实应用测试
-test.only('uses：应用测试返回值', async () => {
+test.skip('uses：应用测试返回值', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { uses: '/Users/shihuali/workspace/typescript-app-template/lib/index.js', id: 'xuse' },
@@ -351,7 +351,7 @@ test.only('uses：应用测试返回值', async () => {
   // expect(get(res, 'steps.xuse.errorMessage').toString()).toMatch('Error');
 });
 
-test.only('测试获取所有log', async () => {
+test.skip('测试获取所有log', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { uses: '/Users/shihuali/workspace/typescript-app-template/lib/index.js', id: 'xuse' },
