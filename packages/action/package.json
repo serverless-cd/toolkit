@@ -1,6 +1,7 @@
 {
   "name": "@serverless-cd/action",
   "version": "0.0.1-alpha.4",
+  "private": true,
   "description": "sevrerless-cd action",
   "main": "./lib/index.js",
   "scripts": {
