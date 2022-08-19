@@ -3,9 +3,6 @@
 core 方法可以作用在插件体系中
 
 
-## getInput
-获取 input 的输入值
-
 ##  setEnvVariable
 将变量导出到环境变量中
 
