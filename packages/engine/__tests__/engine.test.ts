@@ -1,32 +1,28 @@
 import Engine from '../src';
-import * as path from 'path';
-import * as core from '@serverless-cd/core';
+import { IStepOptions } from '../src/types';
 import { get } from 'lodash';
-
-function getStep() {
-  const pipelineContent: any = core.getYamlContent();
-  const jobs = get(pipelineContent, 'jobs', {});
-  let steps = [];
-  for (const key in jobs) {
-    steps = get(jobs[key], 'steps', []);
-    // 暂时只支持一个job
-    break;
-  }
-  return steps;
-}
 
 describe('执行step全部成功', () => {
   test('获取某一步的output', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'serverless-pipeline.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'echo "world"' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
   });
 
   test('模版可以识别{{steps.xhello.output.code === 0}}', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'if-condition-true.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      {
+        run: 'echo "world"',
+        if: '{{ steps.xhello.output.code === 0 }}',
+        id: 'xworld',
+      },
+      { run: 'echo "end"', id: 'xend' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 获取步骤1的output
@@ -36,8 +32,15 @@ describe('执行step全部成功', () => {
   });
 
   test('模版可以识别{{steps.xhello.output.code !== 0}}', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'if-condition-false.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      {
+        run: 'echo "world"',
+        if: '{{ steps.xhello.output.code !== 0 }}',
+        id: 'xworld',
+      },
+      { run: 'echo "end"', id: 'xend' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 获取步骤1的output
@@ -47,11 +50,15 @@ describe('执行step全部成功', () => {
   });
 
   test('模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code === 0}}', async () => {
-    core.setServerlessCdVariable(
-      'TEMPLATE_PATH',
-      path.join(__dirname, 'if-many-condition-true.yaml'),
-    );
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'echo "world"', id: 'xworld' },
+      {
+        run: 'echo "end"',
+        if: '{{ steps.xhello.output.code === 0 && steps.xworld.output.code === 0 }}',
+        id: 'xend',
+      },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 获取步骤1的output
@@ -63,11 +70,16 @@ describe('执行step全部成功', () => {
   });
 
   test('模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code !== 0}}', async () => {
-    core.setServerlessCdVariable(
-      'TEMPLATE_PATH',
-      path.join(__dirname, 'if-many-condition-false.yaml'),
-    );
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'echo "world"', id: 'xworld' },
+      {
+        run: 'echo "end"',
+        if: '{{ steps.xhello.output.code === 0 && steps.xworld.output.code !== 0 }}',
+        id: 'xend',
+      },
+    ] as IStepOptions[];
+
     const engine = new Engine(steps);
     const res = await engine.start();
     // 获取步骤1的output
@@ -81,8 +93,12 @@ describe('执行step全部成功', () => {
 
 describe('某一步执行失败', () => {
   test('后续步骤执行状态为skip', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'error.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror' },
+      { run: 'echo "world"', id: 'xworld' },
+    ] as IStepOptions[];
+
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 failure
@@ -93,8 +109,11 @@ describe('某一步执行失败', () => {
   });
 
   test('但该步骤添加了continue-on-error: true，后续步骤正常执行', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'continue-on-error.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror', 'continue-on-error': true },
+      { run: 'echo "world"', id: 'xworld' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 error-with-continue
@@ -104,11 +123,10 @@ describe('某一步执行失败', () => {
   });
 
   test('但该步骤添加了continue-on-error: true，但执行步骤的终态是success', async () => {
-    core.setServerlessCdVariable(
-      'TEMPLATE_PATH',
-      path.join(__dirname, 'continue-on-error-status.yaml'),
-    );
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror', 'continue-on-error': true },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 error-with-continue
@@ -119,8 +137,12 @@ describe('某一步执行失败', () => {
   });
 
   test('后续某步骤标记了if: {{ failure() }}', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'failure.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror' },
+      { run: 'echo "world"', id: 'xworld' },
+      { run: 'echo "end"', id: 'xend', if: '{{ failure() }}' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 failure
@@ -132,8 +154,12 @@ describe('某一步执行失败', () => {
   });
 
   test('后续多个步骤标记了if: {{ failure() }}', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'many-failure.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror' },
+      { run: 'echo "world"', id: 'xworld', if: '{{ failure() }}' },
+      { run: 'echo "end"', id: 'xend', if: '{{ failure() }}' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 failure
@@ -145,11 +171,17 @@ describe('某一步执行失败', () => {
   });
 
   test('后续某步骤标记了if: {{ failure() && steps.xerror.output.code !== 0 }}', async () => {
-    core.setServerlessCdVariable(
-      'TEMPLATE_PATH',
-      path.join(__dirname, 'failure-and-output-true.yaml'),
-    );
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror' },
+      { run: 'echo "world"', id: 'xworld' },
+      {
+        run: 'echo "end"',
+        id: 'xend',
+        if: '{{ failure() && steps.xerror.output.code !== 0 }}',
+      },
+    ] as IStepOptions[];
+
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 failure
@@ -161,11 +193,16 @@ describe('某一步执行失败', () => {
   });
 
   test('后续某步骤标记了if: {{ failure() && steps.xerror.output.code === 0 }}', async () => {
-    core.setServerlessCdVariable(
-      'TEMPLATE_PATH',
-      path.join(__dirname, 'failure-and-output-false.yaml'),
-    );
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror' },
+      { run: 'echo "world"', id: 'xworld' },
+      {
+        run: 'echo "end"',
+        id: 'xend',
+        if: '{{ failure() && steps.xerror.output.code === 0 }}',
+      },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 failure
@@ -177,8 +214,12 @@ describe('某一步执行失败', () => {
   });
 
   test('后续某步骤标记了if: {{ success() }}', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'success.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror' },
+      { run: 'echo "world"', if: '{{ success() }}', id: 'xworld' },
+      { run: 'echo "end"', id: 'xend' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 failure
@@ -190,8 +231,12 @@ describe('某一步执行失败', () => {
   });
 
   test('后续某步骤标记了if: {{ always() }}', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'always.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror' },
+      { run: 'echo "world"', if: '{{ always() }}', id: 'xworld' },
+      { run: 'echo "end"', id: 'xend' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
     // 步骤2 状态是 failure
@@ -210,8 +255,11 @@ test('cancel测试', (done) => {
       fn();
     }, 3000);
   };
-  core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'cancel/cancel.yaml'));
-  const steps = getStep();
+  const steps = [
+    { run: 'echo "hello"' },
+    { run: 'node packages/engine/__tests__/cancel-test.js' },
+    { run: 'echo "world"' },
+  ] as IStepOptions[];
   const engine = new Engine(steps);
   const callback = jest.fn(() => {
     engine.cancel();
@@ -226,8 +274,10 @@ test('cancel测试', (done) => {
 
 describe('执行终态emit测试', () => {
   test('success', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'emit-success.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'echo "world"' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     engine.on('success', (data) => {
       expect(data).toEqual([
@@ -238,8 +288,10 @@ describe('执行终态emit测试', () => {
     await engine.start();
   });
   test('failure', async () => {
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'emit-failure.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     engine.on('failure', (data) => {
       expect(data).toEqual([
@@ -257,8 +309,10 @@ describe('执行终态emit测试', () => {
         fn();
       }, 3000);
     };
-    core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'cancel/emit-cancel.yaml'));
-    const steps = getStep();
+    const steps = [
+      { run: 'echo "hello"' },
+      { run: 'node packages/engine/__tests__/cancel-test.js' },
+    ] as IStepOptions[];
     const engine = new Engine(steps);
     const callback = jest.fn(() => {
       engine.cancel();
@@ -268,7 +322,7 @@ describe('执行终态emit测试', () => {
       expect(data).toEqual([
         { run: 'echo "hello"', status: 'success' },
         {
-          run: 'node packages/engine/__tests__/cancel/test.js',
+          run: 'node packages/engine/__tests__/cancel-test.js',
           status: 'cancelled',
         },
       ]);
