@@ -105,7 +105,6 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xerror.status')).toBe('failure');
     // 步骤3 未执行, 状态为 skipped
     expect(get(res, 'steps.xworld.status')).toBe('skipped');
-    expect(process.exitCode).toBe(1);
   });
 
   test('但该步骤添加了continue-on-error: true，后续步骤正常执行', async () => {
@@ -133,7 +132,6 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
     // 步骤3 依然会执行
     expect(get(res, 'status')).toBe('success');
-    expect(process.exitCode).toBe(0);
   });
 
   test('后续某步骤标记了if: {{ failure() }}', async () => {
@@ -330,7 +328,6 @@ describe('执行终态emit测试', () => {
     engine.start();
     setTimeout(() => {
       expect(callback).toBeCalled();
-      expect(process.exitCode).toBe(2);
       done();
     }, 3001);
   });

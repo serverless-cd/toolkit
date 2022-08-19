@@ -3,7 +3,7 @@ import { createMachine, interpret } from 'xstate';
 import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus, IContext, IStatus } from './types';
 import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
 import { command } from 'execa';
-import { STEP_STATUS, STEP_IF, CODE } from './constant';
+import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
 import EventEmitter from 'events';
 const artTemplate = require('art-template');
@@ -118,8 +118,6 @@ class Engine extends EventEmitter {
       const { $stepCount, ...rest } = item;
       return rest;
     });
-    // 退出码
-    process.exitCode = CODE[this.context.status];
     this.emit(this.context.status, data);
   }
   private async handleSrc(item: IStepOptions) {

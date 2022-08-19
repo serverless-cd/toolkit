@@ -11,9 +11,3 @@ export const STEP_IF = {
   FAILURE: 'failure()',
   ALWAYS: 'always()',
 };
-
-export const CODE = {
-  success: 0,
-  failure: 1,
-  cancelled: 2,
-};
