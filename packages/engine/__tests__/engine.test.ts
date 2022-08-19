@@ -1,91 +1,94 @@
 import Engine from '../src';
 import { IStepOptions } from '../src/types';
 import { get } from 'lodash';
+import * as path from 'path';
 
 describe('执行step全部成功', () => {
-  test('获取某一步的output', async () => {
+  test('获取某一步的outputs', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'echo "world"' },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
-    expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
   });
 
-  test('模版可以识别{{steps.xhello.output.code === 0}}', async () => {
+  test('模版可以识别{{steps.xhello.outputs.code === 0}}', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       {
         run: 'echo "world"',
-        if: '{{ steps.xhello.output.code === 0 }}',
+        if: '{{ steps.xhello.outputs.code === 0 }}',
         id: 'xworld',
       },
       { run: 'echo "end"', id: 'xend' },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
-    // 获取步骤1的output
-    expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+    // 获取步骤1的outputs
+    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
     // 步骤2执行成功说明模版识别成功
     expect(get(res, 'steps.xworld.status')).toBe('success');
   });
 
-  test('模版可以识别{{steps.xhello.output.code !== 0}}', async () => {
+  test('模版可以识别{{steps.xhello.outputs.code !== 0}}', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       {
         run: 'echo "world"',
-        if: '{{ steps.xhello.output.code !== 0 }}',
+        if: '{{ steps.xhello.outputs.code !== 0 }}',
         id: 'xworld',
       },
       { run: 'echo "end"', id: 'xend' },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
-    // 获取步骤1的output
-    expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
+    // 获取步骤1的outputs
+    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
     // 步骤2的执行状态为skip，说明模版识别成功
     expect(get(res, 'steps.xworld.status')).toBe('skipped');
   });
 
-  test('模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code === 0}}', async () => {
+  test('模版可以识别{{steps.xhello.outputs.code === 0 && steps.xworld.outputs.code === 0}}', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'echo "world"', id: 'xworld' },
       {
         run: 'echo "end"',
-        if: '{{ steps.xhello.output.code === 0 && steps.xworld.output.code === 0 }}',
+        if: '{{ steps.xhello.outputs.code === 0 && steps.xworld.outputs.code === 0 }}',
         id: 'xend',
       },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const res = await engine.start();
-    // 获取步骤1的output
-    expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
-    // 获取步骤2的output
-    expect(get(res, 'steps.xworld.output')).toEqual({ code: 0, stdout: '"world"\n' });
+    // 获取步骤1的outputs
+    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
+    // 获取步骤2的outputs
+    expect(get(res, 'steps.xworld.outputs.code')).toBe(0);
+
     // 步骤3执行成功说明模版识别成功
     expect(get(res, 'steps.xend.status')).toBe('success');
   });
 
-  test('模版可以识别{{steps.xhello.output.code === 0 && steps.xworld.output.code !== 0}}', async () => {
+  test('模版可以识别{{steps.xhello.outputs.code === 0 && steps.xworld.outputs.code !== 0}}', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'echo "world"', id: 'xworld' },
       {
         run: 'echo "end"',
-        if: '{{ steps.xhello.output.code === 0 && steps.xworld.output.code !== 0 }}',
+        if: '{{ steps.xhello.outputs.code === 0 && steps.xworld.outputs.code !== 0 }}',
         id: 'xend',
       },
     ] as IStepOptions[];
 
     const engine = new Engine(steps);
     const res = await engine.start();
-    // 获取步骤1的output
-    expect(get(res, 'steps.xhello.output')).toEqual({ code: 0, stdout: '"hello"\n' });
-    // 获取步骤2的output
-    expect(get(res, 'steps.xworld.output')).toEqual({ code: 0, stdout: '"world"\n' });
+    // 获取步骤1的outputs
+    expect(get(res, 'steps.xhello.outputs.code')).toBe(0);
+
+    // 获取步骤2的outputs
+    expect(get(res, 'steps.xworld.outputs.code')).toBe(0);
     // 步骤3的执行状态为skip，说明模版识别成功
     expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
@@ -168,7 +171,7 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xend.status')).toBe('success');
   });
 
-  test('后续某步骤标记了if: {{ failure() && steps.xerror.output.code !== 0 }}', async () => {
+  test("后续某步骤标记了if: {{ failure() && steps.xerror.status === 'failure' }}", async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'npm run error', id: 'xerror' },
@@ -176,7 +179,7 @@ describe('某一步执行失败', () => {
       {
         run: 'echo "end"',
         id: 'xend',
-        if: '{{ failure() && steps.xerror.output.code !== 0 }}',
+        if: "{{ failure() && steps.xerror.status === 'failure' }}",
       },
     ] as IStepOptions[];
 
@@ -190,7 +193,7 @@ describe('某一步执行失败', () => {
     expect(get(res, 'steps.xend.status')).toBe('success');
   });
 
-  test('后续某步骤标记了if: {{ failure() && steps.xerror.output.code === 0 }}', async () => {
+  test("后续某步骤标记了if: {{ failure() && steps.xerror.status !== 'failure' }}", async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'npm run error', id: 'xerror' },
@@ -198,7 +201,7 @@ describe('某一步执行失败', () => {
       {
         run: 'echo "end"',
         id: 'xend',
-        if: '{{ failure() && steps.xerror.output.code === 0 }}',
+        if: "{{ failure() && steps.xerror.status !== 'failure' }}",
       },
     ] as IStepOptions[];
     const engine = new Engine(steps);
@@ -331,4 +334,17 @@ describe('执行终态emit测试', () => {
       done();
     }, 3001);
   });
+});
+
+//TODO：后续可以用真实应用测试
+test.only('uses：应用测试返回值', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { uses: '/Users/shihuali/workspace/typescript-app-template/lib/index.js', id: 'xuse' },
+  ] as IStepOptions[];
+  const engine = new Engine(steps);
+  const res = await engine.start();
+  expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
+  // error case
+  // expect(get(res, 'steps.xuse.errorMessage').toString()).toMatch('Error');
 });

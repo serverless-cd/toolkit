@@ -5,6 +5,7 @@ import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import EventEmitter from 'events';
 const artTemplate = require('art-template');
 
@@ -140,7 +141,7 @@ class Engine extends EventEmitter {
             ...this.context.steps,
             [item.id]: {
               status: STEP_STATUS.SUCCESS,
-              output: response,
+              outputs: response,
             },
           };
         }
@@ -166,7 +167,7 @@ class Engine extends EventEmitter {
             ...this.context.steps,
             [item.id]: {
               status,
-              output: err,
+              errorMessage: err,
             },
           };
         }
@@ -190,14 +191,15 @@ class Engine extends EventEmitter {
     // uses
     if (usesItem.uses) {
       this.logName(item);
-      const cp = command(`npm i ${usesItem.uses} --save`);
-      this.childProcess.push(cp);
-      await this.onFinish(cp, logFile);
-      try {
-        return await require(usesItem.uses).run(usesItem.with);
-      } catch (e) {
-        logger.error(e as string, logFile);
+      console.log(usesItem.uses, fs.existsSync(usesItem.uses));
+      // 本地路径调试时，不在安装依赖
+      if (!fs.existsSync(usesItem.uses)) {
+        const cp = command(`npm i ${usesItem.uses} --save`);
+        this.childProcess.push(cp);
+        await this.onFinish(cp, logFile);
       }
+      const run = require(usesItem.uses).default;
+      return await run({ inputs: usesItem.with });
     }
   }
   private async doSkip(item: IStepOptions) {
@@ -266,12 +268,9 @@ class Engine extends EventEmitter {
         stdout.length
           ? resolve({
               code: code,
-              stdout: Buffer.concat(stdout).toString(),
+              stdout: null,
             })
-          : reject({
-              code: code,
-              stderr: Buffer.concat(stderr).toString(),
-            });
+          : reject(Buffer.concat(stderr).toString());
       });
     });
   }
