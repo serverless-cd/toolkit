@@ -1,7 +1,9 @@
 import Engine from '../src';
 import { IStepOptions } from '../src/types';
 import { get } from 'lodash';
+import { logger } from '@serverless-cd/core';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 
 describe('执行step全部成功', () => {
   test('获取某一步的outputs', async () => {
@@ -347,4 +349,20 @@ test.only('uses：应用测试返回值', async () => {
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
   // error case
   // expect(get(res, 'steps.xuse.errorMessage').toString()).toMatch('Error');
+});
+
+test.only('测试获取所有log', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { uses: '/Users/shihuali/workspace/typescript-app-template/lib/index.js', id: 'xuse' },
+    { run: 'npm run error', id: 'xerror' },
+  ] as IStepOptions[];
+  const logFile = path.join(__dirname, 'logs.log');
+  fs.existsSync(logFile) && fs.unlinkSync(logFile);
+  logger.on('data', (message) => {
+    fs.appendFileSync(logFile, `${message}\n`);
+  });
+  const engine = new Engine(steps);
+  await engine.start();
+  expect(fs.readFileSync(logFile, 'utf8')).not.toBeUndefined();
 });

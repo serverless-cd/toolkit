@@ -191,7 +191,6 @@ class Engine extends EventEmitter {
     // uses
     if (usesItem.uses) {
       this.logName(item);
-      console.log(usesItem.uses, fs.existsSync(usesItem.uses));
       // 本地路径调试时，不在安装依赖
       if (!fs.existsSync(usesItem.uses)) {
         const cp = command(`npm i ${usesItem.uses} --save`);
