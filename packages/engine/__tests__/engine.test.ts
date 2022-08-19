@@ -337,6 +337,74 @@ describe('执行终态emit测试', () => {
   });
 });
 
+describe('步骤执行过程中emit测试', () => {
+  test('success, failure, skipped, error-with-continue', async () => {
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'npm run error', id: 'xerror', 'continue-on-error': true },
+      { run: 'echo "world"', id: 'xworld' },
+      { run: 'npm run error', id: 'xerror' },
+      { run: 'echo "world"', id: 'xworld' },
+    ] as IStepOptions[];
+    const engine = new Engine(steps);
+    const newData: any = [];
+    engine.on('process', (data) => {
+      newData.push({
+        run: data.run,
+        id: data.id,
+        status: data.status,
+      });
+    });
+    await engine.start();
+    expect(newData).toEqual([
+      { run: 'echo "hello"', id: 'xhello', status: 'success' },
+      { run: 'npm run error', id: 'xerror', status: 'error-with-continue' },
+      { run: 'echo "world"', id: 'xworld', status: 'success' },
+      { run: 'npm run error', id: 'xerror', status: 'failure' },
+      { run: 'echo "world"', id: 'xworld', status: 'skipped' },
+    ]);
+  });
+
+  test('cancelled', (done) => {
+    const lazy = (fn: any) => {
+      setTimeout(() => {
+        console.log('3s后执行 callback');
+        fn();
+      }, 3000);
+    };
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'node packages/engine/__tests__/cancel-test.js', id: 'xcancel' },
+    ] as IStepOptions[];
+    const engine = new Engine(steps);
+    const callback = jest.fn(() => {
+      engine.cancel();
+    });
+    lazy(callback);
+    const newData: any = [];
+    engine.on('process', (data) => {
+      newData.push({
+        run: data.run,
+        id: data.id,
+        status: data.status,
+      });
+    });
+    engine.start();
+    setTimeout(() => {
+      expect(newData).toEqual([
+        { run: 'echo "hello"', id: 'xhello', status: 'success' },
+        {
+          run: 'node packages/engine/__tests__/cancel-test.js',
+          id: 'xcancel',
+          status: 'cancelled',
+        },
+      ]);
+      expect(callback).toBeCalled();
+      done();
+    }, 3001);
+  });
+});
+
 test('uses：应用测试返回值', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },

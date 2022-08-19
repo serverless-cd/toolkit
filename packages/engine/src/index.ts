@@ -1,7 +1,7 @@
 import { logger } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus, IContext, IStatus } from './types';
-import { isEmpty, get, each, replace, map, uniqueId, merge } from 'lodash';
+import { isEmpty, get, each, replace, map, uniqueId, merge, omit } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
@@ -74,14 +74,14 @@ class Engine extends EventEmitter {
                   STEP_IF.SUCCESS,
                   this.context.status !== STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
-                // 替换 success()
+                // 替换 always()
                 item.if = replace(item.if, STEP_IF.ALWAYS, 'true');
                 const ifCondition = artTemplate.compile(item.if);
                 return ifCondition(this.getFilterContext()) === 'true'
                   ? this.handleSrc(item)
                   : this.doSkip(item);
               }
-              // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skip
+              // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skipped
               if (this.context.status === STEP_STATUS.FAILURE) {
                 return this.doSkip(item);
               }
@@ -102,7 +102,7 @@ class Engine extends EventEmitter {
         states,
       });
       const stepService = interpret(fetchMachine)
-        .onTransition((state) => console.log(state.value, this.context))
+        .onTransition((state) => console.log(state.value))
         .start();
       stepService.send('INIT');
     });
@@ -110,12 +110,20 @@ class Engine extends EventEmitter {
   cancel() {
     this.context.status = STEP_STATUS.CANCEL as IStatus;
     this.context.editStatusAble = false;
+    // kill child process, 后续的步骤正常执行，但状态标记为cancelled
     each(this.childProcess, (item) => {
       item.kill();
     });
   }
   private getFilterContext() {
     return { status: this.context.status, steps: this.context.steps, env: this.context.env };
+  }
+  private getProcessData(item: IStepOptions) {
+    return {
+      ...omit(item, '$stepCount'),
+      status: this.context[item.$stepCount].status,
+      env: this.context.env,
+    };
   }
   // 将执行终态进行emit
   private doEmit() {
@@ -177,6 +185,9 @@ class Engine extends EventEmitter {
           };
         }
         if (item['continue-on-error'] !== true) throw err;
+      })
+      .finally(() => {
+        this.emit('process', this.getProcessData(item));
       });
   }
   private async doSrc(item: IStepOptions) {
@@ -224,6 +235,7 @@ class Engine extends EventEmitter {
       };
     }
     this.logName(item);
+    this.emit('process', this.getProcessData(item));
     return Promise.resolve();
   }
   private async doCancel(item: IStepOptions) {
