@@ -1,16 +1,26 @@
 import { logger } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
-import { IStepOptions, IRunOptions, IUsesOptions } from './types';
-import { isEmpty, get, each, replace } from 'lodash';
+import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus, IContext, IStatus } from './types';
+import { isEmpty, get, each, replace, map, uniqueId, merge, omit } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import EventEmitter from 'events';
 const artTemplate = require('art-template');
 
 class Engine extends EventEmitter {
+  private childProcess: any[] = [];
+  private context = {
+    status: 'success',
+    editStatusAble: true,
+  } as IContext;
   constructor(private steps: IStepOptions[]) {
     super();
+    this.steps = map(steps, (item: IStepOptions) => {
+      item.$stepCount = uniqueId();
+      return item;
+    });
   }
   async start() {
     if (isEmpty(this.steps)) return;
@@ -24,7 +34,16 @@ class Engine extends EventEmitter {
         final: {
           type: 'final',
           invoke: {
-            src: (context: any) => resolve({ status: context.$status, steps: context.steps }),
+            src: () => {
+              // 执行终态是 error-with-continue 的时候，改为 success
+              const status =
+                this.context.status === STEP_STATUS.ERROR_WITH_CONTINUE
+                  ? STEP_STATUS.SUCCESS
+                  : this.context.status;
+              this.context.status = status as IStatus;
+              this.doEmit();
+              resolve(this.getFilterContext());
+            },
           },
         },
       };
@@ -36,33 +55,37 @@ class Engine extends EventEmitter {
         states[item.$stepCount] = {
           invoke: {
             id: item.$stepCount,
-            src: (context: any) => {
+            src: () => {
+              // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
+              if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
+              // 合并环境变量
+              this.context.env = merge({}, process.env, item.env);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
                 item.if = replace(
                   item.if,
                   STEP_IF.FAILURE,
-                  context.$status === STEP_STATUS.FAILURE ? 'true' : 'false',
+                  this.context.status === STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
                 // 替换 success()
                 item.if = replace(
                   item.if,
                   STEP_IF.SUCCESS,
-                  context.$status !== STEP_STATUS.FAILURE ? 'true' : 'false',
+                  this.context.status !== STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
-                // 替换 success()
+                // 替换 always()
                 item.if = replace(item.if, STEP_IF.ALWAYS, 'true');
                 const ifCondition = artTemplate.compile(item.if);
-                return ifCondition(context) === 'true'
-                  ? this.handleSrc(item, context)
-                  : this.doSkip(item, context);
+                return ifCondition(this.getFilterContext()) === 'true'
+                  ? this.handleSrc(item)
+                  : this.doSkip(item);
               }
-              // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skip
-              if (context.$status === STEP_STATUS.FAILURE) {
-                return this.doSkip(item, context);
+              // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skipped
+              if (this.context.status === STEP_STATUS.FAILURE) {
+                return this.doSkip(item);
               }
-              return this.handleSrc(item, context);
+              return this.handleSrc(item);
             },
             onDone: {
               target,
@@ -76,36 +99,62 @@ class Engine extends EventEmitter {
         predictableActionArguments: true,
         id: 'step',
         initial: 'init',
-        context: {
-          $status: 'init',
-          $editStatusAble: true, // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
-        },
         states,
       });
       const stepService = interpret(fetchMachine)
-        .onTransition((state) => console.log(state.value, state.context))
+        .onTransition((state) => console.log(state.value))
         .start();
       stepService.send('INIT');
     });
   }
-  private async handleSrc(item: IStepOptions, context: any) {
+  cancel() {
+    this.context.status = STEP_STATUS.CANCEL as IStatus;
+    this.context.editStatusAble = false;
+    // kill child process, 后续的步骤正常执行，但状态标记为cancelled
+    each(this.childProcess, (item) => {
+      item.kill();
+    });
+  }
+  private getFilterContext() {
+    return { status: this.context.status, steps: this.context.steps, env: this.context.env };
+  }
+  private getProcessData(item: IStepOptions) {
+    return {
+      ...omit(item, '$stepCount'),
+      status: this.context[item.$stepCount].status,
+      env: this.context.env,
+    };
+  }
+  // 将执行终态进行emit
+  private doEmit() {
+    const data = map(this.steps, (item: IStepsStatus) => {
+      item.status = get(this.context, `${item.$stepCount}.status`);
+      const { $stepCount, ...rest } = item;
+      return rest;
+    });
+    this.emit(this.context.status, data);
+  }
+  private async handleSrc(item: IStepOptions) {
     return this.doSrc(item)
       .then((response: any) => {
+        // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
+        if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
+
         // 记录全局的执行状态
-        if (context.$editStatusAble) {
-          context.$status = STEP_STATUS.SUCCESS;
+        if (this.context.editStatusAble) {
+          this.context.status = STEP_STATUS.SUCCESS as IStatus;
         }
         // $stepCount 添加状态
-        context[item.$stepCount] = {
+        this.context[item.$stepCount] = {
           status: STEP_STATUS.SUCCESS,
         };
         // id 添加状态
         if (item.id) {
-          context.steps = {
-            ...context.steps,
+          this.context.steps = {
+            ...this.context.steps,
             [item.id]: {
               status: STEP_STATUS.SUCCESS,
-              output: response,
+              outputs: response,
             },
           };
         }
@@ -116,26 +165,29 @@ class Engine extends EventEmitter {
             ? STEP_STATUS.ERROR_WITH_CONTINUE
             : STEP_STATUS.FAILURE;
         // 记录全局的执行状态
-        if (context.$editStatusAble) {
-          context.$status = status;
+        if (this.context.editStatusAble) {
+          this.context.status = status as IStatus;
         }
         if (status === STEP_STATUS.FAILURE) {
           // 全局的执行状态一旦失败，便不可修改
-          context.$editStatusAble = false;
+          this.context.editStatusAble = false;
         }
-        context[item.$stepCount] = {
+        this.context[item.$stepCount] = {
           status,
         };
         if (item.id) {
-          context.steps = {
-            ...context.steps,
+          this.context.steps = {
+            ...this.context.steps,
             [item.id]: {
               status,
-              output: err,
+              errorMessage: err,
             },
           };
         }
         if (item['continue-on-error'] !== true) throw err;
+      })
+      .finally(() => {
+        this.emit('process', this.getProcessData(item));
       });
   }
   private async doSrc(item: IStepOptions) {
@@ -148,43 +200,66 @@ class Engine extends EventEmitter {
       execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
       this.logName(item);
       const cp = command(runItem.run, { cwd: execPath });
+      this.childProcess.push(cp);
       const res = await this.onFinish(cp, logFile);
       return res;
     }
     // uses
     if (usesItem.uses) {
       this.logName(item);
-      const cp = command(`npm i ${usesItem.uses} --save`);
-      await this.onFinish(cp, logFile);
-      try {
-        return await require(usesItem.uses).run(usesItem.with);
-      } catch (e) {
-        logger.error(e as string, logFile);
+      // 本地路径调试时，不在安装依赖
+      if (!fs.existsSync(usesItem.uses)) {
+        const cp = command(`npm i ${usesItem.uses} --save`);
+        this.childProcess.push(cp);
+        await this.onFinish(cp, logFile);
       }
+      const run = require(usesItem.uses).default;
+      return await run({
+        inputs: get(usesItem, 'with', {}),
+        context: this.getFilterContext(),
+      });
     }
   }
-  private async doSkip(item: IStepOptions, context: any) {
+  private async doSkip(item: IStepOptions) {
     // $stepCount 添加状态
-    context[item.$stepCount] = {
+    this.context[item.$stepCount] = {
       status: STEP_STATUS.SKIP,
     };
     // id 添加状态
     if (item.id) {
-      context.steps = {
-        ...context.steps,
+      this.context.steps = {
+        ...this.context.steps,
         [item.id]: {
           status: STEP_STATUS.SKIP,
         },
       };
     }
-    this.logName(item, context);
+    this.logName(item);
+    this.emit('process', this.getProcessData(item));
     return Promise.resolve();
   }
-  private logName(item: IStepOptions, context?: any) {
+  private async doCancel(item: IStepOptions) {
+    // $stepCount 添加状态
+    this.context[item.$stepCount] = {
+      status: STEP_STATUS.CANCEL,
+    };
+    // id 添加状态
+    if (item.id) {
+      this.context.steps = {
+        ...this.context.steps,
+        [item.id]: {
+          status: STEP_STATUS.CANCEL,
+        },
+      };
+    }
+    this.logName(item);
+    return Promise.resolve();
+  }
+  private logName(item: IStepOptions) {
     const logFile = `step_${item.$stepCount}.log`;
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
-    const isSkip = get(context, `${item.$stepCount}.status`) === STEP_STATUS.SKIP;
+    const isSkip = get(this.context, `${item.$stepCount}.status`) === STEP_STATUS.SKIP;
     if (runItem.run) {
       const msg = runItem.name || `Run ${runItem.run}`;
       return logger.info(isSkip ? `[skipped] ${msg}` : msg, logFile);
@@ -209,15 +284,7 @@ class Engine extends EventEmitter {
       });
 
       cp.on('exit', (code: number) => {
-        stdout.length
-          ? resolve({
-              code: code,
-              stdout: Buffer.concat(stdout).toString(),
-            })
-          : reject({
-              code: code,
-              stderr: Buffer.concat(stderr).toString(),
-            });
+        stdout.length ? resolve({}) : reject(Buffer.concat(stderr).toString());
       });
     });
   }
