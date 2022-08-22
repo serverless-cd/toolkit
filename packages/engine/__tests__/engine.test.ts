@@ -1,5 +1,4 @@
-import Engine from '../src';
-import { IStepOptions } from '../src/types';
+import Engine, { IStepOptions } from '../src';
 import { get } from 'lodash';
 import { logger } from '@serverless-cd/core';
 import * as path from 'path';
@@ -314,6 +313,8 @@ describe('执行终态emit测试', () => {
     const steps = [
       { run: 'echo "hello"' },
       { run: 'node packages/engine/__tests__/cancel-test.js' },
+      { run: 'echo "world"' },
+      { run: 'echo "end"', if: '{{ cancelled() }}' },
     ] as IStepOptions[];
     const engine = new Engine(steps);
     const callback = jest.fn(() => {
@@ -327,6 +328,8 @@ describe('执行终态emit测试', () => {
           run: 'node packages/engine/__tests__/cancel-test.js',
           status: 'cancelled',
         },
+        { run: 'echo "world"', status: 'cancelled' },
+        { run: 'echo "end"', if: 'true', status: 'success' },
       ]);
     });
     engine.start();
