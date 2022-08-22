@@ -1,80 +1,77 @@
-# step 方法 
+# 解析引擎 engine
+解析引擎`engine`本质是一个npm包`@serverless-cd/engine`，它主要负责`steps`执行步骤的处理，详情[查看](https://github.com/serverless-cd/serverless-cd-toolkit/tree/master/packages/engine)
+```
+steps:
+  - run: echo "hello"
+    id: xhello
+  - run: echo "world"
+    if: '{{ steps.xhello.status==="success" }}'
+    id: xworld
+```
 
-## 基本使用
+## 使用方式
 
+- 启动/终止
 ```ts
-import * as core from '@serverless-cd/core';
-
-core.setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, 'serverless-pipeline.yaml'));
-core.setServerlessCdVariable('LOG_PATH', path.join(process.cwd(), 'logs'));
-
-await step();
+import Engine from '@serverless-cd/engine';
+const engine = new Engine(spec); // spec是steps的JSON对象
+engine.start(); // 启动
+engine.cancel(); // 取消/终止
+```
+- 监听每个步骤的执行结果
+```ts
+engine.on('process', callback);
 ```
 
-- 您可以通过 `core.setServerlessCdVariable('TEMPLATE_PATH', value)` 指定yaml文件路径
-- 您可以通过 `core.setServerlessCdVariable('LOG_PATH', value)` 指定日志文件的输出路径
-
-## 每个step的执行状态
-我们可以通过 `steps[${step_id}].status` 来获取当前step的执行状态
-
-- success
-- failure
-- error-with-continue
-- skipped
-- cancelled
-
-## step的终态
-- success
-- failure
-- cancelled
-
-
-## 当前step获取其它step的输出
-如果某一步骤是否需要执行依赖前面步骤的输出结果，则可以通过 `if: '{{ steps.xhello.output.code === 0 }}'` 来实现
-
+- 监听整个steps的执行结果
+```ts
+engine.on('failure', callback); 
+engine.on('success', callback);
+engine.on('cancelled', callback);
 ```
-steps:
-   - run: echo "hello"
-     id: xhello
-   - run: echo "world"
-     if: '{{ steps.xhello.output.code === 0 }}'
-     id: xworld
+- 实现Stream的接口获取输出日志
+```
+engine.output.pipe()
 ```
 
-### 状态检查函数
+## 状态检查函数
 您可以使用以下状态检查函数作为 if 条件中的表达式。
+### success
+当前面的步骤没有失败或取消时返回 `true`
 
-- success() // 当前面的所有步骤没有失败时返回 `true`
-- failure() // 在作业的任何之前一步失败时返回 `true`
-- always() // 导致该步骤总是执行，并返回 `true`
-
-#### failure
-在执行步骤的过程中如果失败了还想继续执行某一步骤，则可以通过 `if: '{{ failure() }}'` 来实现
-
-```
+#### 示例
+```yaml
 steps:
-   - run: npm run error
-     id: xerror
-   - run: echo "world"
-     if: '{{ failure() }}'
-     id: xworld
+  ...
+  - name: The job has succeeded
+    if: ${{ success() }}
 ```
 
-当然，状态检测函数也可以和其它step的输出结果一起作为条件来判断当前步骤是否执行
+### failure
+当前面的步骤没有失败或取消时返回 `true` 
 
-```
+#### 示例
+```yaml
 steps:
-   - run: echo "hello"
-     id: xhello
-   - run: npm run error
-     id: xerror
-   - run: echo "world"
-     if: '{{ failure() && steps.xerror.output.code !== 0 }}'
-     id: xworld
+  ...
+  - name: The job has failed
+    if: ${{ failure() }}
 ```
 
-#### always
-如果某一步骤不管其它步骤执行成功还是失败，都想执行当前步骤，则可以通过 `if: '{{ always() }}'` 来实现
+#### 有条件的失败
+```yaml
+steps:
+  - run: echo "hello"
+    id: xhello
+  - run: npm run error
+    id: xerror
+  - run: echo "world"
+    if: '{{ failure() && steps.xerror.status === "failure" }}'
+    id: xworld
+```
+
+### always
+导致该步骤总是执行，并返回 `true`
 
 ```
 steps:
@@ -86,8 +83,8 @@ steps:
 ```
 
 
-### continue-on-error
-如果某一步骤哪怕执行失败了，你也想继续正常的执行，则可以通过 `continue-on-error: true` 来实现
+## continue-on-error
+忽略某一步骤的执行错误，不影响执行步骤的全局状态
 
 ```
 steps:
@@ -99,6 +96,5 @@ steps:
    - run: echo "world"
      id: xworld
 ```
-
 
 
