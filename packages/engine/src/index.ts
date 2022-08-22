@@ -9,6 +9,8 @@ import * as fs from 'fs-extra';
 import EventEmitter from 'events';
 const artTemplate = require('art-template');
 
+export { IStepOptions } from './types';
+
 class Engine extends EventEmitter {
   private childProcess: any[] = [];
   private context = {
@@ -209,7 +211,7 @@ class Engine extends EventEmitter {
       this.logName(item);
       // 本地路径调试时，不在安装依赖
       if (!fs.existsSync(usesItem.uses)) {
-        const cp = command(`npm i ${usesItem.uses} --save`);
+        const cp = command(`npm i ${usesItem.uses} --no-save`);
         this.childProcess.push(cp);
         await this.onFinish(cp, logFile);
       }

@@ -9,7 +9,7 @@
     "format": "prettier --write packages/**/*.ts",
     "format-check": "prettier --check packages/**/*.ts",
     "test": "jest --testTimeout 10000",
-    "test:engine": "jest --testTimeout 10000 packages/engine --watchAll",
+    "test:engine": "jest --testTimeout 10000 packages/engine",
     "test:core": "jest --testTimeout 10000 packages/core --watchAll",
     "test:action": "jest --testTimeout 10000 packages/action",
     "test:engine-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/engine",

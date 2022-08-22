@@ -1,5 +1,4 @@
-import Engine from '../src';
-import { IStepOptions } from '../src/types';
+import Engine, { IStepOptions } from '../src';
 import { get } from 'lodash';
 import { logger } from '@serverless-cd/core';
 import * as path from 'path';
