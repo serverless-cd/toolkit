@@ -19,14 +19,6 @@ on:
 ```
 
 
-### create
-
-分支,tag创建时触发
-
-### delete
-
-分支,tag删除时触发
-
 ### push/pull_request
 
 `push`是当有对仓库的push操作时触发;`pull_request`则是在执行`pull request`中触发
@@ -79,6 +71,16 @@ on:
 `unlocked`,解锁时触发
 `review_requested`,code review结束时触发
 `review_request_removedcode` review请求被删除时触发
+
+
+
+### create
+
+分支,tag创建时触发
+
+### delete
+
+分支,tag删除时触发
 
 ### release
 
