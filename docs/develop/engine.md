@@ -33,32 +33,31 @@ engine.on('cancelled', callback);
 ```
 engine.output.pipe()
 ```
-
 ## 状态检查函数
 您可以使用以下状态检查函数作为 if 条件中的表达式。
 ### success
 当前面的步骤没有失败或取消时返回 `true`
-
 #### 示例
 ```yaml
 steps:
   ...
   - name: The job has succeeded
-    if: ${{ success() }}
+    if: '{{ success() }}'
 ```
 
 ### failure
 当前面的步骤没有失败或取消时返回 `true` 
-
 #### 示例
 ```yaml
 steps:
   ...
   - name: The job has failed
-    if: ${{ failure() }}
+    if: '{{ failure() }}'
 ```
 
 #### 有条件的失败
+您可以为失败后运行的步骤添加额外的条件
+#### 示例
 ```yaml
 steps:
   - run: echo "hello"
@@ -73,13 +72,22 @@ steps:
 ### always
 导致该步骤总是执行，并返回 `true`
 
-```
+#### 示例
+```yaml
 steps:
    - run: npm run error
      id: xerror
    - run: echo "world"
      if: '{{ always() }}'
      id: xworld
+```
+
+### cancelled
+在工作流程取消时返回 `true`
+
+#### 示例
+```yaml
+if: '{{ cancelled() }}'
 ```
 
 

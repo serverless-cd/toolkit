@@ -58,8 +58,6 @@ class Engine extends EventEmitter {
           invoke: {
             id: item.$stepCount,
             src: () => {
-              // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
-              if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
               // 合并环境变量
               this.context.env = merge({}, process.env, item.env);
               // 先判断if条件，成功则执行该步骤。
@@ -76,13 +74,20 @@ class Engine extends EventEmitter {
                   STEP_IF.SUCCESS,
                   this.context.status !== STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
+                // 替换 success()
+                item.if = replace(
+                  item.if,
+                  STEP_IF.CANCEL,
+                  this.context.status === STEP_STATUS.CANCEL ? 'true' : 'false',
+                );
                 // 替换 always()
                 item.if = replace(item.if, STEP_IF.ALWAYS, 'true');
                 const ifCondition = artTemplate.compile(item.if);
-                return ifCondition(this.getFilterContext()) === 'true'
-                  ? this.handleSrc(item)
-                  : this.doSkip(item);
+                item.if = ifCondition(this.getFilterContext());
+                return item.if === 'true' ? this.handleSrc(item) : this.doSkip(item);
               }
+              // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
+              if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
               // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skipped
               if (this.context.status === STEP_STATUS.FAILURE) {
                 return this.doSkip(item);
@@ -139,9 +144,9 @@ class Engine extends EventEmitter {
   private async handleSrc(item: IStepOptions) {
     return this.doSrc(item)
       .then((response: any) => {
-        // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
-        if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
-
+        // 如果已取消且if条件不成功，则不执行该步骤, 并记录状态为 cancelled
+        const isCancel = item.if !== 'true' && this.context.status === STEP_STATUS.CANCEL;
+        if (isCancel) return this.doCancel(item);
         // 记录全局的执行状态
         if (this.context.editStatusAble) {
           this.context.status = STEP_STATUS.SUCCESS as IStatus;

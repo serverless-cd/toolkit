@@ -10,4 +10,5 @@ export const STEP_IF = {
   SUCCESS: 'success()',
   FAILURE: 'failure()',
   ALWAYS: 'always()',
+  CANCEL: 'cancelled()',
 };
