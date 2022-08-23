@@ -2,10 +2,11 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs-extra';
 import { getServerlessCdVariable } from './variable';
+import { get, map, merge } from 'lodash';
 
 const TEMPLATE_YAML = 'serverless-pipeline.yaml';
 
-export function getYamlContent() {
+function parseSpec() {
   const filePath = getYamlPath();
   const filename = path.basename(filePath);
 
@@ -14,7 +15,14 @@ export function getYamlContent() {
   }
 
   try {
-    return yaml.load(fs.readFileSync(filePath, 'utf8'));
+    const res = yaml.load(fs.readFileSync(filePath, 'utf8'));
+    return {
+      on: get(res, 'on'),
+      steps: map(get(res, 'steps'), (step) => {
+        step.env = merge({}, get(res, 'env'), get(step, 'env'));
+        return step;
+      }),
+    };
   } catch (error) {
     const e = error as Error;
     let message = `${filename} format is incorrect`;
@@ -25,7 +33,9 @@ export function getYamlContent() {
   }
 }
 
-export function getYamlPath() {
+function getYamlPath() {
   const templatePath = getServerlessCdVariable('TEMPLATE_PATH');
   return templatePath || path.join(process.cwd(), TEMPLATE_YAML);
 }
+
+export default parseSpec;

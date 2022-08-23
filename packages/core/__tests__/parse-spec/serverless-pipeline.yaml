@@ -1,0 +1,13 @@
+name: "On Push master"
+on:
+  push:
+    branches:
+      - master
+env:
+  name: Heimanba
+  age: 30
+steps:
+  - run: echo 'Hi {{ env.name }}'  # Hi Heimanba
+  - run: echo 'Hi {{ env.name }}'  # Hi Tony
+    env:
+      name: Tony
