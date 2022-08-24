@@ -1,107 +1,64 @@
-import EventEmitter from 'events';
-import { ListenConfig } from './types';
-import { checkType, findHandler, handlerEvents, commonEvent } from './utile';
-import getHookKeyword from './git/hookKeyword';
-import events from './events';
+import { isEmpty, isNil, isString } from 'lodash';
+import getHookKeyword from './git/keyword';
+import { IHookOutput, IHookPayload, IUserConfig } from './types';
 
-class WebHook extends EventEmitter {
-  initOptions: ListenConfig | ListenConfig[];
+async function webhook(hookPayload: IHookPayload, userConfig: IUserConfig): Promise<IHookOutput> {
+  const { headers, body } = hookPayload || {};
+  const { secret, on: eventsConfig } = userConfig || {};
 
-  static events = events;
+  console.debug('webhook payload: ', hookPayload);
+  console.debug('user custom payload: ', userConfig);
 
-  constructor(initOptions: ListenConfig | ListenConfig[]) {
-    if (Array.isArray(initOptions)) {
-      for (const option of initOptions) {
-        checkType(option);
-      }
-    } else {
-      checkType(initOptions);
-    }
-
-    super();
-    this.initOptions = initOptions;
+  if (isString(body)) {
+    throw new TypeError("must provide a 'body' option");
   }
 
-  handler (req: any, callback: Function = () => {}) {
-    const { url, method, headers, protocol, body } = req;
-    console.log('req payload: ', { method, url, headers });
-
-    const listenConfig: ListenConfig = findHandler(url, this.initOptions);
-    console.log('获取监听配置: ', listenConfig);
-
-    const { events: listenEvents, path, secret } = listenConfig;
-    const events = handlerEvents(listenEvents || []);
-    console.log('监听的事件: ', events);
-    const reqPath = url.split('?').shift();
-
-    if (reqPath !== path || method !== 'POST') {
-      return callback();
-    }
-
-    const hookKeyword = getHookKeyword(headers, secret);
-    console.log('get hookKeyword payload:: ', hookKeyword);
-    const { signatureKey, eventKey, idKey, verify } = hookKeyword;
-    
-    const {
-      [signatureKey]: signature,
-      [eventKey]: event,
-      [idKey]: id,
-    } = headers;
-
-    if (!signature) {
-      return this.hasError(`No ${signatureKey} found on request`, callback);
-    }
-
-    if (!event) {
-      return this.hasError(`No ${event} found on request`, callback);
-    }
-
-    if (!id) {
-      return this.hasError(`No ${id} found on request`, callback);
-    }
-
-    if (events.length && !events.includes(event)) {
-      return this.hasError(`No ${event} found on request`, callback);
-    }
-
-    let obj;
-    try {
-      obj = JSON.parse(body.toString());
-    } catch(e: any) {
-      return this.hasError(e.toString(), callback);
-    }
-
-    if (!verify(signature, body, obj)) {
-      return this.hasError(`${signatureKey} does not match blob signature`, callback);
-    }
-
-    const emitData = {
-      path,
-      event,
-      id,
-      protocol,
-      url,
-      payload: obj,
-      host: headers.host,
-    };
-    console.log('emitData:: ', emitData);
-
-    const emitEvent = commonEvent(event);
-    console.log('emitEvent:: ', emitEvent);
-
-    this.emit(emitEvent, emitData);
-    if (!events.length) {
-      this.emit('*', emitData);
-    }
-
-    callback(null, emitData);
+  let obj;
+  try {
+    obj = JSON.parse(body);
+  } catch(_e: any) {
+    throw new Error('Body is not a json string');
   }
 
-  private hasError (msg: string, callback: Function) {
-    const err = new Error(msg);
-    this.emit('error', err);
-    callback(err);
+  if (isEmpty(headers)) {
+    throw new TypeError("must provide a 'headers' option");
   }
-};
 
-export = WebHook;
+  if (isEmpty(eventsConfig)) {
+    throw new TypeError("must provide a 'on' option");
+  }
+
+  const { signatureKey, eventKey, idKey, verify, filterEvent } = getHookKeyword(headers, secret);
+
+  const {
+    [signatureKey]: signature,
+    [eventKey]: event,
+    [idKey]: id,
+  } = headers;
+
+  if (isEmpty(event)) {
+    throw new Error(`No ${eventKey} found on request`);
+  }
+
+  if (isEmpty(id)) {
+    throw new Error(`No ${idKey} found on request`);
+  }
+
+  if (!verify(signature, body, obj)) {
+    throw new Error(`${signatureKey} does not match blob signature`);
+  }
+
+  if (filterEvent) {
+    const hasEvent = filterEvent(event, obj, eventsConfig);
+    if (!isNil(hasEvent)) {
+      return { success: true };
+    }
+  }
+
+  return {
+    success: false,
+    message: `No ${event} event was matched`,
+  }
+}
+
+export = webhook;

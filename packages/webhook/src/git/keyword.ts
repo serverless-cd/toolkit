@@ -1,9 +1,11 @@
 import Verify from "./verify";
+import githubEvent from "./events/github";
+import { IHookKeyword } from "../types";
 
-export default function getHookKeyword (headers: { [key: string]: string }, secret: string) {
-  // get platform
+
+export default function getHookKeyword (headers: { [key: string]: string }, secret?: string): IHookKeyword {
   const ua: string = headers['user-agent'] || '';
-  const { verifyGithub, verifyGiteaGogs, verifyGitee, verifyGitlab, verifyCodeup } = new Verify(secret);
+  const { verifyGithub } = new Verify(secret);
 
   // github
   if (ua.startsWith('GitHub-Hookshot')) {
@@ -12,9 +14,15 @@ export default function getHookKeyword (headers: { [key: string]: string }, secr
       eventKey: 'x-github-event',
       idKey: 'x-github-delivery',
       verify: verifyGithub,
+      filterEvent: githubEvent,
     }
   }
 
+  throw new Error('Unrecognized product');
+
+  // TODO
+  /**
+  // const { verifyGithub, verifyGitee, verifyGiteaGogs, verifyGitlab, verifyCodeup } = new Verify(secret);
   // gitee
   if (ua === 'git-oschina-hook') {
     return {
@@ -24,7 +32,6 @@ export default function getHookKeyword (headers: { [key: string]: string }, secr
       verify: verifyGitee,
     }
   }
-  
   // gitlab
   if (headers['x-gitlab-token']) {
     return {
@@ -64,6 +71,5 @@ export default function getHookKeyword (headers: { [key: string]: string }, secr
       verify: verifyCodeup,
     }
   }
-
-  throw new Error('Unrecognized product');
+  */
 }
