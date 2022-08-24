@@ -91,10 +91,28 @@ if: '{{ cancelled() }}'
 ```
 
 
-## continue-on-error
+## 小贴士
+
+### if和run字段可以识别魔法变量
+
+```yaml
+env:
+  name: Heimanba
+  age: 30
+steps:
+  - run: echo 'Hi {{ env.name }}'  # Hi Heimanba
+    id: xname
+  - run: echo 'Hi {{ env.name }}'  # Hi Tony
+    env:
+      name: Tony
+  - run: echo "hello"
+    if: '{{ failure() && steps.xname.status === "failure" }}'
+```
+
+### continue-on-error
 忽略某一步骤的执行错误，不影响执行步骤的全局状态
 
-```
+```yaml
 steps:
    - run: echo "hello"
      id: xhello
