@@ -52,7 +52,10 @@ class Engine extends EventEmitter {
                   : this.context.status;
               this.context.status = status as IStatus;
               this.doEmit();
-              resolve(this.getFilterContext());
+              resolve({
+                status: this.context.status,
+                steps: this.context.steps,
+              });
             },
           },
         },
@@ -218,6 +221,8 @@ class Engine extends EventEmitter {
       let execPath = runItem['working-directory'] || process.cwd();
       execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
       this.logName(item);
+      const ifCondition = artTemplate.compile(runItem.run);
+      runItem.run = ifCondition(this.getFilterContext());
       const cp = command(runItem.run, { cwd: execPath });
       this.childProcess.push(cp);
       const res = await this.onFinish(cp, logFile);
