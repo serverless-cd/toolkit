@@ -4,18 +4,18 @@ import { logger } from '@serverless-cd/core';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 
-describe('执行step全部成功', () => {
-  test('获取某一步的outputs', async () => {
-    const steps = [
-      { run: 'echo "hello"', id: 'xhello' },
-      { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
-      { run: 'echo "world"' },
-    ] as IStepOptions[];
-    const engine = new Engine(steps);
-    const res = await engine.start();
-    expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
-  });
+test('获取某一步的outputs', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
+    { run: 'echo "world"' },
+  ] as IStepOptions[];
+  const engine = new Engine(steps);
+  const res = await engine.start();
+  expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
+});
 
+describe('if测试', () => {
   test('模版可以识别{{steps.xhello.status === "success"}}', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
@@ -92,7 +92,7 @@ describe('执行step全部成功', () => {
     // 步骤3的执行状态为skip，说明模版识别成功
     expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
-  test.only('模版可以识别 {{env.name === "xiaoming"}}', async () => {
+  test('模版可以识别 {{env.name === "xiaoming"}}', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello', if: '{{ env.name === "xiaoming" }}' },
       {
@@ -108,6 +108,26 @@ describe('执行step全部成功', () => {
       xhello: { status: 'skipped' },
       xworld: { status: 'success', outputs: {} },
     });
+  });
+});
+
+describe('run测试', () => {
+  test('模版可以识别 {{env.name}}', async () => {
+    const steps = [
+      { run: 'echo {{env.name}}', env: { name: 'xiaoming' } },
+    ] as unknown as IStepOptions[];
+    const engine = new Engine(steps);
+    const res = await engine.start();
+    expect(get(res, 'status')).toBe('success');
+  });
+  test.only('模版可以识别 {{steps.xuse.outputs.success}}', async () => {
+    const steps = [
+      { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
+      { run: 'echo {{steps.xuse.outputs.success}}' },
+    ] as IStepOptions[];
+    const engine = new Engine(steps);
+    const res = await engine.start();
+    expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
   });
 });
 
