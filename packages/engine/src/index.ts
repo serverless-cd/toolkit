@@ -1,6 +1,14 @@
 import { logger } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
-import { IStepOptions, IRunOptions, IUsesOptions, IStepsStatus, IContext, IStatus } from './types';
+import {
+  IStepOptions,
+  IRunOptions,
+  IUsesOptions,
+  IStepsStatus,
+  IContext,
+  IStatus,
+  IkeyValue,
+} from './types';
 import { isEmpty, get, each, replace, map, uniqueId, merge, omit } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
@@ -59,7 +67,7 @@ class Engine extends EventEmitter {
             id: item.$stepCount,
             src: () => {
               // 合并环境变量
-              this.context.env = merge({}, process.env, item.env);
+              this.context.env = item.env as IkeyValue;
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
@@ -109,7 +117,7 @@ class Engine extends EventEmitter {
         states,
       });
       const stepService = interpret(fetchMachine)
-        .onTransition((state) => console.log(state.value))
+        .onTransition((state) => console.log(state.value, this.context))
         .start();
       stepService.send('INIT');
     });
@@ -123,7 +131,11 @@ class Engine extends EventEmitter {
     });
   }
   private getFilterContext() {
-    return { status: this.context.status, steps: this.context.steps, env: this.context.env };
+    return {
+      status: this.context.status,
+      steps: this.context.steps,
+      env: get(this.context, 'env', {}),
+    };
   }
   private getProcessData(item: IStepOptions) {
     return {

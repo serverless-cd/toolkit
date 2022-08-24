@@ -1,6 +1,4 @@
-import { logger, setServerlessCdVariable, getServerlessCdVariable } from '../../src';
-import * as path from 'path';
-import * as fs from 'fs-extra';
+import { logger } from '../src';
 
 test('enableDebug', () => {
   logger.enableDebug();

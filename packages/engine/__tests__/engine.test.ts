@@ -92,6 +92,23 @@ describe('执行step全部成功', () => {
     // 步骤3的执行状态为skip，说明模版识别成功
     expect(get(res, 'steps.xend.status')).toBe('skipped');
   });
+  test.only('模版可以识别 {{env.name === "xiaoming"}}', async () => {
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello', if: '{{ env.name === "xiaoming" }}' },
+      {
+        run: 'echo "world"',
+        id: 'xworld',
+        if: '{{ env.name === "xiaoming" }}',
+        env: { name: 'xiaoming' },
+      },
+    ] as IStepOptions[];
+    const engine = new Engine(steps);
+    const res = await engine.start();
+    expect(get(res, 'steps')).toEqual({
+      xhello: { status: 'skipped' },
+      xworld: { status: 'success', outputs: {} },
+    });
+  });
 });
 
 describe('某一步执行失败', () => {
@@ -434,47 +451,4 @@ test('测试获取所有log', async () => {
   const engine = new Engine(steps);
   await engine.start();
   expect(fs.readFileSync(logFile, 'utf8')).not.toBeUndefined();
-});
-
-describe('环境变量', () => {
-  test('测试process.env, if成立', async () => {
-    process.env.name = 'xiaoming';
-    const steps = [
-      { run: 'echo "hello"', id: 'xhello' },
-      { run: 'echo "world"', id: 'xworld', if: '{{ env.name === "xiaoming" }}' },
-    ] as IStepOptions[];
-    const engine = new Engine(steps);
-    const res = await engine.start();
-    // 步骤3执行状态成功，说明if成立
-    expect(get(res, 'steps.xworld.status')).toBe('success');
-  });
-
-  test('测试process.env, if失败', async () => {
-    process.env.name = 'xiaoming';
-    const steps = [
-      { run: 'echo "hello"', id: 'xhello' },
-      { run: 'echo "world"', id: 'xworld', if: '{{ env.name !== "xiaoming" }}' },
-    ] as IStepOptions[];
-    const engine = new Engine(steps);
-    const res = await engine.start();
-    // 步骤3执行状态skipped，说明if失败
-    expect(get(res, 'steps.xworld.status')).toBe('skipped');
-  });
-
-  test('测试process.env和step env', async () => {
-    process.env.name = 'xiaoming';
-    const steps = [
-      { run: 'echo "hello"', id: 'xhello' },
-      {
-        run: 'echo "world"',
-        id: 'xworld',
-        if: '{{ env.name === "xiaohong" }}',
-        env: { name: 'xiaohong' },
-      },
-    ] as IStepOptions[];
-    const engine = new Engine(steps);
-    const res = await engine.start();
-    // env.name 是 xiaohong
-    expect(get(res, 'env.name')).toBe('xiaohong');
-  });
 });
