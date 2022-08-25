@@ -1,15 +1,16 @@
-import { isEmpty, isNil, isString } from 'lodash';
+import { isPlainObject, isEmpty, isNil, isString } from 'lodash';
 import getHookKeyword from './git/keyword';
-import { IHookOutput, IHookPayload, IUserConfig } from './types';
+import { IHookOutput, IHookPayload } from './types';
 
-async function webhook(hookPayload: IHookPayload, userConfig: IUserConfig): Promise<IHookOutput> {
-  const { headers, body } = hookPayload || {};
-  const { secret, on: eventsConfig } = userConfig || {};
+async function webhook(hookPayload: IHookPayload): Promise<IHookOutput> {
+  if (!isPlainObject(hookPayload)) {
+    throw new TypeError('The parameter format should be object');
+  }
+  const { headers, body, secret, on: eventsConfig } = hookPayload || {};
 
-  console.debug('webhook payload: ', hookPayload);
-  console.debug('user custom payload: ', userConfig);
+  // console.debug('webhook payload: ', hookPayload);
 
-  if (isString(body)) {
+  if (!isString(body)) {
     throw new TypeError("must provide a 'body' option");
   }
 
@@ -28,20 +29,15 @@ async function webhook(hookPayload: IHookPayload, userConfig: IUserConfig): Prom
     throw new TypeError("must provide a 'on' option");
   }
 
-  const { signatureKey, eventKey, idKey, verify, filterEvent } = getHookKeyword(headers, secret);
+  const { signatureKey, eventKey, verify, filterEvent } = getHookKeyword(headers, secret);
 
   const {
     [signatureKey]: signature,
     [eventKey]: event,
-    [idKey]: id,
   } = headers;
 
   if (isEmpty(event)) {
     throw new Error(`No ${eventKey} found on request`);
-  }
-
-  if (isEmpty(id)) {
-    throw new Error(`No ${idKey} found on request`);
   }
 
   if (!verify(signature, body, obj)) {

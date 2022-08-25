@@ -15,21 +15,18 @@ export interface IGitEventObjct {
 export interface IHookKeyword {
 	signatureKey: string;
 	eventKey: string;
-	idKey: string;
+	idKey?: string;
 	verify: (signature: string, data: BinaryLike, json?: { [key: string]: any }) => boolean;
 	filterEvent?: (event: string, body: IObject, eventsConfig: IOnEvents) => string | void;
-}
-
-export interface IUserConfig {
-  secret?: string; // 配置 webhook 的 secret
-  on: IOnEvents; // 监听的事件
 }
 
 export interface IHookPayload {
   headers: {
     [key: string]: string;
   };
-  body: string; // json 串
+  body: string; // webhook 请求体【json 串】
+  secret?: string; // 配置 webhook 的 secret
+  on: IOnEvents; // 监听的事件
 }
 
 export interface IHookOutput {
