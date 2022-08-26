@@ -33,12 +33,7 @@ describe('signature 验证', () => {
   });
 
   test('验证正常', async () => {
-    const signatureKey = 'x-hub-signature';
     const parame = _.cloneDeep(initParame);
-    _.set(parame, `headers[${signatureKey}]`, undefined);
-    _.set(parame, 'secret', undefined);
-    _.set(parame, `headers[${signatureKey}]`, undefined);
- 
     await webHook(parame);
     expect(true).toBeTruthy();
   });

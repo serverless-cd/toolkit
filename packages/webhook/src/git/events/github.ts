@@ -68,11 +68,10 @@ function handlerObject(event: string, body: IObject, eventsConfig: IGitEventObjc
 
 // on.push.<paths|paths-ignore|branches|tags|branches-ignore|tags-ignore> 
 function push(body: IObject, pushConfig: { [key: string]: string[] }): string | void {
-  const {
-    added = [],
-    removed = [],
-    modified = [],
-  } = body.head_commit || {};
+  const added = _.get(body, 'head_commit.added', []);
+  const removed = _.get(body, 'head_commit.removed', []);
+  const modified = _.get(body, 'head_commit.modified', []);
+
   const updateFiles: string[] = _.concat(added, removed, modified);
   const ref = _.get(body, 'ref', '');
   const branch = _.replace(ref, 'refs/heads/', '');

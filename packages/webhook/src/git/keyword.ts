@@ -1,10 +1,11 @@
+import { get } from 'lodash';
 import Verify from "./verify";
 import githubEvent from "./events/github";
 import { IHookKeyword } from "../types";
 
 
 export default function getHookKeyword (headers: { [key: string]: string }, secret?: string): IHookKeyword {
-  const ua: string = headers['user-agent'] || '';
+  const ua: string = get(headers, 'user-agent', '');
   const { verifyGithub } = new Verify(secret);
 
   // github

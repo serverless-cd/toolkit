@@ -6,7 +6,7 @@ async function webhook(hookPayload: IHookPayload): Promise<IHookOutput> {
   if (!isPlainObject(hookPayload)) {
     throw new TypeError('The parameter format should be object');
   }
-  const { headers, body, secret, on: eventsConfig } = hookPayload || {};
+  const { headers, body, secret, on: eventsConfig } = hookPayload;
 
   // console.debug('webhook payload: ', hookPayload);
 
