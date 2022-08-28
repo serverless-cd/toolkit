@@ -7,7 +7,7 @@ import { SECRET } from '../mock/multiplex';
 const eventKey = 'x-github-event';
 
 async function runWebHookSuccess(parame: IHookPayload) {
-  const payload = await webHook(parame);;
+  const payload = await webHook(parame);
   expect(payload).toEqual({
     success: true
   });
