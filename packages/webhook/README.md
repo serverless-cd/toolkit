@@ -1,4 +1,21 @@
-## 触发webhook事件：github
+## 使用方法
+
+```
+const { success, message } = await webHook({
+	secret: SECRET,
+	on: 'push',
+	headers: req.headers,
+	body: body.toString(),
+});
+```
+
+```
+success: boolean; // 事件没有验证是否通过
+message: string;
+```
+
+
+# 触发webhook事件：github
 
 ### 语法
 
