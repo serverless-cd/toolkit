@@ -11,6 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^5.0.1",
+    "egg-logger": "^2.9.0",
     "fs-extra": "^10.1.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21"
