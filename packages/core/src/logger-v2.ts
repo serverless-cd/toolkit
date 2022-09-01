@@ -5,25 +5,33 @@ import {
   ConsoleTransport,
   Transport,
   LoggerLevel,
-  LoggerOptions,
+  TransportOptions,
 } from 'egg-logger';
 
 const duartionRegexp = /([0-9]+ms)/g;
 const categoryRegexp = /(\[[\w\-_.:]+\])/g;
 const httpMethodRegexp = /(GET|POST|PUT|PATH|HEAD|DELETE) /g;
 
-class LoggerTransport extends Transport {
-  constructor(opts: LoggerOptions) {
+interface OssLoggerOptions extends TransportOptions {
+  ossKey?: string;
+}
+
+//  refer: https://github.com/eggjs/egg-logger-sls/tree/master/lib
+//  https://github.com/eggjs/egg-logger
+class OssLoggerTransport extends Transport {
+  constructor(opts: OssLoggerOptions) {
     super(opts);
+    this.ossKey = opts.ossKey;
   }
   log(level: LoggerLevel, args: any[], meta: object) {
     const msg = super.log(level, args, meta);
+    // ossClient push文件
     console.log(msg);
   }
 }
 
-module.exports = (opts: { file: string; prefix: string; console: boolean }) => {
-  const { file, prefix, console = true } = opts;
+module.exports = (opts: { ossKey?: string; file?: string; prefix: string; console?: boolean }) => {
+  const { ossKey, file, prefix, console = true } = opts;
   const logger = new Logger({});
   let formatter = function (meta?: any) {
     let msg = meta.message;
@@ -56,6 +64,7 @@ module.exports = (opts: { file: string; prefix: string; console: boolean }) => {
       }),
     );
   }
+  
   if (file) {
     logger.set(
       'file',
@@ -68,12 +77,21 @@ module.exports = (opts: { file: string; prefix: string; console: boolean }) => {
   }
 
   // 远程目录
-  // if (redisKey) {
-  //   logger.set('remote', new RedisTransport({
-  //     level: 'DEBUG',
-  //     redisKey,
-  //     formatter
-  //   }));
-  // }
+  if (ossKey) {
+    logger.set(
+      'remote',
+      new OssLoggerTransport({
+        level: 'DEBUG',
+        ossKey,
+        formatter,
+      }),
+    );
+  }
   return logger;
 };
+
+/**
+ * 使用方式：
+ * const baseLogger = new BaseLogger({console: true});
+ * logger.info('info');
+ */
