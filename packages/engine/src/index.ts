@@ -1,4 +1,4 @@
-import { logger } from '@serverless-cd/core';
+import { EngineLogger } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -8,6 +8,7 @@ import {
   IContext,
   IStatus,
   IkeyValue,
+  IEngineOptions,
 } from './types';
 import { isEmpty, get, each, replace, map, uniqueId, merge, omit } from 'lodash';
 import { command } from 'execa';
@@ -18,15 +19,19 @@ import EventEmitter from 'events';
 const artTemplate = require('art-template');
 
 export { IStepOptions } from './types';
-
 class Engine extends EventEmitter {
   private childProcess: any[] = [];
   private context = {
     status: 'success',
     editStatusAble: true,
   } as IContext;
-  constructor(private steps: IStepOptions[]) {
+  private steps: IStepOptions[] = [];
+  private logPrefix: string;
+  private logger!: EngineLogger;
+  constructor(options: IEngineOptions) {
+    const { steps, logPrefix } = options;
     super();
+    this.logPrefix = logPrefix;
     this.steps = map(steps, (item: IStepOptions) => {
       item.$stepCount = uniqueId();
       return item;
@@ -214,6 +219,7 @@ class Engine extends EventEmitter {
   }
   private async doSrc(item: IStepOptions) {
     const logFile = `step_${item.$stepCount}.log`;
+    this.logger = new EngineLogger(path.join(this.logPrefix, logFile));
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     // run
@@ -225,7 +231,7 @@ class Engine extends EventEmitter {
       runItem.run = ifCondition(this.getFilterContext());
       const cp = command(runItem.run, { cwd: execPath });
       this.childProcess.push(cp);
-      const res = await this.onFinish(cp, logFile);
+      const res = await this.onFinish(cp);
       return res;
     }
     // uses
@@ -235,7 +241,7 @@ class Engine extends EventEmitter {
       if (!fs.existsSync(usesItem.uses)) {
         const cp = command(`npm i ${usesItem.uses} --no-save`);
         this.childProcess.push(cp);
-        await this.onFinish(cp, logFile);
+        await this.onFinish(cp);
       }
       const run = require(usesItem.uses).default;
       return await run({
@@ -280,30 +286,29 @@ class Engine extends EventEmitter {
     return Promise.resolve();
   }
   private logName(item: IStepOptions) {
-    const logFile = `step_${item.$stepCount}.log`;
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const isSkip = get(this.context, `${item.$stepCount}.status`) === STEP_STATUS.SKIP;
     if (runItem.run) {
       const msg = runItem.name || `Run ${runItem.run}`;
-      return logger.info(isSkip ? `[skipped] ${msg}` : msg, logFile);
+      return this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
     }
     if (usesItem.uses) {
       const msg = usesItem.name || `Run ${usesItem.uses}`;
-      logger.info(isSkip ? `[skipped] ${msg}` : msg, logFile);
+      this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
     }
   }
-  private onFinish(cp: any, logFile: string) {
+  private onFinish(cp: any) {
     return new Promise((resolve, reject) => {
       const stdout: Buffer[] = [];
       const stderr: Buffer[] = [];
       cp.stdout.on('data', (chunk: Buffer) => {
-        logger.info(chunk.toString(), logFile);
+        this.logger.info(chunk.toString());
         stdout.push(chunk);
       });
 
       cp.stderr.on('data', (chunk: Buffer) => {
-        logger.info(chunk.toString(), logFile);
+        this.logger.info(chunk.toString());
         stderr.push(chunk);
       });
 

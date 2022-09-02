@@ -1,8 +1,7 @@
 import Engine, { IStepOptions } from '../src';
 import { get } from 'lodash';
-import { logger } from '@serverless-cd/core';
 import * as path from 'path';
-import * as fs from 'fs-extra';
+const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
 test('获取某一步的outputs', async () => {
   const steps = [
@@ -10,7 +9,7 @@ test('获取某一步的outputs', async () => {
     { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
-  const engine = new Engine(steps);
+  const engine = new Engine({ steps, logPrefix });
   const res = await engine.start();
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
 });
@@ -26,7 +25,7 @@ describe('if测试', () => {
       },
       { run: 'echo "end"', id: 'xend' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 获取步骤1的status
     expect(get(res, 'steps.xhello.status')).toBe('success');
@@ -44,7 +43,7 @@ describe('if测试', () => {
       },
       { run: 'echo "end"', id: 'xend' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 获取步骤1的status
     expect(get(res, 'steps.xhello.status')).toBe('success');
@@ -62,7 +61,7 @@ describe('if测试', () => {
         id: 'xend',
       },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 获取步骤1的状态
     expect(get(res, 'steps.xhello.status')).toBe('success');
@@ -83,7 +82,7 @@ describe('if测试', () => {
       },
     ] as IStepOptions[];
 
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 获取步骤1的状态
     expect(get(res, 'steps.xhello.status')).toBe('success');
@@ -102,7 +101,7 @@ describe('if测试', () => {
         env: { name: 'xiaoming' },
       },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     expect(get(res, 'steps')).toEqual({
       xhello: { status: 'skipped' },
@@ -116,16 +115,16 @@ describe('run测试', () => {
     const steps = [
       { run: 'echo {{env.name}}', env: { name: 'xiaoming' } },
     ] as unknown as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     expect(get(res, 'status')).toBe('success');
   });
-  test.only('模版可以识别 {{steps.xuse.outputs.success}}', async () => {
+  test('模版可以识别 {{steps.xuse.outputs.success}}', async () => {
     const steps = [
       { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
       { run: 'echo {{steps.xuse.outputs.success}}' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
   });
@@ -139,7 +138,7 @@ describe('某一步执行失败', () => {
       { run: 'echo "world"', id: 'xworld' },
     ] as IStepOptions[];
 
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -153,7 +152,7 @@ describe('某一步执行失败', () => {
       { run: 'npm run error', id: 'xerror', 'continue-on-error': true },
       { run: 'echo "world"', id: 'xworld' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 error-with-continue
     expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
@@ -166,7 +165,7 @@ describe('某一步执行失败', () => {
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'npm run error', id: 'xerror', 'continue-on-error': true },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 error-with-continue
     expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
@@ -181,7 +180,7 @@ describe('某一步执行失败', () => {
       { run: 'echo "world"', id: 'xworld' },
       { run: 'echo "end"', id: 'xend', if: '{{ failure() }}' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -198,7 +197,7 @@ describe('某一步执行失败', () => {
       { run: 'echo "world"', id: 'xworld', if: '{{ failure() }}' },
       { run: 'echo "end"', id: 'xend', if: '{{ failure() }}' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -220,7 +219,7 @@ describe('某一步执行失败', () => {
       },
     ] as IStepOptions[];
 
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -241,7 +240,7 @@ describe('某一步执行失败', () => {
         if: "{{ failure() && steps.xerror.status !== 'failure' }}",
       },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -258,7 +257,7 @@ describe('某一步执行失败', () => {
       { run: 'echo "world"', if: '{{ success() }}', id: 'xworld' },
       { run: 'echo "end"', id: 'xend' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -275,7 +274,7 @@ describe('某一步执行失败', () => {
       { run: 'echo "world"', if: '{{ always() }}', id: 'xworld' },
       { run: 'echo "end"', id: 'xend' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const res = await engine.start();
     // 步骤2 状态是 failure
     expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -298,7 +297,7 @@ test('cancel测试', (done) => {
     { run: 'node packages/engine/__tests__/cancel-test.js' },
     { run: 'echo "world"' },
   ] as IStepOptions[];
-  const engine = new Engine(steps);
+  const engine = new Engine({ steps, logPrefix });
   const callback = jest.fn(() => {
     engine.cancel();
   });
@@ -316,7 +315,7 @@ describe('执行终态emit测试', () => {
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'echo "world"' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     engine.on('success', (data) => {
       expect(data).toEqual([
         { run: 'echo "hello"', id: 'xhello', status: 'success' },
@@ -330,7 +329,7 @@ describe('执行终态emit测试', () => {
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'npm run error', id: 'xerror' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     engine.on('failure', (data) => {
       expect(data).toEqual([
         { run: 'echo "hello"', id: 'xhello', status: 'success' },
@@ -353,7 +352,7 @@ describe('执行终态emit测试', () => {
       { run: 'echo "world"' },
       { run: 'echo "end"', if: '{{ cancelled() }}' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const callback = jest.fn(() => {
       engine.cancel();
     });
@@ -386,7 +385,7 @@ describe('步骤执行过程中emit测试', () => {
       { run: 'npm run error', id: 'xerror' },
       { run: 'echo "world"', id: 'xworld' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const newData: any = [];
     engine.on('process', (data) => {
       newData.push({
@@ -416,7 +415,7 @@ describe('步骤执行过程中emit测试', () => {
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'node packages/engine/__tests__/cancel-test.js', id: 'xcancel' },
     ] as IStepOptions[];
-    const engine = new Engine(steps);
+    const engine = new Engine({ steps, logPrefix });
     const callback = jest.fn(() => {
       engine.cancel();
     });
@@ -450,25 +449,9 @@ test('uses：应用测试返回值', async () => {
     { run: 'echo "hello"', id: 'xhello' },
     { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
   ] as IStepOptions[];
-  const engine = new Engine(steps);
+  const engine = new Engine({ steps, logPrefix });
   const res = await engine.start();
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
   // error case
   // expect(get(res, 'steps.xuse.errorMessage').toString()).toMatch('Error');
-});
-
-test('测试获取所有log', async () => {
-  const steps = [
-    { run: 'echo "hello"', id: 'xhello' },
-    { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
-    { run: 'npm run error', id: 'xerror' },
-  ] as IStepOptions[];
-  const logFile = path.join(__dirname, 'logs.log');
-  fs.existsSync(logFile) && fs.unlinkSync(logFile);
-  logger.on('data', (message) => {
-    fs.appendFileSync(logFile, `${message}\n`);
-  });
-  const engine = new Engine(steps);
-  await engine.start();
-  expect(fs.readFileSync(logFile, 'utf8')).not.toBeUndefined();
 });

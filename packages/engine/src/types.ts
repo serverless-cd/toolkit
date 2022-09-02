@@ -1,3 +1,7 @@
+export interface IEngineOptions {
+  steps: IStepOptions[];
+  logPrefix: string;
+}
 export interface IkeyValue {
   [key: string]: any;
 }
