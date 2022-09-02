@@ -4,12 +4,11 @@ import {
   ConsoleTransport,
   Transport,
   LoggerLevel,
-  TransportOptions,
   ConsoleTransportOptions,
   FileTransportOptions,
 } from 'egg-logger';
 import chalk from 'chalk';
-import * as fs from 'fs';
+import OssLogger, { IOssConfig } from './oss-logger';
 
 const duartionRegexp = /([0-9]+ms)/g;
 const categoryRegexp = /(\[[\w\-_.:]+\])/g;
@@ -54,36 +53,15 @@ class _FileTransport extends FileTransport {
   }
 }
 
-interface OssTransportOptions extends TransportOptions {
-  //   region: '<oss region>',
-  //   accessKeyId: '<Your accessKeyId>',
-  //   accessKeySecret: '<Your accessKeySecret>',
-  //   bucket: '<Your bucket name>',
-}
-class OssTransport extends Transport {
-  constructor(options: OssTransportOptions) {
-    super({
-      formatter,
-      ...options,
-    });
-  }
-  log(level: LoggerLevel, args: any[], meta: object) {
-    const msg = super.log(level, args, meta);
-    console.log('msg===', msg);
-    // TODO: upload to oss
-    // const OSS = require('ali-oss');
-    // const client = new OSS({
-    //   region: '<oss region>',
-    //   accessKeyId: '<Your accessKeyId>',
-    //   accessKeySecret: '<Your accessKeySecret>',
-    //   bucket: '<Your bucket name>',
-    // });
-  }
-}
-
 class EngineLogger extends Logger {
   constructor(file: string) {
     super({});
+    this.set(
+      'console',
+      new _ConsoleTransport({
+        level: 'DEBUG',
+      }),
+    );
     this.set(
       'file',
       new _FileTransport({
@@ -91,13 +69,9 @@ class EngineLogger extends Logger {
         level: 'INFO',
       }),
     );
-
-    this.set(
-      'console',
-      new _ConsoleTransport({
-        level: 'DEBUG',
-      }),
-    );
+  }
+  async oss(ossConfig: IOssConfig) {
+    return await new OssLogger(ossConfig).init();
   }
 }
 
@@ -106,7 +80,6 @@ export {
   Logger,
   formatter,
   Transport,
-  OssTransport,
   _ConsoleTransport as ConsoleTransport,
   _FileTransport as FileTransport,
 };

@@ -2,7 +2,7 @@ import OssLogger from '../../src/logger/oss-logger';
 import * as path from 'path';
 import OssClient from 'ali-oss';
 
-test('OssLogger', async () => {
+test.skip('OssLogger', async () => {
   const oss = await new OssLogger({
     // 替换成自己的ak/sk
     accessKeyId: 'xxx',

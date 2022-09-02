@@ -1,4 +1,6 @@
 import { Logger, FileTransport, ConsoleTransport, EngineLogger } from '../../src/logger/index';
+import * as path from 'path';
+import OssClient from 'ali-oss';
 
 test('Logger', () => {
   const logger = new Logger({});
@@ -17,14 +19,24 @@ test('Logger', () => {
   );
   logger.debug('debug foo'); // only output to stdout
   logger.info('GET /foo/bar 200ms');
-  logger.warn('[分类: 警告信息]');
+  logger.info('[abc]123');
+  logger.warn('warn foo');
   logger.error(new Error('error foo'));
 });
 
-test.only('EngineLogger', () => {
-  const logger = new EngineLogger('test11.log');
+test.skip('EngineLogger', async () => {
+  const logger = new EngineLogger('test-engine.log');
   logger.debug('debug foo'); // only output to stdout
   logger.info('GET /foo/bar 200ms');
-  logger.warn('[分类: 警告信息]');
+  logger.info('[abc]123');
+  logger.warn('warn foo');
   logger.error(new Error('error foo'));
+  const res = await logger.oss({
+    accessKeyId: 'xxx',
+    accessKeySecret: 'xxx',
+    bucket: 'shl-test',
+    region: 'cn-chengdu',
+    codeUri: path.join(__dirname, 'test'),
+  });
+  expect(res).toBeInstanceOf(OssClient);
 });

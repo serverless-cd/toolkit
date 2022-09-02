@@ -11,7 +11,7 @@ const PUT_BUCKET_CORS = [
   },
 ];
 
-export interface IConfig {
+export interface IOssConfig {
   accessKeyId: string;
   accessKeySecret: string;
   bucket: string;
@@ -21,7 +21,7 @@ export interface IConfig {
 
 class OssLogger {
   private client: OssClient;
-  constructor(private config: IConfig) {
+  constructor(private config: IOssConfig) {
     const { accessKeyId, accessKeySecret, bucket, region, codeUri } = config;
     this.config.codeUri = path.isAbsolute(codeUri) ? codeUri : path.join(process.cwd(), codeUri);
     // 构造oss客户端
