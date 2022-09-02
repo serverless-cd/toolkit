@@ -11,13 +11,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ali-oss": "^6.17.1",
     "chalk": "^4.1.2",
     "egg-logger": "^2.9.0",
     "fs-extra": "^10.1.0",
     "js-yaml": "^4.1.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "walk-sync": "^3.0.0"
   },
   "devDependencies": {
+    "@types/ali-oss": "^6.16.4",
     "@types/fs-extra": "^9.0.13",
     "@types/js-yaml": "^4.0.5",
     "@types/lodash": "^4.14.182"
