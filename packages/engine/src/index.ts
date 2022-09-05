@@ -1,4 +1,4 @@
-import { EngineLogger } from '@serverless-cd/core';
+import { EngineLogger, IOssConfig } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -28,10 +28,12 @@ class Engine extends EventEmitter {
   private steps: IStepOptions[] = [];
   private logPrefix: string;
   private logger!: EngineLogger;
+  private ossConfig: IOssConfig | undefined;
   constructor(options: IEngineOptions) {
-    const { steps, logPrefix } = options;
+    const { steps, logPrefix, ossConfig } = options;
     super();
     this.logPrefix = logPrefix;
+    this.ossConfig = ossConfig;
     this.steps = map(steps, (item: IStepOptions) => {
       item.$stepCount = uniqueId();
       return item;
@@ -74,7 +76,7 @@ class Engine extends EventEmitter {
           invoke: {
             id: item.$stepCount,
             src: () => {
-              // 合并环境变量
+              // 记录环境变量
               this.context.env = item.env as IkeyValue;
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
@@ -152,6 +154,15 @@ class Engine extends EventEmitter {
       env: this.context.env,
     };
   }
+  // 每个步骤最后的动作
+  private async doFinal(item: IStepOptions) {
+    if (this.ossConfig && fs.existsSync(this.logPrefix)) {
+      await this.logger.oss({
+        ...this.ossConfig,
+        codeUri: path.join(this.logPrefix, `step_${item.$stepCount}.log`),
+      });
+    }
+  }
   // 将执行终态进行emit
   private doEmit() {
     const data = map(this.steps, (item: IStepsStatus) => {
@@ -162,60 +173,60 @@ class Engine extends EventEmitter {
     this.emit(this.context.status, data);
   }
   private async handleSrc(item: IStepOptions) {
-    return this.doSrc(item)
-      .then((response: any) => {
-        // 如果已取消且if条件不成功，则不执行该步骤, 并记录状态为 cancelled
-        const isCancel = item.if !== 'true' && this.context.status === STEP_STATUS.CANCEL;
-        if (isCancel) return this.doCancel(item);
-        // 记录全局的执行状态
-        if (this.context.editStatusAble) {
-          this.context.status = STEP_STATUS.SUCCESS as IStatus;
-        }
-        // $stepCount 添加状态
-        this.context[item.$stepCount] = {
-          status: STEP_STATUS.SUCCESS,
+    try {
+      const response: any = await this.doSrc(item);
+      // 如果已取消且if条件不成功，则不执行该步骤, 并记录状态为 cancelled
+      const isCancel = item.if !== 'true' && this.context.status === STEP_STATUS.CANCEL;
+      if (isCancel) return this.doCancel(item);
+      // 记录全局的执行状态
+      if (this.context.editStatusAble) {
+        this.context.status = STEP_STATUS.SUCCESS as IStatus;
+      }
+      // $stepCount 添加状态
+      this.context[item.$stepCount] = {
+        status: STEP_STATUS.SUCCESS,
+      };
+      // id 添加状态
+      if (item.id) {
+        this.context.steps = {
+          ...this.context.steps,
+          [item.id]: {
+            status: STEP_STATUS.SUCCESS,
+            outputs: response,
+          },
         };
-        // id 添加状态
-        if (item.id) {
-          this.context.steps = {
-            ...this.context.steps,
-            [item.id]: {
-              status: STEP_STATUS.SUCCESS,
-              outputs: response,
-            },
-          };
-        }
-      })
-      .catch((err: any) => {
-        const status =
-          item['continue-on-error'] === true
-            ? STEP_STATUS.ERROR_WITH_CONTINUE
-            : STEP_STATUS.FAILURE;
-        // 记录全局的执行状态
-        if (this.context.editStatusAble) {
-          this.context.status = status as IStatus;
-        }
-        if (status === STEP_STATUS.FAILURE) {
-          // 全局的执行状态一旦失败，便不可修改
-          this.context.editStatusAble = false;
-        }
-        this.context[item.$stepCount] = {
-          status,
+      }
+    } catch (err: any) {
+      const status =
+        item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
+      // 记录全局的执行状态
+      if (this.context.editStatusAble) {
+        this.context.status = status as IStatus;
+      }
+      if (status === STEP_STATUS.FAILURE) {
+        // 全局的执行状态一旦失败，便不可修改
+        this.context.editStatusAble = false;
+      }
+      this.context[item.$stepCount] = {
+        status,
+      };
+      if (item.id) {
+        this.context.steps = {
+          ...this.context.steps,
+          [item.id]: {
+            status,
+            errorMessage: err,
+          },
         };
-        if (item.id) {
-          this.context.steps = {
-            ...this.context.steps,
-            [item.id]: {
-              status,
-              errorMessage: err,
-            },
-          };
-        }
-        if (item['continue-on-error'] !== true) throw err;
-      })
-      .finally(() => {
+      }
+      if (item['continue-on-error'] !== true) {
         this.emit('process', this.getProcessData(item));
-      });
+        await this.doFinal(item);
+        throw err;
+      }
+    }
+    this.emit('process', this.getProcessData(item));
+    await this.doFinal(item);
   }
   private async doSrc(item: IStepOptions) {
     const logFile = `step_${item.$stepCount}.log`;
@@ -247,6 +258,7 @@ class Engine extends EventEmitter {
       return await run({
         inputs: get(usesItem, 'with', {}),
         context: this.getFilterContext(),
+        logger: this.logger,
       });
     }
   }
@@ -266,6 +278,7 @@ class Engine extends EventEmitter {
     }
     this.logName(item);
     this.emit('process', this.getProcessData(item));
+    await this.doFinal(item);
     return Promise.resolve();
   }
   private async doCancel(item: IStepOptions) {
@@ -283,6 +296,8 @@ class Engine extends EventEmitter {
       };
     }
     this.logName(item);
+    this.emit('process', this.getProcessData(item));
+    await this.doFinal(item);
     return Promise.resolve();
   }
   private logName(item: IStepOptions) {

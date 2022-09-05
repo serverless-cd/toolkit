@@ -1,6 +1,8 @@
+import { IOssConfig } from '@serverless-cd/core';
 export interface IEngineOptions {
   steps: IStepOptions[];
   logPrefix: string;
+  ossConfig?: IOssConfig;
 }
 export interface IkeyValue {
   [key: string]: any;

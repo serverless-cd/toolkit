@@ -82,4 +82,5 @@ export {
   Transport,
   _ConsoleTransport as ConsoleTransport,
   _FileTransport as FileTransport,
+  IOssConfig,
 };

@@ -11,25 +11,22 @@ const PUT_BUCKET_CORS = [
   },
 ];
 
-export interface IOssConfig {
+export interface IOssConfig extends OssClient.Options {
   accessKeyId: string;
   accessKeySecret: string;
   bucket: string;
   region: string;
-  codeUri: string;
+  codeUri?: string; // engine 内部会处理该字段
 }
 
 class OssLogger {
   private client: OssClient;
   constructor(private config: IOssConfig) {
-    const { accessKeyId, accessKeySecret, bucket, region, codeUri } = config;
-    this.config.codeUri = path.isAbsolute(codeUri) ? codeUri : path.join(process.cwd(), codeUri);
+    const { region } = config;
     // 构造oss客户端
     this.client = new OssClient({
-      bucket,
+      ...config,
       region: `oss-${region}`,
-      accessKeyId,
-      accessKeySecret,
     });
   }
   async init() {
@@ -39,13 +36,22 @@ class OssLogger {
     return this.client;
   }
   async put() {
-    const { codeUri } = this.config;
+    let { codeUri = '' } = this.config;
+    codeUri = path.isAbsolute(codeUri) ? codeUri : path.join(process.cwd(), codeUri);
+    const file = fs.statSync(codeUri);
+    if (file.isFile()) {
+      const filename = path.basename(codeUri);
+      console.log(`uploading ${filename} to oss...`);
+      await this.client.put(filename, codeUri);
+      console.log(`upload ${filename} to oss success`);
+      return;
+    }
     const paths = walkSync(codeUri);
     for (const p of paths) {
       const fillPath = path.join(codeUri, p);
       const stat = fs.statSync(fillPath);
       if (stat.isFile()) {
-        console.log(`uploading ${p}`);
+        console.log(`uploading ${p} to oss...`);
         try {
           await this.client.put(p, fillPath);
         } catch (error) {

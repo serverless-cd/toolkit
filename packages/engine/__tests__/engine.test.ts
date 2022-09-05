@@ -3,6 +3,26 @@ import { get } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
+test.skip('logger oss', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
+    { run: 'echo "world"' },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logPrefix,
+    ossConfig: {
+      accessKeyId: 'xxx',
+      accessKeySecret: 'xxx',
+      bucket: 'shl-test',
+      region: 'cn-chengdu',
+    },
+  });
+  const res = await engine.start();
+  expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
+});
+
 test('获取某一步的outputs', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
@@ -382,8 +402,8 @@ describe('步骤执行过程中emit测试', () => {
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'npm run error', id: 'xerror', 'continue-on-error': true },
       { run: 'echo "world"', id: 'xworld' },
-      { run: 'npm run error', id: 'xerror' },
-      { run: 'echo "world"', id: 'xworld' },
+      { run: 'npm run error1', id: 'xerror1' },
+      { run: 'echo "world1"', id: 'xworld1' },
     ] as IStepOptions[];
     const engine = new Engine({ steps, logPrefix });
     const newData: any = [];
@@ -399,8 +419,8 @@ describe('步骤执行过程中emit测试', () => {
       { run: 'echo "hello"', id: 'xhello', status: 'success' },
       { run: 'npm run error', id: 'xerror', status: 'error-with-continue' },
       { run: 'echo "world"', id: 'xworld', status: 'success' },
-      { run: 'npm run error', id: 'xerror', status: 'failure' },
-      { run: 'echo "world"', id: 'xworld', status: 'skipped' },
+      { run: 'npm run error1', id: 'xerror1', status: 'failure' },
+      { run: 'echo "world1"', id: 'xworld1', status: 'skipped' },
     ]);
   });
 
