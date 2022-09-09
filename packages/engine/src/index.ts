@@ -35,7 +35,7 @@ class Engine extends EventEmitter {
     this.logPrefix = logPrefix;
     this.ossConfig = ossConfig;
     this.steps = map(steps, (item: IStepOptions) => {
-      item.$stepCount = uniqueId();
+      item.stepCount = uniqueId();
       return item;
     });
   }
@@ -45,7 +45,7 @@ class Engine extends EventEmitter {
       const states: any = {
         init: {
           on: {
-            INIT: get(this.steps, '[0].$stepCount'),
+            INIT: get(this.steps, '[0].stepCount'),
           },
         },
         final: {
@@ -70,11 +70,11 @@ class Engine extends EventEmitter {
 
       each(this.steps, (item, index) => {
         const target = this.steps[index + 1]
-          ? get(this.steps, `[${index + 1}].$stepCount`)
+          ? get(this.steps, `[${index + 1}].stepCount`)
           : 'final';
-        states[item.$stepCount] = {
+        states[item.stepCount] = {
           invoke: {
-            id: item.$stepCount,
+            id: item.stepCount,
             src: () => {
               // 记录环境变量
               this.context.env = item.env as IkeyValue;
@@ -149,8 +149,8 @@ class Engine extends EventEmitter {
   }
   private getProcessData(item: IStepOptions) {
     return {
-      ...omit(item, '$stepCount'),
-      status: this.context[item.$stepCount].status,
+      ...item,
+      status: this.context[item.stepCount].status,
       env: this.context.env,
     };
   }
@@ -159,15 +159,15 @@ class Engine extends EventEmitter {
     if (this.ossConfig && fs.existsSync(this.logPrefix)) {
       await this.logger.oss({
         ...this.ossConfig,
-        codeUri: path.join(this.logPrefix, `step_${item.$stepCount}.log`),
+        codeUri: path.join(this.logPrefix, `step_${item.stepCount}.log`),
       });
     }
   }
   // 将执行终态进行emit
   private doEmit() {
     const data = map(this.steps, (item: IStepsStatus) => {
-      item.status = get(this.context, `${item.$stepCount}.status`);
-      const { $stepCount, ...rest } = item;
+      item.status = get(this.context, `${item.stepCount}.status`);
+      const { stepCount, ...rest } = item;
       return rest;
     });
     this.emit(this.context.status, data);
@@ -182,8 +182,8 @@ class Engine extends EventEmitter {
       if (this.context.editStatusAble) {
         this.context.status = STEP_STATUS.SUCCESS as IStatus;
       }
-      // $stepCount 添加状态
-      this.context[item.$stepCount] = {
+      // stepCount 添加状态
+      this.context[item.stepCount] = {
         status: STEP_STATUS.SUCCESS,
       };
       // id 添加状态
@@ -207,7 +207,7 @@ class Engine extends EventEmitter {
         // 全局的执行状态一旦失败，便不可修改
         this.context.editStatusAble = false;
       }
-      this.context[item.$stepCount] = {
+      this.context[item.stepCount] = {
         status,
       };
       if (item.id) {
@@ -229,7 +229,7 @@ class Engine extends EventEmitter {
     await this.doFinal(item);
   }
   private async doSrc(item: IStepOptions) {
-    const logFile = `step_${item.$stepCount}.log`;
+    const logFile = `step_${item.stepCount}.log`;
     this.logger = new EngineLogger(path.join(this.logPrefix, logFile));
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
@@ -263,8 +263,8 @@ class Engine extends EventEmitter {
     }
   }
   private async doSkip(item: IStepOptions) {
-    // $stepCount 添加状态
-    this.context[item.$stepCount] = {
+    // stepCount 添加状态
+    this.context[item.stepCount] = {
       status: STEP_STATUS.SKIP,
     };
     // id 添加状态
@@ -282,8 +282,8 @@ class Engine extends EventEmitter {
     return Promise.resolve();
   }
   private async doCancel(item: IStepOptions) {
-    // $stepCount 添加状态
-    this.context[item.$stepCount] = {
+    // stepCount 添加状态
+    this.context[item.stepCount] = {
       status: STEP_STATUS.CANCEL,
     };
     // id 添加状态
@@ -303,7 +303,7 @@ class Engine extends EventEmitter {
   private logName(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
-    const isSkip = get(this.context, `${item.$stepCount}.status`) === STEP_STATUS.SKIP;
+    const isSkip = get(this.context, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
     if (runItem.run) {
       const msg = runItem.name || `Run ${runItem.run}`;
       return this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
