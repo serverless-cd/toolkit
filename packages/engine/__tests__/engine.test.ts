@@ -350,6 +350,25 @@ describe('执行终态emit测试', () => {
     });
     await engine.start();
   });
+  test('completed', async () => {
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'echo "world"' },
+    ] as IStepOptions[];
+    const engine = new Engine({ steps, logPrefix });
+    engine.on('completed', (data) => {
+      const newData = map(data, (item) => omit(item, 'stepCount'));
+      expect(newData).toEqual([
+        {
+          run: 'echo "hello"',
+          id: 'xhello',
+          status: 'success',
+        },
+        { run: 'echo "world"', status: 'success' },
+      ]);
+    });
+    await engine.start();
+  });
   test('failure', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },

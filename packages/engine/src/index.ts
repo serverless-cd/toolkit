@@ -192,6 +192,8 @@ class Engine extends EventEmitter {
       return item;
     });
     this.emit(this.$context.status, data);
+    this.context.status = this.$context.status;
+    this.emit('completed', data);
   }
   private async handleSrc(item: IStepOptions) {
     try {
