@@ -1,5 +1,5 @@
 import Engine, { IStepOptions } from '../src';
-import { get } from 'lodash';
+import { get, omit, map } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
@@ -337,8 +337,14 @@ describe('执行终态emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logPrefix });
     engine.on('success', (data) => {
-      expect(data).toEqual([
-        { run: 'echo "hello"', id: 'xhello', status: 'success' },
+      const newData = map(data, (item) => omit(item, 'stepCount'));
+
+      expect(newData).toEqual([
+        {
+          run: 'echo "hello"',
+          id: 'xhello',
+          status: 'success',
+        },
         { run: 'echo "world"', status: 'success' },
       ]);
     });
@@ -351,7 +357,8 @@ describe('执行终态emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logPrefix });
     engine.on('failure', (data) => {
-      expect(data).toEqual([
+      const newData = map(data, (item) => omit(item, 'stepCount'));
+      expect(newData).toEqual([
         { run: 'echo "hello"', id: 'xhello', status: 'success' },
         { run: 'npm run error', id: 'xerror', status: 'failure' },
       ]);
@@ -378,7 +385,8 @@ describe('执行终态emit测试', () => {
     });
     lazy(callback);
     engine.on('cancelled', (data) => {
-      expect(data).toEqual([
+      const newData = map(data, (item) => omit(item, 'stepCount'));
+      expect(newData).toEqual([
         { run: 'echo "hello"', status: 'success' },
         {
           run: 'node packages/engine/__tests__/cancel-test.js',
