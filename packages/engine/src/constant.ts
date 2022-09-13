@@ -4,6 +4,8 @@ export const STEP_STATUS = {
   ERROR_WITH_CONTINUE: 'error-with-continue',
   SKIP: 'skipped',
   CANCEL: 'cancelled',
+  RUNNING: 'running',
+  PENING: 'pending',
 };
 
 export const STEP_IF = {

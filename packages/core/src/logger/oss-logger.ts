@@ -42,7 +42,7 @@ class OssLogger {
     if (file.isFile()) {
       const filename = path.basename(codeUri);
       console.log(`uploading ${filename} to oss...`);
-      await this.client.put(filename, codeUri);
+      await this.client.put(codeUri, codeUri);
       console.log(`upload ${filename} to oss success`);
       return;
     }
@@ -53,7 +53,7 @@ class OssLogger {
       if (stat.isFile()) {
         console.log(`uploading ${p} to oss...`);
         try {
-          await this.client.put(p, fillPath);
+          await this.client.put(fillPath, fillPath);
         } catch (error) {
           throw new Error((error as Error).message);
         }
