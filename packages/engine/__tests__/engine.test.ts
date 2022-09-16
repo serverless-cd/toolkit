@@ -461,6 +461,7 @@ describe('步骤执行过程中emit测试', () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'node packages/engine/__tests__/cancel-test.js', id: 'xcancel' },
+      { run: 'echo "world"', id: 'xworld' },
     ] as IStepOptions[];
     const engine = new Engine({ steps, logPrefix });
     const callback = jest.fn(() => {
@@ -484,6 +485,7 @@ describe('步骤执行过程中emit测试', () => {
           id: 'xcancel',
           status: 'cancelled',
         },
+        { run: 'echo "world"', id: 'xworld', status: 'cancelled' },
       ]);
       expect(callback).toBeCalled();
       done();

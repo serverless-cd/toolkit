@@ -351,7 +351,9 @@ class Engine extends EventEmitter {
       });
 
       cp.on('exit', (code: number) => {
-        stdout.length ? resolve({}) : reject(Buffer.concat(stderr).toString());
+        code === 0 || this.$context.status === STEP_STATUS.CANCEL
+          ? resolve({})
+          : reject(Buffer.concat(stderr).toString());
       });
     });
   }
