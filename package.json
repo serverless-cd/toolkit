@@ -13,6 +13,8 @@
     "test:core": "jest --testTimeout 10000 packages/core --watchAll",
     "test:webhook": "jest --testTimeout 10000 packages/webhook --watchAll",
     "test:webhook-coverage": "jest --testTimeout 10000 packages/webhook --coverage --coverageDirectory coverage/webhook",
+    "test:trigger": "jest --testTimeout 10000 packages/trigger --watchAll",
+    "test:trigger-coverage": "jest --testTimeout 10000 packages/trigger --coverage --coverageDirectory coverage/trigger",
     "test:engine-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/engine",
     "test:core-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/core"
   },
@@ -23,7 +25,7 @@
     "@types/jest": "^28.1.6",
     "@types/js-yaml": "^4.0.5",
     "jest": "^28.1.3",
-    "lerna": "^5.4.0",
+    "lerna": "^5.5.0",
     "prettier": "^2.7.1",
     "ts-jest": "^28.0.7",
     "typescript": "^4.7.4"
