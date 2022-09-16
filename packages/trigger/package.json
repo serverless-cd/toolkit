@@ -1,0 +1,39 @@
+{
+  "name": "event-trigger",
+  "version": "0.0.1-alpha.9",
+  "description": "> TODO: description",
+  "author": "wss-git <wssgryx@163.com>",
+  "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit#readme",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/serverless-cd/serverless-cd-toolkit.git"
+  },
+  "scripts": {
+    "start": "esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=example/lib/index.js --watch",
+    "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=lib/index.js",
+    "postbuild": "rm -rf example/lib && cp -rf lib example/lib"
+  },
+  "dependencies": {
+    "jexl": "^2.3.0",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/jexl": "^2.3.1",
+    "@types/lodash": "^4.14.184",
+    "@types/micromatch": "^4.0.2",
+    "@types/node": "^18.7.1",
+    "esbuild": "^0.14.54"
+  },
+  "bugs": {
+    "url": "https://github.com/serverless-cd/serverless-cd-toolkit/issues"
+  }
+}
