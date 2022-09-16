@@ -3,6 +3,7 @@ import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
   IRunOptions,
+  IScriptOptions,
   IUsesOptions,
   IStepsStatus,
   IContext,
@@ -17,6 +18,7 @@ import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import EventEmitter from 'events';
+import { spawn } from 'child_process';
 const artTemplate = require('art-template');
 
 export { IStepOptions } from './types';
@@ -81,7 +83,6 @@ class Engine extends EventEmitter {
         const target = this.steps[index + 1]
           ? get(this.steps, `[${index + 1}].stepCount`)
           : 'final';
-        this.context.stepCount = item.stepCount;
         states[item.stepCount] = {
           invoke: {
             id: item.stepCount,
@@ -256,6 +257,7 @@ class Engine extends EventEmitter {
     this.logger = new EngineLogger(path.join(this.logPrefix, logFile));
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
+    const scriptItem = item as IScriptOptions;
     // run
     if (runItem.run) {
       let execPath = runItem['working-directory'] || process.cwd();
@@ -283,6 +285,16 @@ class Engine extends EventEmitter {
         context: this.getFilterContext(),
         logger: this.logger,
       });
+    }
+    // script
+    if (scriptItem.script) {
+      let execPath = scriptItem['working-directory'] || process.cwd();
+      execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
+      this.logName(item);
+      const cp = spawn('zx', ['--eval', scriptItem.script]);
+      this.childProcess.push(cp);
+      const res = await this.onFinish(cp);
+      return res;
     }
   }
   private async doSkip(item: IStepOptions) {
@@ -326,6 +338,7 @@ class Engine extends EventEmitter {
   private logName(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
+    const scriptItem = item as IScriptOptions;
     const isSkip = get(this.$context, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
     if (runItem.run) {
       const msg = runItem.name || `Run ${runItem.run}`;
@@ -334,6 +347,10 @@ class Engine extends EventEmitter {
     if (usesItem.uses) {
       const msg = usesItem.name || `Run ${usesItem.uses}`;
       this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
+    }
+    if (scriptItem.script) {
+      const msg = runItem.name || `Run ${scriptItem.script}`;
+      return this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
     }
   }
   private onFinish(cp: any) {

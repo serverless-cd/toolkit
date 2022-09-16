@@ -504,3 +504,18 @@ test('uses：应用测试返回值', async () => {
   // error case
   // expect(get(res, 'steps.xuse.errorMessage').toString()).toMatch('Error');
 });
+
+test.only('script 测试', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    {
+      script: 'await Promise.all([$`sleep 1; echo 1`, $`sleep 2; echo 2`, $`sleep 3; echo 3`]);\n',
+      id: 'xscript',
+    },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logPrefix });
+  const res = await engine.start();
+  console.log(JSON.stringify(res, null, 2));
+
+  expect(get(res, 'steps.xscript.status')).toBe('success');
+});

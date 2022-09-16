@@ -19,6 +19,17 @@ export interface IRunOptions {
   'working-directory'?: string;
 }
 
+export interface IScriptOptions {
+  script: string;
+  stepCount: string;
+  id?: string;
+  name?: string;
+  if?: string;
+  env?: IkeyValue;
+  'continue-on-error'?: boolean;
+  'working-directory'?: string;
+}
+
 export interface IUsesOptions {
   uses: string;
   stepCount: string;
@@ -30,7 +41,7 @@ export interface IUsesOptions {
   with?: IkeyValue;
 }
 
-export type IStepOptions = IRunOptions | IUsesOptions;
+export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
 
 export type IStepsStatus = IStepOptions & { status: string };
 
