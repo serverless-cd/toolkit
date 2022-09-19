@@ -166,9 +166,9 @@ class Engine extends EventEmitter {
   }
   private getFilterContext() {
     return {
+      ...this.inputs,
       steps: this.$context.steps,
       env: get(this.$context, 'env', {}),
-      ...this.inputs,
     };
   }
   private getProcessData(item: IStepOptions) {
@@ -337,23 +337,37 @@ class Engine extends EventEmitter {
     await this.doFinal(item);
     return Promise.resolve();
   }
+  private doWarn() {
+    let msg = '';
+    if (this.inputs?.env && this.inputs?.steps) {
+      msg =
+        'env and steps are built-in fields, and env and steps fields in the inputs will be ignored.';
+    } else if (this.inputs?.env) {
+      msg = 'env is a built-in fields, and the env field in the inputs will be ignored.';
+    } else if (this.inputs?.steps) {
+      msg = 'steps is a built-in fields, and the steps field in the inputs will be ignored.';
+    }
+    console.log(msg, 'msg');
+
+    msg && this.logger.warn(msg);
+  }
   private logName(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;
     const isSkip = get(this.$context, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
+    let msg = '';
     if (runItem.run) {
-      const msg = runItem.name || `Run ${runItem.run}`;
-      return this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
+      msg = runItem.name || `Run ${runItem.run}`;
     }
     if (usesItem.uses) {
-      const msg = usesItem.name || `Run ${usesItem.uses}`;
-      this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
+      msg = usesItem.name || `Run ${usesItem.uses}`;
     }
     if (scriptItem.script) {
-      const msg = runItem.name || `Run ${scriptItem.script}`;
-      return this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
+      msg = runItem.name || `Run ${scriptItem.script}`;
     }
+    this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
+    this.doWarn();
   }
   private onFinish(cp: any) {
     return new Promise((resolve, reject) => {

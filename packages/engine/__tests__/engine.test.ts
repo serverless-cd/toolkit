@@ -524,7 +524,11 @@ test.only('inputs测试', async () => {
     { run: 'echo "world', id: 'xworld', if: '{{name==="xiaoming"}}' },
     { run: 'echo {{name}}', id: 'xname' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix, inputs: { name: 'xiaoming' } });
+  const engine = new Engine({
+    steps,
+    logPrefix,
+    inputs: { name: 'xiaoming', env: { name: 'xiaoming' } },
+  });
   const res = await engine.start();
   expect(get(res, 'steps.xname.status')).toBe('success');
 });
