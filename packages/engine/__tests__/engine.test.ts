@@ -505,7 +505,7 @@ test('uses：应用测试返回值', async () => {
   // expect(get(res, 'steps.xuse.errorMessage').toString()).toMatch('Error');
 });
 
-test.only('script 测试', async () => {
+test('script 测试', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     {
@@ -515,7 +515,16 @@ test.only('script 测试', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
   const res = await engine.start();
-  console.log(JSON.stringify(res, null, 2));
-
   expect(get(res, 'steps.xscript.status')).toBe('success');
+});
+
+test.only('inputs测试', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { run: 'echo "world', id: 'xworld', if: '{{name==="xiaoming"}}' },
+    { run: 'echo {{name}}', id: 'xname' },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logPrefix, inputs: { name: 'xiaoming' } });
+  const res = await engine.start();
+  expect(get(res, 'steps.xname.status')).toBe('success');
 });

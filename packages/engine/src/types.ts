@@ -3,6 +3,7 @@ export interface IEngineOptions {
   steps: IStepOptions[];
   logPrefix: string;
   ossConfig?: IOssConfig;
+  inputs?: IkeyValue;
 }
 export interface IkeyValue {
   [key: string]: any;

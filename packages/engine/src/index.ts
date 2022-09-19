@@ -35,11 +35,13 @@ class Engine extends EventEmitter {
   private logPrefix: string;
   private logger!: EngineLogger;
   private ossConfig: IOssConfig | undefined;
+  private inputs: IkeyValue | undefined;
   constructor(options: IEngineOptions) {
-    const { steps, logPrefix, ossConfig } = options;
+    const { steps, logPrefix, ossConfig, inputs } = options;
     super();
     this.logPrefix = logPrefix;
     this.ossConfig = ossConfig;
+    this.inputs = inputs;
     this.steps = map(steps, (item: IStepOptions) => {
       item.stepCount = uniqueId();
       return item;
@@ -164,9 +166,9 @@ class Engine extends EventEmitter {
   }
   private getFilterContext() {
     return {
-      status: this.$context.status,
       steps: this.$context.steps,
       env: get(this.$context, 'env', {}),
+      ...this.inputs,
     };
   }
   private getProcessData(item: IStepOptions) {
