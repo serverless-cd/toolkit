@@ -6,7 +6,7 @@ const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 test.skip('logger oss', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
+    { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
   const engine = new Engine({
@@ -26,7 +26,7 @@ test.skip('logger oss', async () => {
 test('获取某一步的outputs', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
+    { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
@@ -141,7 +141,7 @@ describe('run测试', () => {
   });
   test('模版可以识别 {{steps.xuse.outputs.success}}', async () => {
     const steps = [
-      { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
+      { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
       { run: 'echo {{steps.xuse.outputs.success}}' },
     ] as IStepOptions[];
     const engine = new Engine({ steps, logPrefix });
@@ -496,7 +496,7 @@ describe('步骤执行过程中emit测试', () => {
 test('uses：应用测试返回值', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: '@serverless-cd/ts-app', id: 'xuse', with: { milliseconds: 10 } },
+    { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
   const res = await engine.start();
@@ -518,7 +518,7 @@ test('script 测试', async () => {
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
 
-test.only('inputs测试', async () => {
+test('inputs测试', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'echo "world', id: 'xworld', if: '{{name==="xiaoming"}}' },

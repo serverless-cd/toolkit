@@ -283,7 +283,7 @@ class Engine extends EventEmitter {
       }
       const run = require(usesItem.uses).default;
       return await run({
-        inputs: get(usesItem, 'with', {}),
+        inputs: get(usesItem, 'inputs', {}),
         context: this.getFilterContext(),
         logger: this.logger,
       });
