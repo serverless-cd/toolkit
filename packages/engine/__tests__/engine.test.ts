@@ -532,3 +532,31 @@ test('inputs测试', async () => {
   const res = await engine.start();
   expect(get(res, 'steps.xname.status')).toBe('success');
 });
+
+test.only('{{secret.name}} => 日志需要为 ***', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    {
+      uses: '/Users/shihuali/workspace/serverless-cd/typescript-app-template/lib',
+      id: 'xuse',
+      inputs: {
+        name: '{{secret.name}}',
+        obj: {
+          name: '{{secret.name}}',
+          age: '{{env.age}}',
+          long: '{{secret.long}}',
+        },
+        array: [
+          {
+            name: '{{secret.name}}',
+            age: '{{env.age}}',
+          },
+        ],
+      },
+      env: { name: 'xiaoming', age: '20', long: 'iamxiaoming' },
+    },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logPrefix });
+  const res = await engine.start();
+  expect(get(res, 'steps.xuse.status')).toBe('success');
+});
