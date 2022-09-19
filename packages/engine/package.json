@@ -11,7 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "@serverless-cd/core": "^0.0.1-alpha.9",
-    "art-template": "^4.13.2",
     "execa": "^5.1.1",
     "lodash": "^4.17.21",
     "xstate": "^4.33.0"

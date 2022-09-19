@@ -1,4 +1,4 @@
-import { EngineLogger, IOssConfig } from '@serverless-cd/core';
+import { EngineLogger, IOssConfig, artTemplate } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -19,7 +19,6 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import EventEmitter from 'events';
 import { spawn } from 'child_process';
-const artTemplate = require('art-template');
 
 export { IStepOptions } from './types';
 class Engine extends EventEmitter {

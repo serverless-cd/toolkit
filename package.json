@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "lerna bootstrap",
+    "clean": "lerna clean",
     "build": "lerna run build",
     "prepub": "lerna run build",
     "pub": "lerna publish",
