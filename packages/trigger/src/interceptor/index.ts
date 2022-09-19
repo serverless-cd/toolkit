@@ -1,6 +1,5 @@
-import Github from './github';
+import Github from './events/github';
 
 export default {
-  Github,
   github: Github,
 }

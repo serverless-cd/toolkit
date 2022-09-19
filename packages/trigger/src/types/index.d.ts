@@ -6,11 +6,13 @@ export interface IGithubTrigger {
   filter?: string;
 }
 
-export type ITigger = IGithubTrigger;
 
-export interface IRequestPayload {
+export interface IGithubWebhook {
   headers: {
     [key: string]: string;
   };
   body: string; // webhook 请求体【json 串】
 }
+
+export type ITigger = IGithubTrigger;
+export type IPayload = IGithubWebhook;

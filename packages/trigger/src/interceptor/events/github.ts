@@ -1,41 +1,43 @@
 import _ from 'lodash';
 import crypto from 'crypto';
 import jexl from 'jexl';
-import BaseEvent from './base-event';
+import BaseEvent from './webhook';
+import { generateErrorResult } from 'src/utils';
 
 export default class Github extends BaseEvent {
-  async handler(): Promise<any> {
+  async verify(): Promise<any> {
     const ua: string = _.get(this.headers, 'user-agent', '');
 
     if (!_.startsWith(ua, 'GitHub-Hookshot')) {
-      console.error('Request payload and interceptor configuration do not match');
-      console.error(`interceptor is 'github', but ua is ${ua || null}.`);
-      return { success: false };
+      const message = `Request payload and interceptor configuration do not match
+interceptor is 'github', but ua is ${ua || null}.`;
+      return generateErrorResult(message);
     }
 
     const verifySecretStatus = this.verifySecret();
     if (!verifySecretStatus) {
-      console.error('Verify secret error.');
-      return { success: false };
+      const message = 'Verify secret error.';
+      throw new Error(message);
+      // console.error(message);
+      // return { success: false, message };
     }
 
     const event = _.get(this.headers, 'x-github-event');
     if (_.isEmpty(event)) {
-      console.error("No 'x-github-event' found on request");
-      return { success: false };
+      return generateErrorResult("No 'x-github-event' found on request");
     }
 
     const { eventType } = this.trigger;
     if (eventType !== event) {
-      console.error(`Event type mismatch.\nListen event: ${eventType}, Accepted Event: ${event}`);
-      return { success: false };
+      const message = `Event type mismatch.\nListen event: ${eventType}, Accepted Event: ${event}`;
+      return generateErrorResult(message);
     }
 
     if (this.trigger.filter) {
       const filterStatus = await jexl.eval(this.trigger.filter, this.requestPayload);
       if (!filterStatus) {
-        console.log('Filter status error: ', filterStatus);
-        return { success: false }
+        const message = `Filter status error: ${filterStatus}`
+        return generateErrorResult(message);
       }
     }
 
