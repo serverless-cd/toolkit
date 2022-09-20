@@ -20,8 +20,9 @@ export default class Github extends BaseEvent {
       const secret = _.get(trigger, 'secret');
       const verifySecretStatus = this.verifySecret(secret);
       if (!verifySecretStatus) {
-        const message = 'Verify secret error.';
-        throw new Error(message);
+        const errorResult = generateErrorPayload('Verify secret error');
+        results.push(errorResult);
+        continue;
       }
 
       const event = _.get(this.headers, 'x-github-event');
