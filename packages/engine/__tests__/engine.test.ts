@@ -533,30 +533,48 @@ test('inputs测试', async () => {
   expect(get(res, 'steps.xname.status')).toBe('success');
 });
 
-test.only('{{secret.name}} => 日志需要为 ***', async () => {
-  const steps = [
-    { run: 'echo "hello"', id: 'xhello' },
-    {
-      uses: path.join(__dirname, 'fixtures', 'app'),
-      id: 'xuse',
-      inputs: {
-        name: '{{secret.name}}',
-        obj: {
+describe('{{secret.name}} => 日志需要为 ***', () => {
+  test('uses case', async () => {
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      {
+        uses: path.join(__dirname, 'fixtures', 'app'),
+        id: 'xuse',
+        inputs: {
           name: '{{secret.name}}',
-          age: '{{env.age}}',
-          long: '{{secret.long}}',
-        },
-        array: [
-          {
+          obj: {
             name: '{{secret.name}}',
             age: '{{env.age}}',
+            long: '{{secret.long}}',
           },
-        ],
+          array: [
+            {
+              name: '{{secret.name}}',
+              age: '{{env.age}}',
+            },
+          ],
+        },
+        env: { name: 'xiaoming', age: '20', long: 'iamxiaoming' },
       },
-      env: { name: 'xiaoming', age: '20', long: 'iamxiaoming' },
-    },
-  ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
-  const res = await engine.start();
-  expect(get(res, 'steps.xuse.status')).toBe('success');
+    ] as IStepOptions[];
+    const engine = new Engine({ steps, logPrefix });
+    const res = await engine.start();
+    expect(get(res, 'steps.xuse.status')).toBe('success');
+  });
+
+  test.only('run case', async () => {
+    const steps = [
+      {
+        run: 'echo "s config add --AccessKeyID {{secret.AccessKeyID}} --AccessKeySecret {{secret.AccessKeySecret}}"',
+        id: 'xrun',
+        env: {
+          AccessKeyID: '123',
+          AccessKeySecret: '456',
+        },
+      },
+    ] as unknown as IStepOptions[];
+    const engine = new Engine({ steps, logPrefix });
+    const res = await engine.start();
+    expect(get(res, 'steps.xrun.status')).toBe('success');
+  });
 });

@@ -12,7 +12,7 @@ import {
   IEngineOptions,
   IPublicContext,
 } from './types';
-import { isEmpty, get, each, replace, map, uniqueId, merge, omit } from 'lodash';
+import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
@@ -164,10 +164,29 @@ class Engine extends EventEmitter {
     });
   }
   private getFilterContext() {
+    const env = get(this.$context, 'env', {});
     return {
       ...this.inputs,
       steps: this.$context.steps,
-      env: get(this.$context, 'env', {}),
+      env,
+      secret: env,
+    };
+  }
+  private getSecretFilterContext() {
+    const env = this.$context.env;
+    const secret = {} as IkeyValue;
+    for (const key in env) {
+      const val = env[key];
+      secret[key] =
+        val.length > 8
+          ? val.slice(0, 3) + '*'.repeat(val.length - 6) + val.slice(val.length - 3, val.length)
+          : '***';
+    }
+    return {
+      ...this.inputs,
+      steps: this.$context.steps,
+      env,
+      secret,
     };
   }
   private getProcessData(item: IStepOptions) {
@@ -346,17 +365,18 @@ class Engine extends EventEmitter {
     } else if (this.inputs?.steps) {
       msg = 'steps is a built-in fields, and the steps field in the inputs will be ignored.';
     }
-    console.log(msg, 'msg');
-
     msg && this.logger.warn(msg);
   }
-  private logName(item: IStepOptions) {
+  private logName(_item: IStepOptions) {
+    const item = { ..._item };
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;
     const isSkip = get(this.$context, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
     let msg = '';
     if (runItem.run) {
+      const ifCondition = artTemplate.compile(runItem.run);
+      runItem.run = ifCondition(this.getSecretFilterContext());
       msg = runItem.name || `Run ${runItem.run}`;
     }
     if (usesItem.uses) {
