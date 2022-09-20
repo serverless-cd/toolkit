@@ -17,7 +17,7 @@ interface IConfig {
 export default function run(config: IConfig): IkeyValue {
   const { logger } = config;
   const newIputs = getInputs(config);
-  // console.log(`newIputs :${JSON.stringify(newIputs)}`)
+  console.log(`newIputs :${JSON.stringify(newIputs)}`);
   const newSecretIputs = getSecretInputs(config);
   logger.info(`newSecretIputs :${JSON.stringify(newSecretIputs)}`);
   return { success: true };

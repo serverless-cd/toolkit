@@ -272,7 +272,8 @@ class Engine extends EventEmitter {
     this.emit('process', this.getProcessData(item));
     await this.doFinal(item);
   }
-  private async doSrc(item: IStepOptions) {
+  private async doSrc(_item: IStepOptions) {
+    const item = { ..._item };
     const logFile = `step_${item.stepCount}.log`;
     this.logger = new EngineLogger(path.join(this.logPrefix, logFile));
     const runItem = item as IRunOptions;
@@ -282,7 +283,7 @@ class Engine extends EventEmitter {
     if (runItem.run) {
       let execPath = runItem['working-directory'] || process.cwd();
       execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
-      this.logName(item);
+      this.logName(_item);
       const ifCondition = artTemplate.compile(runItem.run);
       runItem.run = ifCondition(this.getFilterContext());
       const cp = command(runItem.run, { cwd: execPath });
@@ -367,8 +368,7 @@ class Engine extends EventEmitter {
     }
     msg && this.logger.warn(msg);
   }
-  private logName(_item: IStepOptions) {
-    const item = { ..._item };
+  private logName(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;
