@@ -33,8 +33,11 @@
     "@types/node": "^18.7.1",
     "esbuild": "^0.14.54"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "bugs": {
     "url": "https://github.com/serverless-cd/serverless-cd-toolkit/issues"
   },
-  "gitHead": "7290a7e00c3242833037c482c76cbbc4bdb5e8f3"
+  "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495"
 }
