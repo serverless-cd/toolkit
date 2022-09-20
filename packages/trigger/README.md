@@ -7,5 +7,4 @@
 ```
 const eventTrigger = require('event-trigger');
 
-// TODO: DEMONSTRATE API
 ```
