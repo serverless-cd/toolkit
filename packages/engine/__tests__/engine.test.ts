@@ -537,7 +537,7 @@ test.only('{{secret.name}} => 日志需要为 ***', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     {
-      uses: '/Users/shihuali/workspace/serverless-cd/typescript-app-template/lib',
+      uses: path.join(__dirname, 'fixtures', 'app'),
       id: 'xuse',
       inputs: {
         name: '{{secret.name}}',
