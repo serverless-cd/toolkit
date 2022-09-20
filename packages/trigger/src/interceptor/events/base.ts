@@ -3,12 +3,12 @@ import { IGithubWebhook, ITigger } from '../../types';
 
 // webhook
 export default abstract class BaseEvent {
-  readonly trigger: ITigger;
+  readonly triggers: ITigger[];
   readonly headers: { [key: string]: string; };
   readonly body: string;
   readonly requestPayload: any;
 
-  constructor(trigger: ITigger, requestPayload: IGithubWebhook) {
+  constructor(triggers: ITigger[], requestPayload: IGithubWebhook) {
     const headers = _.get(requestPayload, 'headers');
     if (_.isEmpty(headers)) {
       throw new TypeError("must provide a 'headers' option");
@@ -19,7 +19,7 @@ export default abstract class BaseEvent {
       throw new TypeError("must provide a 'body' option");
     }
 
-    this.trigger = trigger;
+    this.triggers = triggers;
     this.headers = _.get(requestPayload, 'headers');
     this.body = _.get(requestPayload, 'body');
 
