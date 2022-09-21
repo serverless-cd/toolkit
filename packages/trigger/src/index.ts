@@ -11,7 +11,6 @@ async function verifyLegitimacy(triggers: ITigger[], payload: IPayload) {
 
   // TODO：手动触发
   if (triggerType === 'manual_dispatch') {
-    // TODO
     return {};
   }
 

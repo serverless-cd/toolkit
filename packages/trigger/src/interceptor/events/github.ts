@@ -48,7 +48,7 @@ export default class Github extends BaseEvent {
         }
       }
 
-      return generateSuccessResult({ trigger });
+      return generateSuccessResult(trigger);
     }
 
     return generateErrorResult(results);

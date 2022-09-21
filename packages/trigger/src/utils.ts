@@ -13,7 +13,7 @@ export const generateErrorResult = (results: any) => ({
 });
 
 // 最终返回成功结果
-export const generateSuccessResult = (payload: any) => ({
+export const generateSuccessResult = (trigger: any) => ({
   success: true,
-  payload,
+  trigger,
 });
