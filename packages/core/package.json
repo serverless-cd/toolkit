@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/core",
-  "version": "0.0.1-alpha.9",
+  "version": "0.0.1-alpha.12",
   "description": "sevrerless-cd核心包",
   "main": "./lib/index.js",
   "scripts": {
@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "ali-oss": "^6.17.1",
+    "art-template": "^4.13.2",
     "chalk": "^4.1.2",
     "egg-logger": "^2.9.0",
     "fs-extra": "^10.1.0",
