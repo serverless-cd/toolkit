@@ -16,9 +16,12 @@ import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
-import * as fs from 'fs-extra';
 import EventEmitter from 'events';
-import { spawn } from 'child_process';
+import * as os from 'os';
+import { randomId } from './utils';
+// @ts-ignore
+import * as zx from '@serverless-cd/zx';
+const { fs } = zx;
 
 export { IStepOptions } from './types';
 class Engine extends EventEmitter {
@@ -88,6 +91,10 @@ class Engine extends EventEmitter {
           invoke: {
             id: item.stepCount,
             src: () => {
+              // logger
+              this.logger = new EngineLogger(
+                path.join(this.logPrefix, `step_${item.stepCount}.log`),
+              );
               // 记录 context
               this.recordContext(item, STEP_STATUS.RUNNING);
               // 记录环境变量
@@ -274,8 +281,6 @@ class Engine extends EventEmitter {
   }
   private async doSrc(_item: IStepOptions) {
     const item = { ..._item };
-    const logFile = `step_${item.stepCount}.log`;
-    this.logger = new EngineLogger(path.join(this.logPrefix, logFile));
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;
@@ -309,13 +314,39 @@ class Engine extends EventEmitter {
     }
     // script
     if (scriptItem.script) {
-      let execPath = scriptItem['working-directory'] || process.cwd();
-      execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
       this.logName(item);
-      const cp = spawn('zx', ['--eval', scriptItem.script]);
-      this.childProcess.push(cp);
-      const res = await this.onFinish(cp);
-      return res;
+      return await this.doScript(scriptItem);
+    }
+  }
+  private async doScript(item: IScriptOptions) {
+    const filepath = path.join(os.tmpdir(), randomId() + '.ts');
+    await fs.mkdtemp(filepath);
+    const script = `
+    export async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }: any) {
+      $.log = (entry: any)=> {
+        switch (entry.kind) {
+          case 'cmd':
+            logger.info(entry.cmd)
+            break
+          case 'stdout':
+          case 'stderr':
+            logger.info(entry.data.toString())
+            break
+          case 'cd':
+            logger.info('$ ' + chalk.greenBright('cd') + ' ' +  entry.dir)
+            break
+        }
+      }
+      ${item.script}
+    }`;
+    fs.writeFileSync(filepath, script);
+    try {
+      await require(filepath).run({ ...zx, os, path, logger: this.logger });
+      return Promise.resolve({});
+    } catch (err) {
+      const errorMsg = (err as Error).toString();
+      this.logger.info(errorMsg);
+      return Promise.reject(errorMsg);
     }
   }
   private async doSkip(item: IStepOptions) {

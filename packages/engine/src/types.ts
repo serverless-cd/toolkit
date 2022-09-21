@@ -28,7 +28,6 @@ export interface IScriptOptions {
   if?: string;
   env?: IkeyValue;
   'continue-on-error'?: boolean;
-  'working-directory'?: string;
 }
 
 export interface IUsesOptions {

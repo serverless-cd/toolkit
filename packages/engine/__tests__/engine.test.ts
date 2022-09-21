@@ -23,7 +23,7 @@ test.skip('logger oss', async () => {
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
 });
 
-test.only('获取某一步的outputs', async () => {
+test('获取某一步的outputs', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
