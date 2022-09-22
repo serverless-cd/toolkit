@@ -97,6 +97,7 @@ class Engine extends EventEmitter {
               this.recordContext(item, STEP_STATUS.RUNNING);
               // 记录环境变量
               this.$context.env = item.env as IkeyValue;
+              this.doReplace$(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
@@ -150,6 +151,20 @@ class Engine extends EventEmitter {
         .start();
       stepService.send('INIT');
     });
+  }
+  doReplace$(item: IStepOptions) {
+    const runItem = item as IRunOptions;
+    const scriptItem = item as IScriptOptions;
+    const fn = (str: string) => replace(str, /\${{/g, '{{');
+    if (runItem.run) {
+      runItem.run = fn(runItem.run);
+    }
+    if (scriptItem.script) {
+      scriptItem.script = fn(scriptItem.script);
+    }
+    if (item.if) {
+      item.if = fn(item.if);
+    }
   }
   recordContext(item: IStepOptions, status: string) {
     this.context.stepCount = item.stepCount;
@@ -401,6 +416,8 @@ class Engine extends EventEmitter {
     msg && this.logger.warn(msg);
   }
   private logName(item: IStepOptions) {
+    // 打印 step 名称
+    // serect数据进行加*，此时item修改了原有对象，保证emit callback 数据也是加*的
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;

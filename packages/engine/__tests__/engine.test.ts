@@ -86,8 +86,8 @@ test('script 测试', async () => {
 test('inputs测试', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world', id: 'xworld', if: '{{name==="xiaoming"}}' },
-    { run: 'echo {{name}}', id: 'xname' },
+    { run: 'echo "world', id: 'xworld', if: '${{name==="xiaoming"}}' },
+    { run: 'echo ${{name}}', id: 'xname' },
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
