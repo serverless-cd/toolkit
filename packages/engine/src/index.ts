@@ -1,4 +1,4 @@
-import { EngineLogger, IOssConfig, artTemplate } from '@serverless-cd/core';
+import { EngineLogger, IOssConfig, artTemplate, fs } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -20,7 +20,6 @@ import EventEmitter from 'events';
 import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
-const { fs } = zx;
 
 export { IStepOptions } from './types';
 class Engine extends EventEmitter {
@@ -318,6 +317,10 @@ class Engine extends EventEmitter {
     }
   }
   private async doScript(item: IScriptOptions) {
+    // 文件路径
+    if (fs.existsSync(item.script)) {
+      item.script = fs.readFileSync(item.script, 'utf-8');
+    }
     const script = `
     return async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }) {
       $.log = (entry)=> {

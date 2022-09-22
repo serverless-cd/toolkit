@@ -113,6 +113,18 @@ test('which', async () => {
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
 
+test('文件路径', async () => {
+  const steps = [
+    {
+      script: path.resolve(__dirname, './script.js'),
+      id: 'xscript',
+    },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logPrefix });
+  const res = await engine.start();
+  expect(get(res, 'steps.xscript.status')).toBe('success');
+});
+
 test('测试失败case', async () => {
   const steps = [
     {
