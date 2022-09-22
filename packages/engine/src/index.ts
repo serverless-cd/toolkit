@@ -18,7 +18,6 @@ import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
 import EventEmitter from 'events';
 import * as os from 'os';
-import { randomId } from './utils';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
 const { fs } = zx;
@@ -319,11 +318,9 @@ class Engine extends EventEmitter {
     }
   }
   private async doScript(item: IScriptOptions) {
-    const filepath = path.join(os.tmpdir(), randomId() + '.ts');
-    await fs.mkdtemp(filepath);
     const script = `
-    export async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }: any) {
-      $.log = (entry: any)=> {
+    return async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }) {
+      $.log = (entry)=> {
         switch (entry.kind) {
           case 'cmd':
             logger.info(entry.cmd)
@@ -339,9 +336,10 @@ class Engine extends EventEmitter {
       }
       ${item.script}
     }`;
-    fs.writeFileSync(filepath, script);
     try {
-      await require(filepath).run({ ...zx, os, path, logger: this.logger });
+      const fun = new Function(script);
+      const run = fun();
+      await run({ ...zx, os, path, logger: this.logger });
       return Promise.resolve({});
     } catch (err) {
       const errorMsg = (err as Error).toString();
