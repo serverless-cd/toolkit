@@ -1,9 +1,11 @@
 
 export interface IGithubTrigger {
-  interceptor: 'github';
-  eventType: string;
+  // interceptor: 'github';
   secret?: string;
-  filter?: string;
+  filters?: {
+    eventName: string;
+    filter?: string;
+  }[];
 }
 
 
@@ -14,5 +16,8 @@ export interface IGithubWebhook {
   body: string; // webhook 请求体【json 串】
 }
 
-export type ITigger = IGithubTrigger;
+export interface ITigger {
+  github: IGithubTrigger;
+}
+
 export type IPayload = IGithubWebhook;

@@ -19,8 +19,7 @@
   },
   "scripts": {
     "start": "esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=example/lib/index.js --watch",
-    "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=lib/index.js",
-    "postbuild": "rm -rf example/lib && cp -rf lib example/lib"
+    "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=lib/index.js"
   },
   "dependencies": {
     "jexl": "^2.3.0",
