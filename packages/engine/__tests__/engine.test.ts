@@ -34,6 +34,22 @@ test('获取某一步的outputs', async () => {
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
 });
 
+test('全局status测试', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    {
+      uses: path.join(__dirname, 'fixtures', 'app'),
+      id: 'xuse',
+      inputs: { milliseconds: 10 },
+      if: '${{status === "failture"}}',
+    },
+    { run: 'echo "world"', if: '${{status === "success"}}' },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logPrefix });
+  const res = await engine.start();
+  expect(get(res, 'steps.xuse.status')).toBe('skipped');
+});
+
 test('cancel测试', (done) => {
   const lazy = (fn: any) => {
     setTimeout(() => {

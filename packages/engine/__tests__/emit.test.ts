@@ -50,7 +50,7 @@ describe('执行终态emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logPrefix });
     engine.on('failure', (data) => {
-      const newData = map(data, (item) => omit(item, 'stepCount'));
+      const newData = map(data, (item) => omit(item, ['stepCount', 'errorMessage']));
       expect(newData).toEqual([
         { run: 'echo "hello"', id: 'xhello', status: 'success' },
         { run: 'npm run error', id: 'xerror', status: 'failure' },

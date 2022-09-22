@@ -157,7 +157,7 @@ test('cd', async () => {
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
 
-test.only('支持魔法变量', async () => {
+test('支持魔法变量', async () => {
   const steps = [
     {
       script:
