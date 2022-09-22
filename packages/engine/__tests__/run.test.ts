@@ -13,7 +13,7 @@ test('模版可以识别 {{env.name}}', async () => {
 });
 test('模版可以识别 {{steps.xuse.outputs.success}}', async () => {
   const steps = [
-    { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
+    { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo {{steps.xuse.outputs.success}}' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
