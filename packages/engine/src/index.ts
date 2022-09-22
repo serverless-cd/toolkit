@@ -94,7 +94,7 @@ class Engine extends EventEmitter {
                 path.join(this.logPrefix, `step_${item.stepCount}.log`),
               );
               // 记录 context
-              this.recordContext(item, STEP_STATUS.RUNNING);
+              this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
               this.$context.env = item.env as IkeyValue;
               this.doReplace$(item);
@@ -166,11 +166,19 @@ class Engine extends EventEmitter {
       item.if = fn(item.if);
     }
   }
-  recordContext(item: IStepOptions, status: string) {
+  recordContext(
+    item: IStepOptions,
+    { status, errorMessage }: { status?: string; errorMessage?: string },
+  ) {
     this.context.stepCount = item.stepCount;
     this.context.steps = map(this.context.steps, (obj) => {
       if (obj.stepCount === item.stepCount) {
-        obj.status = status;
+        if (status) {
+          obj.status = status;
+        }
+        if (errorMessage) {
+          obj.errorMessage = errorMessage;
+        }
       }
       return obj;
     });
@@ -218,7 +226,7 @@ class Engine extends EventEmitter {
   }
   // 每个步骤最后的动作
   private async doFinal(item: IStepOptions) {
-    this.recordContext(item, this.$context.status);
+    this.recordContext(item, { status: this.$context.status });
     if (this.ossConfig && fs.existsSync(this.logPrefix)) {
       await this.logger.oss({
         ...this.ossConfig,
@@ -279,12 +287,13 @@ class Engine extends EventEmitter {
           ...this.$context.steps,
           [item.id]: {
             status,
-            errorMessage: err,
           },
         };
       }
       if (item['continue-on-error'] !== true) {
         this.emit('process', this.getProcessData(item));
+        // step 执行失败，记录 errorMessage
+        this.recordContext(item, { errorMessage: err });
         await this.doFinal(item);
         throw err;
       }
