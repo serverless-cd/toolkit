@@ -45,12 +45,12 @@ test('某一步执行失败，但该步骤添加了continue-on-error: true，但
   expect(get(res, 'status')).toBe('success');
 });
 
-test('某一步执行失败，后续某步骤标记了if: {{ failure() }}', async () => {
+test('某一步执行失败，后续某步骤标记了if: ${{ failure() }}', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror' },
     { run: 'echo "world"', id: 'xworld' },
-    { run: 'echo "end"', id: 'xend', if: '{{ failure() }}' },
+    { run: 'echo "end"', id: 'xend', if: '${{ failure() }}' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
   const res = await engine.start();
@@ -62,12 +62,12 @@ test('某一步执行失败，后续某步骤标记了if: {{ failure() }}', asyn
   expect(get(res, 'steps.xend.status')).toBe('success');
 });
 
-test('某一步执行失败，后续多个步骤标记了if: {{ failure() }}', async () => {
+test('某一步执行失败，后续多个步骤标记了if: ${{ failure() }}', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror' },
-    { run: 'echo "world"', id: 'xworld', if: '{{ failure() }}' },
-    { run: 'echo "end"', id: 'xend', if: '{{ failure() }}' },
+    { run: 'echo "world"', id: 'xworld', if: '${{ failure() }}' },
+    { run: 'echo "end"', id: 'xend', if: '${{ failure() }}' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
   const res = await engine.start();
@@ -79,7 +79,7 @@ test('某一步执行失败，后续多个步骤标记了if: {{ failure() }}', a
   expect(get(res, 'steps.xend.status')).toBe('success');
 });
 
-test("某一步执行失败，后续某步骤标记了if: {{ failure() && steps.xerror.status === 'failure' }}", async () => {
+test("某一步执行失败，后续某步骤标记了if: ${{ failure() && steps.xerror.status === 'failure' }}", async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror' },
@@ -87,7 +87,7 @@ test("某一步执行失败，后续某步骤标记了if: {{ failure() && steps.
     {
       run: 'echo "end"',
       id: 'xend',
-      if: "{{ failure() && steps.xerror.status === 'failure' }}",
+      if: "${{ failure() && steps.xerror.status === 'failure' }}",
     },
   ] as IStepOptions[];
 
@@ -101,7 +101,7 @@ test("某一步执行失败，后续某步骤标记了if: {{ failure() && steps.
   expect(get(res, 'steps.xend.status')).toBe('success');
 });
 
-test("某一步执行失败，后续某步骤标记了if: {{ failure() && steps.xerror.status !== 'failure' }}", async () => {
+test("某一步执行失败，后续某步骤标记了if: ${{ failure() && steps.xerror.status !== 'failure' }}", async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror' },
@@ -109,7 +109,7 @@ test("某一步执行失败，后续某步骤标记了if: {{ failure() && steps.
     {
       run: 'echo "end"',
       id: 'xend',
-      if: "{{ failure() && steps.xerror.status !== 'failure' }}",
+      if: "${{ failure() && steps.xerror.status !== 'failure' }}",
     },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
@@ -122,11 +122,11 @@ test("某一步执行失败，后续某步骤标记了if: {{ failure() && steps.
   expect(get(res, 'steps.xend.status')).toBe('skipped');
 });
 
-test('某一步执行失败，后续某步骤标记了if: {{ success() }}', async () => {
+test('某一步执行失败，后续某步骤标记了if: ${{ success() }}', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror' },
-    { run: 'echo "world"', if: '{{ success() }}', id: 'xworld' },
+    { run: 'echo "world"', if: '${{ success() }}', id: 'xworld' },
     { run: 'echo "end"', id: 'xend' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
@@ -139,11 +139,11 @@ test('某一步执行失败，后续某步骤标记了if: {{ success() }}', asyn
   expect(get(res, 'steps.xend.status')).toBe('skipped');
 });
 
-test('某一步执行失败，后续某步骤标记了if: {{ always() }}', async () => {
+test('某一步执行失败，后续某步骤标记了if: ${{ always() }}', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror' },
-    { run: 'echo "world"', if: '{{ always() }}', id: 'xworld' },
+    { run: 'echo "world"', if: '${{ always() }}', id: 'xworld' },
     { run: 'echo "end"', id: 'xend' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });

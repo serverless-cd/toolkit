@@ -3,7 +3,7 @@ import { get, omit, map } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
-describe('{{secret.name}} => 日志需要为 ***', () => {
+describe('${{secret.name}} => 日志需要为 ***', () => {
   test('uses case', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
@@ -11,16 +11,16 @@ describe('{{secret.name}} => 日志需要为 ***', () => {
         uses: path.join(__dirname, 'fixtures', 'app'),
         id: 'xuse',
         inputs: {
-          name: '{{secret.name}}',
+          name: '${{secret.name}}',
           obj: {
-            name: '{{secret.name}}',
-            age: '{{env.age}}',
-            long: '{{secret.long}}',
+            name: '${{secret.name}}',
+            age: '${{env.age}}',
+            long: '${{secret.long}}',
           },
           array: [
             {
-              name: '{{secret.name}}',
-              age: '{{env.age}}',
+              name: '${{secret.name}}',
+              age: '${{env.age}}',
             },
           ],
         },
@@ -35,7 +35,7 @@ describe('{{secret.name}} => 日志需要为 ***', () => {
   test('run case', async () => {
     const steps = [
       {
-        run: 'echo "s config add --AccessKeyID {{secret.AccessKeyID}} --AccessKeySecret {{secret.AccessKeySecret}}"',
+        run: 'echo "s config add --AccessKeyID ${{secret.AccessKeyID}} --AccessKeySecret ${{secret.AccessKeySecret}}"',
         id: 'xrun',
         env: {
           AccessKeyID: '123',
@@ -51,7 +51,7 @@ describe('{{secret.name}} => 日志需要为 ***', () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       {
-        run: 'echo "s config add --AccessKeyID {{secret.AccessKeyID}} --AccessKeySecret {{secret.AccessKeySecret}}"',
+        run: 'echo "s config add --AccessKeyID ${{secret.AccessKeyID}} --AccessKeySecret ${{secret.AccessKeySecret}}"',
         id: 'xrun',
         env: {
           AccessKeyID: '123',

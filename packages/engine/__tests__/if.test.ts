@@ -3,12 +3,12 @@ import { get } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
-test('模版可以识别{{steps.xhello.status === "success"}}', async () => {
+test('模版可以识别${{steps.xhello.status === "success"}}', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     {
       run: 'echo "world"',
-      if: '{{ steps.xhello.status === "success" }}',
+      if: '${{ steps.xhello.status === "success" }}',
       id: 'xworld',
     },
     { run: 'echo "end"', id: 'xend' },
@@ -21,12 +21,12 @@ test('模版可以识别{{steps.xhello.status === "success"}}', async () => {
   expect(get(res, 'steps.xworld.status')).toBe('success');
 });
 
-test('模版可以识别{{steps.xhello.status !== "success"}}', async () => {
+test('模版可以识别${{steps.xhello.status !== "success"}}', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     {
       run: 'echo "world"',
-      if: '{{ steps.xhello.status !== "success" }}',
+      if: '${{ steps.xhello.status !== "success" }}',
       id: 'xworld',
     },
     { run: 'echo "end"', id: 'xend' },
@@ -39,13 +39,13 @@ test('模版可以识别{{steps.xhello.status !== "success"}}', async () => {
   expect(get(res, 'steps.xworld.status')).toBe('skipped');
 });
 
-test("模版可以识别{{ steps.xhello.status === 'success' && steps.xworld.status === 'success' }}", async () => {
+test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.status === 'success' }}", async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'echo "world"', id: 'xworld' },
     {
       run: 'echo "end"',
-      if: "{{ steps.xhello.status === 'success' && steps.xworld.status === 'success' }}",
+      if: "${{ steps.xhello.status === 'success' && steps.xworld.status === 'success' }}",
       id: 'xend',
     },
   ] as IStepOptions[];
@@ -59,13 +59,13 @@ test("模版可以识别{{ steps.xhello.status === 'success' && steps.xworld.sta
   expect(get(res, 'steps.xend.status')).toBe('success');
 });
 
-test("模版可以识别{{ steps.xhello.status === 'success' && steps.xworld.status !== 'success' }}", async () => {
+test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.status !== 'success' }}", async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'echo "world"', id: 'xworld' },
     {
       run: 'echo "end"',
-      if: "{{ steps.xhello.status === 'success' && steps.xworld.status !== 'success' }}",
+      if: "${{ steps.xhello.status === 'success' && steps.xworld.status !== 'success' }}",
       id: 'xend',
     },
   ] as IStepOptions[];
@@ -79,13 +79,13 @@ test("模版可以识别{{ steps.xhello.status === 'success' && steps.xworld.sta
   // 步骤3的执行状态为skip，说明模版识别成功
   expect(get(res, 'steps.xend.status')).toBe('skipped');
 });
-test('模版可以识别 {{env.name === "xiaoming"}}', async () => {
+test('模版可以识别 ${{env.name === "xiaoming"}}', async () => {
   const steps = [
-    { run: 'echo "hello"', id: 'xhello', if: '{{ env.name === "xiaoming" }}' },
+    { run: 'echo "hello"', id: 'xhello', if: '${{ env.name === "xiaoming" }}' },
     {
       run: 'echo "world"',
       id: 'xworld',
-      if: '{{ env.name === "xiaoming" }}',
+      if: '${{ env.name === "xiaoming" }}',
       env: { name: 'xiaoming' },
     },
   ] as IStepOptions[];

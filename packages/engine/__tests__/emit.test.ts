@@ -70,7 +70,7 @@ describe('执行终态emit测试', () => {
       { run: 'echo "hello"' },
       { run: 'node packages/engine/__tests__/cancel-test.js' },
       { run: 'echo "world"' },
-      { run: 'echo "end"', if: '{{ cancelled() }}' },
+      { run: 'echo "end"', if: '${{ cancelled() }}' },
     ] as IStepOptions[];
     const engine = new Engine({ steps, logPrefix });
     const callback = jest.fn(() => {

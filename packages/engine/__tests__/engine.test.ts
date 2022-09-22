@@ -6,7 +6,7 @@ const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 test.skip('logger oss', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
+    { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
   const engine = new Engine({
@@ -26,7 +26,7 @@ test.skip('logger oss', async () => {
 test('获取某一步的outputs', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
+    { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
@@ -61,7 +61,7 @@ test('cancel测试', (done) => {
 test('uses：应用测试返回值', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: '@serverless-cd/ts-app', id: 'xuse', inputs: { milliseconds: 10 } },
+    { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logPrefix });
   const res = await engine.start();
@@ -86,8 +86,8 @@ test('script 测试', async () => {
 test('inputs测试', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world', id: 'xworld', if: '{{name==="xiaoming"}}' },
-    { run: 'echo {{name}}', id: 'xname' },
+    { run: 'echo "world', id: 'xworld', if: '${{name==="xiaoming"}}' },
+    { run: 'echo ${{name}}', id: 'xname' },
   ] as IStepOptions[];
   const engine = new Engine({
     steps,

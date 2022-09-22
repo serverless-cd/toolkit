@@ -1,4 +1,4 @@
-import { EngineLogger, IOssConfig, artTemplate } from '@serverless-cd/core';
+import { EngineLogger, IOssConfig, artTemplate, fs } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -18,10 +18,8 @@ import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
 import EventEmitter from 'events';
 import * as os from 'os';
-import { randomId } from './utils';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
-const { fs } = zx;
 
 export { IStepOptions } from './types';
 class Engine extends EventEmitter {
@@ -96,9 +94,10 @@ class Engine extends EventEmitter {
                 path.join(this.logPrefix, `step_${item.stepCount}.log`),
               );
               // 记录 context
-              this.recordContext(item, STEP_STATUS.RUNNING);
+              this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
               this.$context.env = item.env as IkeyValue;
+              this.doReplace$(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
@@ -153,11 +152,33 @@ class Engine extends EventEmitter {
       stepService.send('INIT');
     });
   }
-  recordContext(item: IStepOptions, status: string) {
+  doReplace$(item: IStepOptions) {
+    const runItem = item as IRunOptions;
+    const scriptItem = item as IScriptOptions;
+    const fn = (str: string) => replace(str, /\${{/g, '{{');
+    if (runItem.run) {
+      runItem.run = fn(runItem.run);
+    }
+    if (scriptItem.script) {
+      scriptItem.script = fn(scriptItem.script);
+    }
+    if (item.if) {
+      item.if = fn(item.if);
+    }
+  }
+  recordContext(
+    item: IStepOptions,
+    { status, errorMessage }: { status?: string; errorMessage?: string },
+  ) {
     this.context.stepCount = item.stepCount;
     this.context.steps = map(this.context.steps, (obj) => {
       if (obj.stepCount === item.stepCount) {
-        obj.status = status;
+        if (status) {
+          obj.status = status;
+        }
+        if (errorMessage) {
+          obj.errorMessage = errorMessage;
+        }
       }
       return obj;
     });
@@ -205,7 +226,7 @@ class Engine extends EventEmitter {
   }
   // 每个步骤最后的动作
   private async doFinal(item: IStepOptions) {
-    this.recordContext(item, this.$context.status);
+    this.recordContext(item, { status: this.$context.status });
     if (this.ossConfig && fs.existsSync(this.logPrefix)) {
       await this.logger.oss({
         ...this.ossConfig,
@@ -266,12 +287,13 @@ class Engine extends EventEmitter {
           ...this.$context.steps,
           [item.id]: {
             status,
-            errorMessage: err,
           },
         };
       }
       if (item['continue-on-error'] !== true) {
         this.emit('process', this.getProcessData(item));
+        // step 执行失败，记录 errorMessage
+        this.recordContext(item, { errorMessage: err });
         await this.doFinal(item);
         throw err;
       }
@@ -315,15 +337,19 @@ class Engine extends EventEmitter {
     // script
     if (scriptItem.script) {
       this.logName(item);
+      const ifCondition = artTemplate.compile(scriptItem.script);
+      scriptItem.script = ifCondition(this.getFilterContext());
       return await this.doScript(scriptItem);
     }
   }
   private async doScript(item: IScriptOptions) {
-    const filepath = path.join(os.tmpdir(), randomId() + '.ts');
-    await fs.mkdtemp(filepath);
+    // 文件路径
+    if (fs.existsSync(item.script)) {
+      item.script = fs.readFileSync(item.script, 'utf-8');
+    }
     const script = `
-    export async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }: any) {
-      $.log = (entry: any)=> {
+    return async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }) {
+      $.log = (entry)=> {
         switch (entry.kind) {
           case 'cmd':
             logger.info(entry.cmd)
@@ -339,9 +365,10 @@ class Engine extends EventEmitter {
       }
       ${item.script}
     }`;
-    fs.writeFileSync(filepath, script);
     try {
-      await require(filepath).run({ ...zx, os, path, logger: this.logger });
+      const fun = new Function(script);
+      const run = fun();
+      await run({ ...zx, os, path, logger: this.logger });
       return Promise.resolve({});
     } catch (err) {
       const errorMsg = (err as Error).toString();
@@ -400,6 +427,8 @@ class Engine extends EventEmitter {
     msg && this.logger.warn(msg);
   }
   private logName(item: IStepOptions) {
+    // 打印 step 名称
+    // serect数据进行加*，此时item修改了原有对象，保证emit callback 数据也是加*的
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;

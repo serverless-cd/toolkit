@@ -43,7 +43,7 @@ export interface IUsesOptions {
 
 export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
 
-export type IStepsStatus = IStepOptions & { status: string };
+export type IStepsStatus = IStepOptions & { status: string; errorMessage?: string };
 
 export type IStatus = 'success' | 'failure' | 'cancelled' | 'pending' | 'running';
 export interface IContext {
