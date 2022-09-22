@@ -156,3 +156,20 @@ test('cd', async () => {
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
+
+test.only('支持魔法变量', async () => {
+  const steps = [
+    {
+      script:
+        'await Promise.all([$`sleep 1; echo ${{env.name}}`, $`sleep 2; echo ${{env.age}}`, $`sleep 3; echo 3`])\n',
+      id: 'xscript',
+      env: {
+        name: 'xiaoming',
+        age: 20,
+      },
+    },
+  ] as unknown as IStepOptions[];
+  const engine = new Engine({ steps, logPrefix });
+  const res = await engine.start();
+  expect(get(res, 'steps.xscript.status')).toBe('success');
+});

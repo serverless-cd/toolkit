@@ -337,6 +337,8 @@ class Engine extends EventEmitter {
     // script
     if (scriptItem.script) {
       this.logName(item);
+      const ifCondition = artTemplate.compile(scriptItem.script);
+      scriptItem.script = ifCondition(this.getFilterContext());
       return await this.doScript(scriptItem);
     }
   }
