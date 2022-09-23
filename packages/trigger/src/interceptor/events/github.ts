@@ -36,7 +36,7 @@ export default class Github extends BaseEvent {
       console.log('event contrast');
       const eventType = _.get(event, 'eventName');
       if (eventType !== eventName) {
-        const message = `Event type mismatch.\nListen event: ${eventType}, Accepted Event: ${event}`;
+        const message = `Event type mismatch,listen event: ${eventType}`;
         const errorResult = generateErrorPayload(message);
         results.push(errorResult);
         continue;
