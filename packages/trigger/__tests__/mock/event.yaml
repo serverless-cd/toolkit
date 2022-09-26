@@ -1,9 +1,11 @@
 triggers:
   - interceptor: github
-    secret: {}
+    secret: abc
     eventType: "push"
     filter: "body.action in ['opened', 'synchronize', 'reopened']" # https://github.com/TomFrost/Jexl
   - interceptor: github
-    secret: {}
+    secret: bcd
     eventType: "push"
-    filter: "body.action in ['synchronize']" # https://github.com/TomFrost/Jexl
+    filter: "body.action in ['synchronize']"
+  - interceptor: manual_dispatch
+  - interceptor: schedule

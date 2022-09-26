@@ -1,6 +1,6 @@
 {
-  "name": "event-trigger",
-  "version": "0.0.1-alpha.9",
+  "name": "@serverless-cd/trigger",
+  "version": "0.0.1-alpha.22",
   "description": "> TODO: description",
   "author": "wss-git <wssgryx@163.com>",
   "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit#readme",
@@ -19,8 +19,7 @@
   },
   "scripts": {
     "start": "esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=example/lib/index.js --watch",
-    "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=lib/index.js",
-    "postbuild": "rm -rf example/lib && cp -rf lib example/lib"
+    "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=lib/index.js"
   },
   "dependencies": {
     "jexl": "^2.3.0",
@@ -33,7 +32,11 @@
     "@types/node": "^18.7.1",
     "esbuild": "^0.14.54"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "bugs": {
     "url": "https://github.com/serverless-cd/serverless-cd-toolkit/issues"
-  }
+  },
+  "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495"
 }

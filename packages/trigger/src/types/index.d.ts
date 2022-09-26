@@ -1,16 +1,23 @@
 
 export interface IGithubTrigger {
-  interceptor: 'github';
-  eventType: string;
+  // interceptor: 'github';
   secret?: string;
-  filter?: string;
+  filters?: {
+    eventName: string;
+    filter?: string;
+  }[];
 }
 
-export type ITigger = IGithubTrigger;
 
-export interface IRequestPayload {
+export interface IGithubWebhook {
   headers: {
     [key: string]: string;
   };
   body: string; // webhook 请求体【json 串】
 }
+
+export interface ITigger {
+  github: IGithubTrigger;
+}
+
+export type IPayload = IGithubWebhook;

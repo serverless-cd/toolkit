@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/engine",
-  "version": "0.0.1-alpha.12",
+  "version": "0.0.1-alpha.23",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
@@ -10,8 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@serverless-cd/core": "^0.0.1-alpha.12",
+    "@serverless-cd/core": "^0.0.1-alpha.23",
     "@serverless-cd/zx": "^0.0.5",
+    "art-template": "^4.13.2",
     "execa": "^5.1.1",
     "lodash": "^4.17.21",
     "xstate": "^4.33.0"
@@ -22,5 +23,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "a5bcb3dabf954efb111a5b94a5787787941e7844"
+  "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495"
 }
