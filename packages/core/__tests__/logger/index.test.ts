@@ -25,18 +25,18 @@ test('Logger', () => {
 });
 
 test.skip('EngineLogger', async () => {
-  const logger = new EngineLogger('test-engine.log');
+  const logger = new EngineLogger(path.join(__dirname, 'logs', 'engine.log'));
   logger.debug('debug foo'); // only output to stdout
   logger.info('GET /foo/bar 200ms');
   logger.info('[abc]123');
   logger.warn('warn foo');
   logger.error(new Error('error foo'));
-  const res = await logger.oss({
-    accessKeyId: 'xxx',
-    accessKeySecret: 'xxx',
-    bucket: 'shl-test',
-    region: 'cn-chengdu',
-    codeUri: path.join(__dirname, 'test'),
-  });
-  expect(res).toBeInstanceOf(OssClient);
+  // const res = await logger.oss({
+  //   accessKeyId: 'xxx',
+  //   accessKeySecret: 'xxx',
+  //   bucket: 'shl-test',
+  //   region: 'cn-chengdu',
+  //   codeUri: path.join(__dirname, 'test'),
+  // });
+  // expect(res).toBeInstanceOf(OssClient);
 });
