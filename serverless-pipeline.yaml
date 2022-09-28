@@ -1,8 +1,12 @@
 name: "On Push master"
-on:
-  push:
-    branches:
-      - master
+triggers:
+  github:
+    secret: test
+    events:
+      - eventName: "push"
+        filter: 'body.ref in ["refs/heads/tes"]'
+    manual_dispatch:
+      secret: test
 job:
   runtime: nodejs12
   env:
