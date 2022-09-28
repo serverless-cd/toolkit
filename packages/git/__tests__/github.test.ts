@@ -22,3 +22,16 @@ test.only('list branchs', async () => {
   // console.log(rows);
   expect(_.isArray(rows)).toBeTruthy();
 });
+
+test.only('get commit', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const config = await prioverd.getCommit({
+    owner: 'wss-git',
+    repo: 'git-action-test',
+    ref: 'refs/heads/tes',
+  });
+  // console.log(config);
+  expect(_.has(config, 'sha')).toBeTruthy();
+});
