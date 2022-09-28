@@ -14,5 +14,6 @@ export default abstract class Base {
     this.octokit = new Octokit({ auth: access_token });
   }
 
-  abstract listRepos(): Promise<any>;
+  abstract listRepos(params?: any): Promise<any[]>;
+  abstract listBranchs(params: any): Promise<any[]>;
 }
