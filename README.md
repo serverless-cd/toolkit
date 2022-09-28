@@ -11,3 +11,14 @@ https://docs.github.com/cn/actions/using-workflows/workflow-syntax-for-github-ac
 - npm run test-core 对指定package进行测试 
     - core："test-core": "jest --testTimeout 10000 packages/core"
     - step："test-step": "jest --testTimeout 10000 packages/step"
+
+## 发布注意事项
+
+- 需要在被发布包的 package.json 文件中添加
+```
+{
+    "publishConfig": {
+        "access": "public"
+    }
+}
+```
