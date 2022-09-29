@@ -1,6 +1,5 @@
 import git from '../src';
 import _ from 'lodash';
-import { execSync } from 'child_process';
 
 const access_token: string = process.env.GITHUB_ACCESS_TOKEN || '';
 
@@ -36,7 +35,7 @@ test('list branchs', async () => {
   }
 });
 
-test('get commit', async () => {
+test('get branch commit', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -44,6 +43,22 @@ test('get commit', async () => {
     owner: 'wss-git',
     repo: 'git-action-test',
     ref: 'refs/heads/tes',
+  });
+
+  expect(_.isString(config.sha)).toBeTruthy();
+  expect(_.isString(config.message)).toBeTruthy();
+  expect(_.isString(config.url)).toBeTruthy();
+  expect(_.has(config, 'source')).toBeTruthy();
+});
+
+test.only('get tag commit', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const config = await prioverd.getCommit({
+    owner: 'wss-git',
+    repo: 'git-action-test',
+    ref: 'refs/tags/0.0.1',
   });
 
   expect(_.isString(config.sha)).toBeTruthy();
