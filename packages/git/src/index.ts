@@ -1,14 +1,15 @@
-import { IProvider } from './types/input';
-import { IGithubConfig } from './types/github';
+import { IProvider, IGitConfig } from './types/input';
 import _ from 'lodash';
 import Github from './github';
+import Gitee from './gitee';
 import Base from './base';
 
 const providers = {
   github: Github,
+  gitee: Gitee,
 }
 
-export default function (provider: IProvider, config: IGithubConfig) {
+export default function (provider: IProvider, config: IGitConfig) {
   const ProviderGit = _.get(providers, provider);
 
   const isExtendsBase = _.get(ProviderGit, 'prototype') instanceof Base;

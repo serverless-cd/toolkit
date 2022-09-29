@@ -2,8 +2,9 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubConfig, IGithubListBranchs, IGithubGetConfig } from './types/github';
+import { IGithubListBranchs, IGithubGetConfig } from './types/github';
 import { IRepoOutput, IBranchOutput, ICommitOutput } from './types/output';
+import { IGitConfig } from './types/input';
 
 export default class Github extends Base {
   private PARAMS: RequestParameters = {
@@ -13,7 +14,7 @@ export default class Github extends Base {
   };
   readonly octokit: Octokit;
 
-  constructor(config: IGithubConfig) {
+  constructor(config: IGitConfig) {
     super(config);
 
     const access_token = _.get(config, 'access_token');
@@ -59,13 +60,13 @@ export default class Github extends Base {
     if (!_.has(params, 'ref')) {
       throw new Error('You must specify repo');
     }
+
     const result = await this.octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', params);
     const source = _.get(result, 'data', {});
 
     return {
       sha: _.get(source, 'sha'),
       message: _.get(source, 'commit.message'),
-      url: _.get(source, 'commit.url'),
       source,
     };
   }

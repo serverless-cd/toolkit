@@ -1,16 +1,6 @@
 import { RequestParameters } from '@octokit/core/dist-types/types';
+import { IListBranchs, IGetConfig } from './input';
 
-export interface IGithubConfig {
-  access_token: string;
-};
+export interface IGithubListBranchs extends IListBranchs, RequestParameters {}
 
-export interface IGithubListBranchs extends RequestParameters {
-  owner: string;
-  repo: string;
-}
-
-export interface IGithubGetConfig extends RequestParameters {
-  owner: string;
-  repo: string;
-  ref: string;
-}
+export interface IGithubGetConfig extends IGetConfig, RequestParameters {}

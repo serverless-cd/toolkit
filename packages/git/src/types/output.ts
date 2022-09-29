@@ -14,6 +14,5 @@ export interface IBranchOutput {
 export interface ICommitOutput {
   sha: string;
   message: string;
-  url: string;
   source: any;
 }

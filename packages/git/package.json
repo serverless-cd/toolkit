@@ -26,6 +26,10 @@
   },
   "dependencies": {
     "@octokit/core": "^4.0.5",
+    "axios": "^0.27.2",
     "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.2"
   }
 }

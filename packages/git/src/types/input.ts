@@ -1,4 +1,8 @@
-export type IProvider = 'github';
+export type IProvider = 'github' | 'gitee';
+
+export interface IGitConfig {
+  access_token: string;
+};
 
 export interface IListBranchs {
   owner: string;
