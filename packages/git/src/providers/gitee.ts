@@ -1,8 +1,8 @@
 import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetConfig } from './types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput } from './types/output';
+import { IGitConfig, IListBranchs, IGetConfig } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput } from '../types/output';
 
 import { execSync } from 'child_process';
 

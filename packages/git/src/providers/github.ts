@@ -2,9 +2,9 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig } from './types/github';
-import { IRepoOutput, IBranchOutput, ICommitOutput } from './types/output';
-import { IGitConfig } from './types/input';
+import { IGithubListBranchs, IGithubGetConfig } from '../types/github';
+import { IRepoOutput, IBranchOutput, ICommitOutput } from '../types/output';
+import { IGitConfig } from '../types/input';
 
 export default class Github extends Base {
   private PARAMS: RequestParameters = {

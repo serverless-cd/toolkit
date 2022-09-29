@@ -1,7 +1,7 @@
 
 import _ from 'lodash';
-import { IListBranchs, IGetConfig } from './types/input';
-import { IBranchOutput, IRepoOutput, ICommitOutput } from './types/output';
+import { IListBranchs, IGetConfig } from '../types/input';
+import { IBranchOutput, IRepoOutput, ICommitOutput } from '../types/output';
 
 export default abstract class Base {
   constructor(_config: any) { }
