@@ -6,3 +6,4 @@ packages/*/__tests__/_temp/
 logs/
 coverage/
 *.log
+.env

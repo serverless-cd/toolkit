@@ -2,18 +2,8 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IConfig } from './interface';
-
-interface IListBranchs extends RequestParameters {
-  owner: string;
-  repo: string;
-}
-
-interface IGetConfig extends RequestParameters {
-  owner: string;
-  repo: string;
-  ref: string;
-}
+import { IGithubConfig, IGithubListBranchs, IGithubGetConfig } from './types/github';
+import { IRepoOutput, IBranchOutput, ICommitOutput } from './types/output';
 
 export default class Github extends Base {
   private PARAMS: RequestParameters = {
@@ -23,7 +13,7 @@ export default class Github extends Base {
   };
   readonly octokit: Octokit;
 
-  constructor(config: IConfig) {
+  constructor(config: IGithubConfig) {
     super(config);
 
     const access_token = _.get(config, 'access_token');
@@ -34,12 +24,16 @@ export default class Github extends Base {
   }
 
   // https://docs.github.com/en/rest/reference/repos#list-repositories-for-the-authenticated-user
-  async listRepos(params?: RequestParameters): Promise<any[]> {
-    return await this.requestList('GET /user/repos', _.defaults(params, { affiliation: 'owner' }));
+  async listRepos(): Promise<IRepoOutput[]> {
+    const rows = await this.requestList('GET /user/repos', _.defaults({ affiliation: 'owner' }, this.PARAMS));
+
+    return _.map(rows, (row) => ({
+      id: row.id, name: row.name, url: row.url, source: row,
+    }));
   }
 
   // https://docs.github.com/en/rest/branches/branches#list-branches
-  async listBranchs(params: IListBranchs): Promise<any[]> {
+  async listBranchs(params: IGithubListBranchs): Promise<IBranchOutput[]> {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');
     }
@@ -47,11 +41,15 @@ export default class Github extends Base {
       throw new Error('You must specify repo');
     }
 
-    return await this.requestList('GET /repos/{owner}/{repo}/branches', params);
+    const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.PARAMS))
+
+    return _.map(rows, (row) => ({
+      name: row.name, commit_sha: _.get(row, 'commit.sha'), source: row,
+    }));
   }
 
   // https://docs.github.com/en/rest/commits/commits#get-a-commit
-  async getCommit(params: IGetConfig): Promise<any> {
+  async getCommit(params: IGithubGetConfig): Promise<ICommitOutput> {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');
     }
@@ -62,19 +60,25 @@ export default class Github extends Base {
       throw new Error('You must specify repo');
     }
     const result = await this.octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', params);
-    return _.get(result, 'data', {});
+    const source = _.get(result, 'data', {});
+
+    return {
+      sha: _.get(source, 'sha'),
+      message: _.get(source, 'commit.message'),
+      url: _.get(source, 'commit.url'),
+      source,
+    };
   }
 
-  private async requestList(path: string, params?: RequestParameters): Promise<any[]> {
-    const p = _.defaults(params, this.PARAMS);
+  private async requestList(path: string, params: RequestParameters): Promise<any[]> {
     let rows: any[] = [];
     let rowLength = 0;
     do {
-      const { data } = await this.octokit.request(path, p);
+      const { data } = await this.octokit.request(path, params);
       rows = _.concat(rows, data);
       rowLength = _.size(data);
-      p.page = p.page as number + 1;
-    } while (rowLength === p.per_page);
+      params.page = params.page as number + 1;
+    } while (rowLength === params.per_page);
 
     return rows;
   }
