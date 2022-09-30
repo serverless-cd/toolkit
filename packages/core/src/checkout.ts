@@ -3,7 +3,7 @@ import simpleGit, { SimpleGit } from 'simple-git';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs-extra';
-import { replace, get } from 'lodash';
+import { replace, get, startsWith } from 'lodash';
 
 export type IProvider = 'github' | 'gitee' | 'gitlab' | 'codeup';
 
@@ -14,9 +14,8 @@ export interface IConfig {
   username: string;
   url: string;
   execDir: string;
+  ref?: string;
   commit?: string;
-  tag?: string;
-  branch?: string;
 }
 export async function checkout(config: IConfig) {
   await new Checkout(config).run();
@@ -97,7 +96,10 @@ class Checkout {
     this.logger.info(get(res, 'latest.hash'));
   }
   private checkInputs() {
-    const { commit, tag, branch } = this.config;
+    const { commit, ref = '' } = this.config;
+    const branch = startsWith(ref, 'refs/heads/') ? replace(ref, 'refs/heads/', '') : undefined;
+    const tag = startsWith(ref, 'refs/tags/') ? replace(ref, 'refs/tags/', '') : undefined;
+
     if (tag) {
       return { tag, commit };
     }
