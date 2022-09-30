@@ -41,7 +41,7 @@ test.only('get branch commit', async () => {
   const prioverd = git('gitee', {
     access_token,
   });
-  const config = await prioverd.getCommit({
+  const config = await prioverd.getRefCommit({
     owner: 'wss-gitee',
     repo: 'git-action-test',
     // ref: 'tes',
@@ -57,7 +57,7 @@ test.only('get tag commit', async () => {
   const prioverd = git('gitee', {
     access_token,
   });
-  const config = await prioverd.getCommit({
+  const config = await prioverd.getRefCommit({
     owner: 'wss-gitee',
     repo: 'git-action-test',
     ref: 'refs/tags/0.0.1',

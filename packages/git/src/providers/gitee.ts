@@ -51,8 +51,8 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranchesBranch
-  // TODO: https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoReleasesTagsTag
-  async getCommit(params: IGetConfig): Promise<ICommitOutput> {
+  // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoReleasesTagsTag
+  async getRefCommit(params: IGetConfig): Promise<ICommitOutput> {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');
     }

@@ -40,7 +40,7 @@ test('get branch commit', async () => {
   const prioverd = git('github', {
     access_token,
   });
-  const config = await prioverd.getCommit({
+  const config = await prioverd.getRefCommit({
     owner: 'wss-git',
     repo: 'git-action-test',
     ref: 'refs/heads/tes',
@@ -55,7 +55,7 @@ test('get tag commit', async () => {
   const prioverd = git('github', {
     access_token,
   });
-  const config = await prioverd.getCommit({
+  const config = await prioverd.getRefCommit({
     owner: 'wss-git',
     repo: 'git-action-test',
     ref: 'refs/tags/0.0.1',

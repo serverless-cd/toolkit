@@ -50,7 +50,7 @@ export default class Github extends Base {
   }
 
   // https://docs.github.com/en/rest/commits/commits#get-a-commit
-  async getCommit(params: IGithubGetConfig): Promise<ICommitOutput> {
+  async getRefCommit(params: IGithubGetConfig): Promise<ICommitOutput> {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');
     }
