@@ -3,10 +3,26 @@ import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
 import { IGithubListBranchs, IGithubGetConfig } from '../types/github';
-import { IRepoOutput, IBranchOutput, ICommitOutput } from '../types/output';
-import { IGitConfig } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput } from '../types/output';
+import { ICreateWebhook, IDeleteWebhook, IGetWebhook, IGitConfig, IListWebhook, IUpdateWebhook } from '../types/input';
 
 export default class Github extends Base {
+  getWebhook(params: IGetWebhook): Promise<IGetWebhookOutput> {
+    throw new Error('Method not implemented.');
+  }
+  deleteWebhook(params: IDeleteWebhook): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  createWebhook(params: ICreateWebhook): Promise<ICreateWebhookOutput> {
+    throw new Error('Method not implemented.');
+  }
+  updateWebhook(params: IUpdateWebhook): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  listWebhook(params: IListWebhook): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
   private PARAMS: RequestParameters = {
     per_page: 100,
     page: 1,
