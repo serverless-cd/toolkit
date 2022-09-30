@@ -14,7 +14,7 @@ interface IConfig {
  * 如果需要输出相关日志，为了防止敏感数据的泄漏，可以使用core包提供的getSecretInputs方法，此方法会对敏感数据进行加*处理
  */
 
-export default function run(config: IConfig): IkeyValue {
+export function run(config: IConfig): IkeyValue {
   const { logger } = config;
   // 注意，实际开发中不要写入敏感信息，此处只是为了方便调试
   logger.info(`config :${JSON.stringify(config)}`);
@@ -22,5 +22,11 @@ export default function run(config: IConfig): IkeyValue {
   console.log(`newIputs :${JSON.stringify(newIputs)}`);
   const newSecretIputs = getSecretInputs(config);
   logger.info(`newSecretIputs :${JSON.stringify(newSecretIputs)}`);
+  return { success: true };
+}
+
+export function postRun(config: IConfig): IkeyValue {
+  const { logger } = config;
+  logger.info(`this is postRun ${JSON.stringify(config)}`);
   return { success: true };
 }

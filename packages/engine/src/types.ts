@@ -39,6 +39,7 @@ export interface IUsesOptions {
   env?: IkeyValue;
   'continue-on-error'?: boolean;
   with?: IkeyValue;
+  type?: 'run' | 'postRun'; //内部处理 用于区分是run还是postRun
 }
 
 export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
