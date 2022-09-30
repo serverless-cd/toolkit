@@ -36,12 +36,7 @@ export default class Gitee extends Base {
 
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranches
   async listBranchs(params: IListBranchs): Promise<IBranchOutput[]> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
+    super.validateListBranchsParams(params);
 
     const { owner, repo } = params;
     const rows = await this.requestList(`/repos/${owner}/${repo}/branches`, _.defaults(params, this.PARAMS));
@@ -54,15 +49,7 @@ export default class Gitee extends Base {
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranchesBranch
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoReleasesTagsTag
   async getRefCommit(params: IGetRefCommit): Promise<ICommitOutput> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
-    if (!_.has(params, 'ref')) {
-      throw new Error('You must specify repo');
-    }
+    super.validateGetRefCommitParams(params);
 
     const { owner, repo, ref } = params;
 
@@ -90,12 +77,8 @@ export default class Gitee extends Base {
 
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoHooks
   async listWebhook(params: IListWebhook): Promise<IGetWebhookOutput[]> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
+    super.validateListWebhookParams(params);
+
     const { owner, repo } = params;
     const rows = await this.requestList(`/repos/${owner}/${repo}/hooks`, _.defaults(params, this.PARAMS));
     
@@ -107,16 +90,8 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoHooks
-  async createWebhook(params: IGiteeCreateWebhook) : Promise<ICreateWebhookOutput> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
-    if (!_.has(params, 'url')) {
-      throw new Error('You must specify url');
-    }
+  async createWebhook(params: IGiteeCreateWebhook): Promise<ICreateWebhookOutput> {
+    super.validateCreateWebhookParams(params);
 
     const { owner, repo } = params;
     const result = await this.requestV5(`/repos/${owner}/${repo}/hooks`, 'POST', params);
@@ -129,19 +104,8 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoHooksId
-  async updateWebhook(params: IGiteeUpdateWebhook) : Promise<void> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
-    if (!_.has(params, 'url')) {
-      throw new Error('You must specify url');
-    }
-    if (!_.has(params, 'hook_id')) {
-      throw new Error('You must specify hook_id');
-    }
+  async updateWebhook(params: IGiteeUpdateWebhook): Promise<void> {
+    super.validateUpdateWebhookParams(params);
 
     const { owner, repo, hook_id } = params;
     const p = _.omit(params, ['owner', 'repo', 'hook_id']);
@@ -150,15 +114,8 @@ export default class Gitee extends Base {
 
   // https://gitee.com/wss-gitee/git-action-test/hooks/1202839/edit#hook-logs
   async getWebhook(params: IGetWebhook): Promise<IGetWebhookOutput> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
-    if (!_.has(params, 'hook_id')) {
-      throw new Error('You must specify hook_id');
-    }
+    super.validateGetWebhookParams(params);
+
     const { owner, repo, hook_id } = params;
     const result = await this.requestV5(`/repos/${owner}/${repo}/hooks/${hook_id}`, 'GET', params);
     const source = _.get(result, 'data', {});
@@ -171,16 +128,8 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoHooksId
-  async deleteWebhook(params: IDeleteWebhook) : Promise<void> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
-    if (!_.has(params, 'hook_id')) {
-      throw new Error('You must specify hook_id');
-    }
+  async deleteWebhook(params: IDeleteWebhook): Promise<void> {
+    super.validateDeleteWebhookParams(params);
 
     const { owner, repo, hook_id } = params;
     await this.requestV5(`/repos/${owner}/${repo}/hooks/${hook_id}`, 'DELETE', {});
