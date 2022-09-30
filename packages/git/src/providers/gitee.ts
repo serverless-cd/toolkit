@@ -4,12 +4,6 @@ import Base from './base';
 import { IGitConfig, IListBranchs, IGetConfig } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput } from '../types/output';
 
-import { execSync } from 'child_process';
-
-function showlog(data:any, log: string) {
-  execSync(`echo '${JSON.stringify(data, null, 2)}' > ./${log}.log`);
-}
-
 const V5 = 'https://gitee.com/api/v5';
 
 export default class Gitee extends Base {
@@ -71,12 +65,24 @@ export default class Gitee extends Base {
 
     const { owner, repo, ref } = params;
 
-    const result = await this.requestV5(`/repos/${owner}/${repo}/branches/${ref}`, 'GET', {});
+    if (_.startsWith(ref, 'refs/tags/')) {
+      const tag = _.replace(ref, 'refs/tags/', '');
+      const result = await this.requestV5(`/repos/${owner}/${repo}/releases/tags/${tag}`, 'GET', {});
+      const source = _.get(result, 'data', {});
+
+      return {
+        sha: _.get(source, 'commit.sha'),
+        message: _.get(source, 'commit.commit.message'),
+        source,
+      };
+    }
+    const branch = _.startsWith(ref, 'refs/heads/') ? _.replace(ref, 'refs/heads/', '') : ref;
+    const result = await this.requestV5(`/repos/${owner}/${repo}/branches/${branch}`, 'GET', {});
     const source = _.get(result, 'data', {});
 
     return {
-      sha: _.get(source, 'commit.sha'),
-      message: _.get(source, 'commit.commit.message'),
+      sha: _.get(source, 'target_commitish'),
+      message: _.get(source, 'tag_name'),
       source,
     };
   }
