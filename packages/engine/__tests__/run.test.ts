@@ -11,7 +11,7 @@ test('模版可以识别 ${{env.name}}', async () => {
   const res = await engine.start();
   expect(get(res, 'status')).toBe('success');
 });
-test('模版可以识别 ${{steps.xuse.outputs.success}}', async () => {
+test.only('模版可以识别 ${{steps.xuse.outputs.success}}', async () => {
   const steps = [
     { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo ${{steps.xuse.outputs.success}}' },

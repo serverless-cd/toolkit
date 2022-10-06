@@ -20,6 +20,7 @@ import EventEmitter from 'events';
 import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
+import { mark, getScript, getSteps } from './utils';
 
 export { IStepOptions } from './types';
 class Engine extends EventEmitter {
@@ -41,10 +42,8 @@ class Engine extends EventEmitter {
     this.logPrefix = logPrefix;
     this.ossConfig = ossConfig;
     this.inputs = inputs;
-    this.steps = map(steps, (item: IStepOptions) => {
-      item.stepCount = uniqueId();
-      return item;
-    });
+    this.steps = getSteps(steps, this.childProcess);
+    console.log(JSON.stringify(this.steps));
 
     this.context.steps = map(this.steps as IStepsStatus[], (item) => {
       item.status = STEP_STATUS.PENING;
@@ -205,10 +204,7 @@ class Engine extends EventEmitter {
     const secret = {} as IkeyValue;
     for (const key in env) {
       const val = env[key];
-      secret[key] =
-        val.length > 8
-          ? val.slice(0, 3) + '*'.repeat(val.length - 6) + val.slice(val.length - 3, val.length)
-          : '***';
+      secret[key] = mark(val);
     }
     return {
       ...this.inputs,
@@ -321,18 +317,13 @@ class Engine extends EventEmitter {
     // uses
     if (usesItem.uses) {
       this.logName(item);
-      // 本地路径调试时，不在安装依赖
-      if (!fs.existsSync(usesItem.uses)) {
-        const cp = command(`npm i ${usesItem.uses} --no-save`);
-        this.childProcess.push(cp);
-        await this.onFinish(cp);
-      }
-      const run = require(usesItem.uses).default;
-      return await run({
+      const app = require(usesItem.uses);
+      const params = {
         inputs: get(usesItem, 'inputs', {}),
         context: this.getFilterContext(),
         logger: this.logger,
-      });
+      };
+      return usesItem.type === 'run' ? await app.run(params) : await app.postRun(params);
     }
     // script
     if (scriptItem.script) {
@@ -347,24 +338,7 @@ class Engine extends EventEmitter {
     if (fs.existsSync(item.script)) {
       item.script = fs.readFileSync(item.script, 'utf-8');
     }
-    const script = `
-    return async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }) {
-      $.log = (entry)=> {
-        switch (entry.kind) {
-          case 'cmd':
-            logger.info(entry.cmd)
-            break
-          case 'stdout':
-          case 'stderr':
-            logger.info(entry.data.toString())
-            break
-          case 'cd':
-            logger.info('$ ' + chalk.greenBright('cd') + ' ' +  entry.dir)
-            break
-        }
-      }
-      ${item.script}
-    }`;
+    const script = getScript(item.script);
     try {
       const fun = new Function(script);
       const run = fun();
@@ -440,7 +414,7 @@ class Engine extends EventEmitter {
       msg = runItem.name || `Run ${runItem.run}`;
     }
     if (usesItem.uses) {
-      msg = usesItem.name || `Run ${usesItem.uses}`;
+      msg = usesItem.name || `${usesItem.type === 'run' ? 'Run' : 'Post Run'} ${usesItem.uses}`;
     }
     if (scriptItem.script) {
       msg = runItem.name || `Run ${scriptItem.script}`;

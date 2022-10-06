@@ -5,13 +5,13 @@ import * as os from 'os';
 import * as fs from 'fs-extra';
 
 const logger = new EngineLogger(path.join(__dirname, 'logs', 'checkout.log'));
+const execDir = path.join(os.tmpdir(), 'checkout-init');
 
 describe('仓库未初始化', () => {
-  const execDir = path.join(os.tmpdir(), 'checkout-init');
   beforeEach(() => {
     fs.removeSync(execDir);
   });
-  test('checkout branch and commit', async () => {
+  test('checkout ref branch case', async () => {
     const config = {
       token: 'a78ef09a876600e0448b166b4c8539e0',
       provider: 'gitee' as IProvider,
@@ -19,14 +19,13 @@ describe('仓库未初始化', () => {
       username: 'shihuali',
       url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
-      branch: 'test',
-      commit: '3b763ea19e8e8a964e90e75962ccb8e0d68bdf46',
+      ref: 'refs/heads/test',
     };
     await checkout(config);
     expect('checkout').toBe('checkout');
   });
 
-  test('checkout tag', async () => {
+  test('checkout ref tag case', async () => {
     const config = {
       token: 'a78ef09a876600e0448b166b4c8539e0',
       provider: 'gitee' as IProvider,
@@ -34,8 +33,7 @@ describe('仓库未初始化', () => {
       username: 'shihuali',
       url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
-      tag: '0.0.2',
-      commit: '3b763ea19e8e8a964e90e75962ccb8e0d68bdf46',
+      ref: 'refs/tags/0.0.2',
     };
     await checkout(config);
     expect('checkout').toBe('checkout');
@@ -70,8 +68,7 @@ describe('仓库未初始化', () => {
 });
 
 describe('仓库已经初始化', () => {
-  const execDir = path.join(os.tmpdir(), 'checkout-no-init');
-  test('checkout branch and commit', async () => {
+  test('checkout ref branch case', async () => {
     const config = {
       token: 'a78ef09a876600e0448b166b4c8539e0',
       provider: 'gitee' as IProvider,
@@ -79,14 +76,13 @@ describe('仓库已经初始化', () => {
       username: 'shihuali',
       url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
-      branch: 'test',
-      commit: '3b763ea19e8e8a964e90e75962ccb8e0d68bdf46',
+      ref: 'refs/heads/test',
     };
     await checkout(config);
     expect('checkout').toBe('checkout');
   });
 
-  test.only('checkout tag', async () => {
+  test('checkout ref tag case', async () => {
     const config = {
       token: 'a78ef09a876600e0448b166b4c8539e0',
       provider: 'gitee' as IProvider,
@@ -94,7 +90,7 @@ describe('仓库已经初始化', () => {
       username: 'shihuali',
       url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
-      tag: '0.0.2',
+      ref: 'refs/tags/0.0.4',
     };
     await checkout(config);
     expect('checkout').toBe('checkout');
@@ -108,7 +104,7 @@ describe('仓库已经初始化', () => {
       username: 'shihuali',
       url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
-      commit: '3b763ea19e8e8a964e90e75962ccb8e0d68bdf46',
+      commit: '1190412a9252dd618e45e7f87ccabd161c4fd357',
     };
     await checkout(config);
     expect('checkout').toBe('checkout');
