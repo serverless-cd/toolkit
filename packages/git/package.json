@@ -1,0 +1,35 @@
+{
+  "name": "@serverless-cd/git",
+  "version": "0.0.1-alpha.25",
+  "description": "git",
+  "keywords": [
+    "serverless-cd",
+    "git"
+  ],
+  "author": "wss-git <wssgryx@163.com>",
+  "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/serverless-cd/serverless-cd-toolkit.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "bugs": {
+    "url": "https://github.com/serverless-cd/serverless-cd-toolkit/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@octokit/core": "^4.0.5",
+    "axios": "^0.27.2",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.2"
+  }
+}
