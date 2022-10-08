@@ -30,7 +30,11 @@ export default class Gitee extends Base {
     const rows = await this.requestList('/user/repos', _.defaults(this.PARAMS, { affiliation: 'owner' }));
 
     return _.map(rows, (row) => ({
-      id: row.id, name: row.name, url: row.html_url, source: row,
+      id: row.id,
+      name: row.name,
+      url: row.html_url,
+      source: row,
+      avatar_url: _.get(row, 'owner.avatar_url'),
     }));
   }
 

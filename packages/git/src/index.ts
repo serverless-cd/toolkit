@@ -4,7 +4,7 @@ import Base from './providers/base';
 import providers from './providers';
 
 
-export default function (provider: IProvider, config: IGitConfig) {
+export = function (provider: IProvider, config: IGitConfig) {
   const ProviderGit = _.get(providers, provider);
 
   const isExtendsBase = _.get(ProviderGit, 'prototype') instanceof Base;

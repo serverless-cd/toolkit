@@ -2,6 +2,7 @@ export interface IRepoOutput {
   id: number;
   name: string;
   url: string;
+  avatar_url: string;
   source: any;
 }
 

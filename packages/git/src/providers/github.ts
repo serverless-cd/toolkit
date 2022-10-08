@@ -29,7 +29,11 @@ export default class Github extends Base {
     const rows = await this.requestList('GET /user/repos', _.defaults(this.PARAMS, { affiliation: 'owner' }));
 
     return _.map(rows, (row) => ({
-      id: row.id, name: row.name, url: row.url, source: row,
+      id: row.id,
+      name: row.name,
+      url: row.url,
+      source: row,
+      avatar_url: _.get(row, 'owner.avatar_url'),
     }));
   }
 
