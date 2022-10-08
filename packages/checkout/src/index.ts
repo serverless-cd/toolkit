@@ -17,6 +17,11 @@ export interface IConfig {
   ref?: string;
   commit?: string;
 }
+
+export default async function checkout(config: IConfig) {
+  await new Checkout(config).run();
+}
+
 export async function run(config: IConfig) {
   await new Checkout(config).run();
 }
