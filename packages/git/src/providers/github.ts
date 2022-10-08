@@ -2,27 +2,11 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig } from '../types/github';
+import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook } from '../types/github';
 import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput } from '../types/output';
-import { ICreateWebhook, IDeleteWebhook, IGetWebhook, IGitConfig, IListWebhook, IUpdateWebhook } from '../types/input';
+import { IGitConfig, IListWebhook } from '../types/input';
 
 export default class Github extends Base {
-  getWebhook(params: IGetWebhook): Promise<IGetWebhookOutput> {
-    throw new Error('Method not implemented.');
-  }
-  deleteWebhook(params: IDeleteWebhook): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  createWebhook(params: ICreateWebhook): Promise<ICreateWebhookOutput> {
-    throw new Error('Method not implemented.');
-  }
-  updateWebhook(params: IUpdateWebhook): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  listWebhook(params: IListWebhook): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-
   private PARAMS: RequestParameters = {
     per_page: 100,
     page: 1,
@@ -42,7 +26,7 @@ export default class Github extends Base {
 
   // https://docs.github.com/en/rest/reference/repos#list-repositories-for-the-authenticated-user
   async listRepos(): Promise<IRepoOutput[]> {
-    const rows = await this.requestList('GET /user/repos', _.defaults({ affiliation: 'owner' }, this.PARAMS));
+    const rows = await this.requestList('GET /user/repos', _.defaults(this.PARAMS, { affiliation: 'owner' }));
 
     return _.map(rows, (row) => ({
       id: row.id, name: row.name, url: row.url, source: row,
@@ -51,12 +35,7 @@ export default class Github extends Base {
 
   // https://docs.github.com/en/rest/branches/branches#list-branches
   async listBranchs(params: IGithubListBranchs): Promise<IBranchOutput[]> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
+    super.validateListBranchsParams(params);
 
     const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.PARAMS))
 
@@ -67,15 +46,7 @@ export default class Github extends Base {
 
   // https://docs.github.com/en/rest/commits/commits#get-a-commit
   async getRefCommit(params: IGithubGetConfig): Promise<ICommitOutput> {
-    if (!_.has(params, 'owner')) {
-      throw new Error('You must specify owner');
-    }
-    if (!_.has(params, 'repo')) {
-      throw new Error('You must specify repo');
-    }
-    if (!_.has(params, 'ref')) {
-      throw new Error('You must specify repo');
-    }
+    super.validateGetRefCommitParams(params);
 
     const result = await this.octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', params);
     const source = _.get(result, 'data', {});
@@ -85,6 +56,78 @@ export default class Github extends Base {
       message: _.get(source, 'commit.message'),
       source,
     };
+  }
+
+  // https://docs.github.com/en/rest/webhooks/repos
+  async listWebhook(params: IListWebhook): Promise<IGetWebhookOutput[]> {
+    super.validateListWebhookParams(params);
+
+    const rows = await this.requestList('GET /repos/{owner}/{repo}/hooks', _.defaults(params, this.PARAMS))
+    return _.map(rows, (row) => ({
+      id: row.id, url: _.get(row, 'config.url'), source: row,
+    }));
+  }
+
+  // https://docs.github.com/en/rest/webhooks/repos#create-a-repository-webhook
+  async createWebhook(params: IGithubCreateWebhook): Promise<ICreateWebhookOutput> {
+    super.validateCreateWebhookParams(params);
+    const p = {
+      owner: params.owner,
+      repo: params.repo,
+      active: true,
+      events: this.getWebhookDefaults(params),
+      config: {
+        url: params.url,
+        content_type: 'json',
+        insecure_ssl: '0',
+        token: params.secret,
+      },
+    };
+
+    const result = await this.octokit.request('POST /repos/{owner}/{repo}/hooks', p);
+    const source = _.get(result, 'data', {});
+    
+    return { id: _.get(source, 'id'), source };
+  }
+
+  async updateWebhook(params: IGithubUpdateWebhook): Promise<void> {
+    super.validateUpdateWebhookParams(params);
+
+    const p = {
+      hook_id: params.hook_id,
+      owner: params.owner,
+      repo: params.repo,
+      active: true,
+      events: this.getWebhookDefaults(params),
+      config: {
+        url: params.url,
+        content_type: 'json',
+        insecure_ssl: '0',
+        token: params.secret,
+      },
+    };
+
+    await this.octokit.request('PATCH /repos/{owner}/{repo}/hooks/{hook_id}', p);
+  }
+
+  async getWebhook(params: IGithubGetWebhook): Promise<IGetWebhookOutput> {
+    super.validateGetWebhookParams(params);
+
+    const result = await this.octokit.request('GET /repos/{owner}/{repo}/hooks/{hook_id}/config', params)
+    const source = _.get(result, 'data', {});
+    this._test_debug_log(source, 'getWebhook')
+
+    return {
+      id: params.hook_id,
+      url: _.get(source, 'url'),
+      source,
+    };
+  }
+
+  async deleteWebhook(params: IGithubDeleteWebhook): Promise<void> {
+    super.validateDeleteWebhookParams(params);
+
+    await this.octokit.request('DELETE /repos/{owner}/{repo}/hooks/{hook_id}', params)
   }
 
   private async requestList(path: string, params: RequestParameters): Promise<any[]> {
