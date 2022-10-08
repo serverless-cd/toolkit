@@ -1,6 +1,5 @@
 export * from './logger';
 export { default as parseSpec } from './parse-spec';
-export * from './checkout';
 export * from './get-inputs';
 export * from './switch-node-version';
 export * from './variable';

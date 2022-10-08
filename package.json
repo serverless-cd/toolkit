@@ -13,11 +13,13 @@
     "test:engine": "jest --testTimeout 10000 packages/engine --watchAll",
     "test:core": "jest --testTimeout 10000 packages/core --watchAll",
     "test:trigger": "jest --testTimeout 10000 packages/trigger --watchAll",
+    "test:checkout": "jest --testTimeout 10000 packages/checkout --watchAll",
     "test:git": "jest --testTimeout 10000 packages/git --watchAll",
     "test:git-coverage": "jest --testTimeout 10000 packages/git --coverage --coverageDirectory coverage/git",
     "test:trigger-coverage": "jest --testTimeout 10000 packages/trigger --coverage --coverageDirectory coverage/trigger",
     "test:engine-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/engine",
-    "test:core-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/core"
+    "test:core-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/core",
+    "test:checkout-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/checkout"
   },
   "workspaces": [
     "packages/*"

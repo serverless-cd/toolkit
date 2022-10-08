@@ -1,4 +1,4 @@
-import { EngineLogger } from './logger';
+import { EngineLogger } from '@serverless-cd/core';
 import simpleGit, { SimpleGit } from 'simple-git';
 import * as path from 'path';
 import * as os from 'os';
@@ -17,7 +17,7 @@ export interface IConfig {
   ref?: string;
   commit?: string;
 }
-export async function checkout(config: IConfig) {
+export async function run(config: IConfig) {
   await new Checkout(config).run();
 }
 

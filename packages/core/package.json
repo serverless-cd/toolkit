@@ -18,7 +18,6 @@
     "fs-extra": "^10.1.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
-    "simple-git": "^3.14.1",
     "walk-sync": "^3.0.0"
   },
   "devDependencies": {
