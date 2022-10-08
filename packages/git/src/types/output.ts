@@ -3,6 +3,7 @@ export interface IRepoOutput {
   name: string;
   url: string;
   avatar_url: string;
+  owner: string;
   source: any;
 }
 

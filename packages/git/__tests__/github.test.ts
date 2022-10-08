@@ -7,7 +7,7 @@ const access_token: string = process.env.GITHUB_ACCESS_TOKEN || '';
 const OWNER = 'wss-git';
 const REPO = 'git-action-test';
 
-test('list repo', async () => {
+test.only('list repo', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -64,7 +64,7 @@ test('get tag commit', async () => {
   expect(_.has(config, 'source')).toBeTruthy();
 });
 
-test.only('webhook', async () => {
+test('webhook', async () => {
   const url = 'http://test.abc';
   const prioverd = git('github', { access_token });
 

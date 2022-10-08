@@ -7,7 +7,7 @@ const access_token: string = process.env.GITEE_ACCESS_TOKEN || '';
 const OWNER = 'wss-gitee';
 const REPO = 'git-action-test';
 
-test('list repo', async () => {
+test.only('list repo', async () => {
   const prioverd = git('gitee', { access_token });
   const rows = await prioverd.listRepos();
 
