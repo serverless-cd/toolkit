@@ -1,8 +1,11 @@
-import { checkout, IProvider } from '../src';
-import { EngineLogger } from '../src/logger';
+import { IProvider } from '../src';
+import { EngineLogger } from '@serverless-cd/core';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs-extra';
+const app = require('../src');
+const checkout = app.run;
+require('dotenv').config();
 
 const logger = new EngineLogger(path.join(__dirname, 'logs', 'checkout.log'));
 const execDir = path.join(os.tmpdir(), 'checkout-init');
@@ -13,7 +16,7 @@ describe('仓库未初始化', () => {
   });
   test('checkout ref branch case', async () => {
     const config = {
-      token: 'a78ef09a876600e0448b166b4c8539e0',
+      token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
       username: 'shihuali',
@@ -27,7 +30,7 @@ describe('仓库未初始化', () => {
 
   test('checkout ref tag case', async () => {
     const config = {
-      token: 'a78ef09a876600e0448b166b4c8539e0',
+      token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
       username: 'shihuali',
@@ -41,7 +44,7 @@ describe('仓库未初始化', () => {
 
   test('checkout commit', async () => {
     const config = {
-      token: 'a78ef09a876600e0448b166b4c8539e0',
+      token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
       username: 'shihuali',
@@ -55,7 +58,7 @@ describe('仓库未初始化', () => {
 
   test('checkout with no tag, commit, branch', async () => {
     const config = {
-      token: 'a78ef09a876600e0448b166b4c8539e0',
+      token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
       username: 'shihuali',
@@ -70,7 +73,7 @@ describe('仓库未初始化', () => {
 describe('仓库已经初始化', () => {
   test('checkout ref branch case', async () => {
     const config = {
-      token: 'a78ef09a876600e0448b166b4c8539e0',
+      token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
       username: 'shihuali',
@@ -84,7 +87,7 @@ describe('仓库已经初始化', () => {
 
   test('checkout ref tag case', async () => {
     const config = {
-      token: 'a78ef09a876600e0448b166b4c8539e0',
+      token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
       username: 'shihuali',
@@ -98,7 +101,7 @@ describe('仓库已经初始化', () => {
 
   test('checkout commit', async () => {
     const config = {
-      token: 'a78ef09a876600e0448b166b4c8539e0',
+      token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
       username: 'shihuali',
@@ -112,7 +115,7 @@ describe('仓库已经初始化', () => {
 
   test('checkout with no tag, commit, branch', async () => {
     const config = {
-      token: 'a78ef09a876600e0448b166b4c8539e0',
+      token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
       username: 'shihuali',
