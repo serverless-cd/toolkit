@@ -1,5 +1,6 @@
 import git from '../src';
 import _ from 'lodash';
+import Gitee from '../src/providers/gitee';
 
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const access_token: string = process.env.GITEE_ACCESS_TOKEN || '';
@@ -59,10 +60,11 @@ test('get tag commit', async () => {
 
 test('webhook', async () => {
   const url = 'http://test.abc';
-  const prioverd = git('gitee', { access_token });
+  const prioverd = git('gitee', { access_token }) as Gitee;
 
   console.log('expect list');
   const rows = await prioverd.listWebhook({ owner: OWNER, repo: REPO  });
+  console.log(rows);
   expect(_.isArray(rows)).toBeTruthy();
   for (const row of rows) {
     expect(_.isString(row.url)).toBeTruthy();
@@ -78,7 +80,8 @@ test('webhook', async () => {
   expect(_.has(createConfig, 'id')).toBeTruthy();
   expect(_.has(createConfig, 'source')).toBeTruthy();
   expect(_.get(createConfig, 'source.push_events')).toBeTruthy();
-  expect(_.get(createConfig, 'source.tag_push_events')).toBeFalsy();
+  expect(_.get(createConfig, 'source.tag_push_events')).toBeTruthy();
+  expect(_.get(createConfig, 'source.tag_push_events')).toBeTruthy();
   console.log('expect create successfully');
 
   const hook_id: number = _.get(createConfig, 'id');
@@ -86,10 +89,10 @@ test('webhook', async () => {
     owner: OWNER, repo: REPO,
     url,
     hook_id,
-    push_events: false,
-    tag_push_events: true,
+    events: ['release'],
   });
   const updateConfig = await prioverd.getWebhook({ owner: OWNER, repo: REPO, hook_id });
+  expect(updateConfig.id).toBe(hook_id);
   expect(_.has(updateConfig, 'source')).toBeTruthy();
   expect(_.get(updateConfig, 'source.push_events')).toBeFalsy();
   expect(_.get(updateConfig, 'source.tag_push_events')).toBeTruthy();

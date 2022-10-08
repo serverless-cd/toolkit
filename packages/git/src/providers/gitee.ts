@@ -1,9 +1,9 @@
 import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook } from '../types/input';
+import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IUpdateWebhookOutput, IDeleteWebhookOutput } from '../types/output';
-import { IGiteeCreateWebhook, IGiteeUpdateWebhook } from '../types/gitee';
+import { IWebhookParams } from '../types/gitee';
 
 const V5 = 'https://gitee.com/api/v5';
 
@@ -27,7 +27,7 @@ export default class Gitee extends Base {
 
   // https://gitee.com/api/v5/swagger#/getV5UserRepos
   async listRepos(): Promise<IRepoOutput[]> {
-    const rows = await this.requestList('/user/repos', _.defaults({ affiliation: 'owner' }, this.PARAMS));
+    const rows = await this.requestList('/user/repos', _.defaults(this.PARAMS, { affiliation: 'owner' }));
 
     return _.map(rows, (row) => ({
       id: row.id, name: row.name, url: row.html_url, source: row,
@@ -90,11 +90,13 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoHooks
-  async createWebhook(params: IGiteeCreateWebhook): Promise<ICreateWebhookOutput> {
+  async createWebhook(params: ICreateWebhook): Promise<ICreateWebhookOutput> {
     super.validateCreateWebhookParams(params);
 
     const { owner, repo } = params;
-    const result = await this.requestV5(`/repos/${owner}/${repo}/hooks`, 'POST', params);
+    const p: IWebhookParams = this.getWebHookEvents(params);
+
+    const result = await this.requestV5(`/repos/${owner}/${repo}/hooks`, 'POST', p);
     const source = _.get(result, 'data', {});
 
     return {
@@ -104,11 +106,11 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/patchV5ReposOwnerRepoHooksId
-  async updateWebhook(params: IGiteeUpdateWebhook): Promise<void> {
+  async updateWebhook(params: IUpdateWebhook): Promise<void> {
     super.validateUpdateWebhookParams(params);
 
     const { owner, repo, hook_id } = params;
-    const p = _.omit(params, ['owner', 'repo', 'hook_id']);
+    const p: IWebhookParams = this.getWebHookEvents(params);
     await this.requestV5(`/repos/${owner}/${repo}/hooks/${hook_id}`, 'PATCH', p);
   }
 
@@ -121,8 +123,8 @@ export default class Gitee extends Base {
     const source = _.get(result, 'data', {});
 
     return {
-      id: _.get(result, 'id'),
-      url: _.get(result, 'url'),
+      id: _.get(source, 'id'),
+      url: _.get(source, 'url'),
       source: source,
     };
   }
@@ -155,5 +157,40 @@ export default class Gitee extends Base {
     } while (rowLength === params.per_page);
 
     return rows;
+  }
+
+  private getWebHookEvents(params: any) {
+    const secret = _.get(params, 'secret');
+    const p: IWebhookParams = {
+      encryption_type: secret ? 1 : undefined,
+      password: secret,
+      url: _.get(params, 'url'),
+      push_events: false,
+      tag_push_events: false,
+      merge_requests_events: false,
+      issues_events: false,
+    };
+
+    const events = this.getWebhookDefaults(params);
+    for (const event of events) {
+      switch (event) {
+        case 'push':
+          p.push_events = true;
+          break;
+        case 'release':
+          p.tag_push_events = true;
+          break;
+        case 'pull_request':
+          p.merge_requests_events = true;
+          break;
+        case 'issues':
+          p.issues_events = true;
+          break;
+        default:
+          console.error(`not supported event: ${event}`);
+      }
+    }
+
+    return p;
   }
 }

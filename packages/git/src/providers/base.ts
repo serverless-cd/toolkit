@@ -1,6 +1,6 @@
 
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook } from '../types/input';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent } from '../types/input';
 import { IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 
 export default abstract class Base {
@@ -13,6 +13,10 @@ export default abstract class Base {
   abstract updateWebhook(params: IUpdateWebhook): Promise<void>;
   abstract deleteWebhook(params: IDeleteWebhook): Promise<void>;
   abstract getWebhook(params: IGetWebhook): Promise<IGetWebhookOutput>;
+
+  getWebhookDefaults(params: any): IWebhookEvent[] {
+    return _.get(params, 'events', ['push', 'release']);
+  }
 
   validateListBranchsParams(params: unknown) {
     if (!_.has(params, 'owner')) {
@@ -53,6 +57,9 @@ export default abstract class Base {
     }
     if (!_.has(params, 'url')) {
       throw new Error('You must specify url');
+    }
+    if (_.has(params, 'events') && !_.isArray(_.get(params, 'events'))) {
+      throw new Error('You must specify events, array of strings');
     }
   }
 
@@ -97,7 +104,7 @@ export default abstract class Base {
     
   _test_debug_log(data: any, log: string = 'test') {
     try {
-      require('child_process').execSync(`echo '${JSON.stringify(data, null, 2)})}' > ${log}.log`);
+      require('child_process').execSync(`echo '${JSON.stringify(data, null, 2)}' > ${log}.log`);
     } catch (e: any) {
       console.log(`${log}.log error: ${e.message}`);
     }
