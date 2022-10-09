@@ -35,6 +35,8 @@ export default class Gitee extends Base {
       avatar_url: _.get(row, 'owner.avatar_url'),
       owner: _.get(row, 'owner.login'),
       url: row.html_url,
+      private: row.private,
+      description: row.description,
       source: row,
     }));
   }

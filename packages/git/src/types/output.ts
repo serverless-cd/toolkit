@@ -4,6 +4,8 @@ export interface IRepoOutput {
   url: string;
   avatar_url: string;
   owner: string;
+  private: boolean;
+  description: string;
   source: any;
 }
 

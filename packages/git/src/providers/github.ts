@@ -34,6 +34,8 @@ export default class Github extends Base {
       avatar_url: _.get(row, 'owner.avatar_url'),
       owner: _.get(row, 'owner.login'),
       url: row.clone_url,
+      private: row.private,
+      description: row.description,
       source: row,
     }));
   }
