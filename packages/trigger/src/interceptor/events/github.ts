@@ -2,7 +2,7 @@ import _ from 'lodash';
 import crypto from 'crypto';
 import jexl from 'jexl';
 import BaseEvent from './base';
-import { generateErrorPayload, generateSuccessResult, generateErrorResult } from 'src/utils';
+import { generateSuccessResult, generateErrorResult } from 'src/utils';
 
 export default class Github extends BaseEvent {
   async verify(): Promise<any> {
@@ -25,8 +25,6 @@ export default class Github extends BaseEvent {
       throw new Error("No 'x-github-event' found on request");
     }
 
-    const results = [];
-
     console.log('verify events config empty');
     const events = _.get(github, 'events', []);
     if (_.isEmpty(events)) {
@@ -36,9 +34,7 @@ export default class Github extends BaseEvent {
       console.log('event contrast');
       const eventType = _.get(event, 'eventName');
       if (eventType !== eventName) {
-        const message = `Event type mismatch,listen event: ${eventType}`;
-        const errorResult = generateErrorPayload(message);
-        results.push(errorResult);
+        console.log(`Event type mismatch,listen event: ${eventType}`);
         continue;
       }
 
@@ -48,7 +44,7 @@ export default class Github extends BaseEvent {
         const filterStatus = await jexl.eval(filter, this.requestPayload);
         if (!filterStatus) {
           const message = `Filter status error: ${filterStatus}`
-          return generateErrorPayload(message);
+          return generateErrorResult(message);
         }
       }
 
@@ -56,7 +52,7 @@ export default class Github extends BaseEvent {
       return generateSuccessResult({ ...event , interceptor: this.interceptor,  });
     }
   
-    return generateErrorResult(results);
+    return generateErrorResult('Event type mismatch');
   }
 
   verifySecret(secret: string | undefined): boolean {
