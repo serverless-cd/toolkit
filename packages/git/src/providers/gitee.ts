@@ -2,7 +2,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
 import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IUpdateWebhookOutput, IDeleteWebhookOutput } from '../types/output';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 
 const V5 = 'https://gitee.com/api/v5';

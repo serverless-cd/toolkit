@@ -85,7 +85,7 @@ export default class Github extends Base {
         url: params.url,
         content_type: 'json',
         insecure_ssl: '0',
-        token: params.secret,
+        secret: params.secret,
       },
     };
 

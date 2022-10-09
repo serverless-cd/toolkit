@@ -29,11 +29,3 @@ export interface IGetWebhookOutput {
   url: string;
   source: any;
 }
-
-export interface IUpdateWebhookOutput {
-  source: any;
-}
-
-export interface IDeleteWebhookOutput {
-  source: any;
-}
