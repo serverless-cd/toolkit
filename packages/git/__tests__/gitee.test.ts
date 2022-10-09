@@ -15,7 +15,7 @@ test.only('list repo', async () => {
   for (const row of rows) {
     expect(_.has(row, 'id')).toBeTruthy();
     expect(_.isString(row.name)).toBeTruthy();
-    expect(_.isString(row.url)).toBeTruthy();
+    expect(_.isString(row.url) && _.endsWith(row.url, '.git')).toBeTruthy();
     expect(_.has(row, 'source')).toBeTruthy();
   }
 });

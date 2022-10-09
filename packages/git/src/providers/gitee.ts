@@ -32,10 +32,10 @@ export default class Gitee extends Base {
     return _.map(rows, (row) => ({
       id: row.id,
       name: row.name,
-      url: row.html_url,
-      source: row,
       avatar_url: _.get(row, 'owner.avatar_url'),
       owner: _.get(row, 'owner.login'),
+      url: row.html_url,
+      source: row,
     }));
   }
 
