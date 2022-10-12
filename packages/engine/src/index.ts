@@ -43,8 +43,6 @@ class Engine extends EventEmitter {
     this.ossConfig = ossConfig;
     this.inputs = inputs;
     this.steps = getSteps(steps, this.childProcess);
-    console.log(JSON.stringify(this.steps));
-
     this.context.steps = map(this.steps as IStepsStatus[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
@@ -317,6 +315,12 @@ class Engine extends EventEmitter {
     // uses
     if (usesItem.uses) {
       this.logName(item);
+      // 本地路径调试时，不在安装依赖
+      if (!fs.existsSync(usesItem.uses)) {
+        const cp = command(`npm i ${usesItem.uses} --no-save`);
+        this.childProcess.push(cp);
+        await this.onFinish(cp);
+      }
       const app = require(usesItem.uses);
       const params = {
         inputs: get(usesItem, 'inputs', {}),
@@ -328,8 +332,6 @@ class Engine extends EventEmitter {
     // script
     if (scriptItem.script) {
       this.logName(item);
-      const ifCondition = artTemplate.compile(scriptItem.script);
-      scriptItem.script = ifCondition(this.getFilterContext());
       return await this.doScript(scriptItem);
     }
   }
@@ -338,6 +340,8 @@ class Engine extends EventEmitter {
     if (fs.existsSync(item.script)) {
       item.script = fs.readFileSync(item.script, 'utf-8');
     }
+    const ifCondition = artTemplate.compile(item.script);
+    item.script = ifCondition(this.getFilterContext());
     const script = getScript(item.script);
     try {
       const fun = new Function(script);
