@@ -333,13 +333,9 @@ class Engine extends EventEmitter {
         await this.onFinish(cp);
       }
       const app = require(usesItem.uses);
-      const params = {
-        context: this.getFilterContext(),
-        logger: this.logger,
-      };
       return usesItem.type === 'run'
-        ? await app.run(get(usesItem, 'inputs', {}), params)
-        : await app.postRun(get(usesItem, 'inputs', {}), params);
+        ? await app.run(get(usesItem, 'inputs', {}), this.getFilterContext(), this.logger)
+        : await app.postRun(get(usesItem, 'inputs', {}), this.getFilterContext(), this.logger);
     }
     // script
     if (scriptItem.script) {

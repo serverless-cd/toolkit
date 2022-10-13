@@ -25,6 +25,26 @@ test.skip('logger oss', async () => {
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
 });
 
+test('自定义logger', async () => {
+  const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
+
+  const customLogger = {
+    info: (msg: string) => {
+      console.log('customLogger info', msg);
+    },
+    warn: (msg: string) => {
+      console.log('customLogger warn', msg);
+    },
+    debug: (msg: string) => {
+      console.log('customLogger debug', msg);
+    },
+  };
+
+  const engine = new Engine({ steps, logConfig: { customLogger } });
+  const res = await engine.start();
+  expect(get(res, 'steps.xhello.status')).toBe('success');
+});
+
 test('获取某一步的outputs', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
