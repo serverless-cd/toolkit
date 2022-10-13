@@ -1,9 +1,15 @@
-import { IOssConfig } from '@serverless-cd/core';
+import { IOssConfig, LoggerLevel } from '@serverless-cd/core';
 export interface IEngineOptions {
   steps: IStepOptions[];
-  logPrefix: string;
-  ossConfig?: IOssConfig;
   inputs?: IkeyValue;
+  logConfig?: ILogConfig;
+}
+
+export interface ILogConfig {
+  logPrefix?: string;
+  logLevel?: LoggerLevel;
+  ossConfig?: IOssConfig;
+  customLogger?: any;
 }
 export interface IkeyValue {
   [key: string]: any;

@@ -10,7 +10,7 @@ test('系统命令:ls-la', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -22,7 +22,7 @@ test('promise', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -35,7 +35,7 @@ test('fs', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -47,7 +47,7 @@ test('os', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -59,7 +59,7 @@ test('path', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -71,7 +71,7 @@ test('chalk', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -84,7 +84,7 @@ test('glob', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -96,7 +96,7 @@ test('YAML', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -108,7 +108,7 @@ test('which', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -120,7 +120,7 @@ test('文件路径', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -140,7 +140,7 @@ test('测试失败case', async () => {
       id: 'xworld',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('failure');
 });
@@ -152,7 +152,7 @@ test('cd', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -169,7 +169,7 @@ test('支持魔法变量', async () => {
       },
     },
   ] as unknown as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });

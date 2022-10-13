@@ -13,7 +13,7 @@ test('模版可以识别${{steps.xhello.status === "success"}}', async () => {
     },
     { run: 'echo "end"', id: 'xend' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 获取步骤1的status
   expect(get(res, 'steps.xhello.status')).toBe('success');
@@ -31,7 +31,7 @@ test('模版可以识别${{steps.xhello.status !== "success"}}', async () => {
     },
     { run: 'echo "end"', id: 'xend' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 获取步骤1的status
   expect(get(res, 'steps.xhello.status')).toBe('success');
@@ -49,7 +49,7 @@ test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.st
       id: 'xend',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 获取步骤1的状态
   expect(get(res, 'steps.xhello.status')).toBe('success');
@@ -70,7 +70,7 @@ test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.st
     },
   ] as IStepOptions[];
 
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 获取步骤1的状态
   expect(get(res, 'steps.xhello.status')).toBe('success');
@@ -89,7 +89,7 @@ test('模版可以识别 ${{env.name === "xiaoming"}}', async () => {
       env: { name: 'xiaoming' },
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps')).toEqual({
     xhello: { status: 'skipped' },
