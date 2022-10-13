@@ -1,4 +1,4 @@
-import { EngineLogger, IOssConfig, artTemplate, fs } from '@serverless-cd/core';
+import { EngineLogger, artTemplate, fs } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -11,8 +11,9 @@ import {
   IkeyValue,
   IEngineOptions,
   IPublicContext,
+  ILogConfig,
 } from './types';
-import { isEmpty, get, each, replace, map, uniqueId } from 'lodash';
+import { isEmpty, get, each, replace, map, noop } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
@@ -32,19 +33,15 @@ class Engine extends EventEmitter {
     editStatusAble: true,
   } as IContext;
   private steps: IStepOptions[] = [];
-  private logPrefix: string;
-  private logger!: EngineLogger;
-  private ossConfig: IOssConfig | undefined;
+  private logger: any;
+  private logConfig: ILogConfig;
   private inputs: IkeyValue | undefined;
   constructor(options: IEngineOptions) {
-    const { steps, logPrefix, ossConfig, inputs } = options;
+    const { steps, logConfig = {}, inputs } = options;
     super();
-    this.logPrefix = logPrefix;
-    this.ossConfig = ossConfig;
+    this.logConfig = logConfig;
     this.inputs = inputs;
     this.steps = getSteps(steps, this.childProcess);
-    console.log(JSON.stringify(this.steps));
-
     this.context.steps = map(this.steps as IStepsStatus[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
@@ -88,9 +85,7 @@ class Engine extends EventEmitter {
             id: item.stepCount,
             src: () => {
               // logger
-              this.logger = new EngineLogger(
-                path.join(this.logPrefix, `step_${item.stepCount}.log`),
-              );
+              this.setLogger(item);
               // 记录 context
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
@@ -144,13 +139,26 @@ class Engine extends EventEmitter {
         initial: 'init',
         states,
       });
+
       const stepService = interpret(fetchMachine)
-        .onTransition((state) => console.log(state.value, this.context))
+        .onTransition((state) => console.log(state.value))
         .start();
       stepService.send('INIT');
     });
   }
-  doReplace$(item: IStepOptions) {
+
+  private setLogger(item: IStepOptions) {
+    const { customLogger, logPrefix, logLevel } = this.logConfig;
+    if (customLogger) {
+      return (this.logger = customLogger);
+    }
+    this.logger = new EngineLogger({
+      file: logPrefix && path.join(logPrefix, `step_${item.stepCount}.log`),
+      level: logLevel,
+    });
+  }
+
+  private doReplace$(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const scriptItem = item as IScriptOptions;
     const fn = (str: string) => replace(str, /\${{/g, '{{');
@@ -164,7 +172,7 @@ class Engine extends EventEmitter {
       item.if = fn(item.if);
     }
   }
-  recordContext(
+  private recordContext(
     item: IStepOptions,
     { status, errorMessage }: { status?: string; errorMessage?: string },
   ) {
@@ -223,10 +231,11 @@ class Engine extends EventEmitter {
   // 每个步骤最后的动作
   private async doFinal(item: IStepOptions) {
     this.recordContext(item, { status: this.context.status });
-    if (this.ossConfig && fs.existsSync(this.logPrefix)) {
+    const { logPrefix, ossConfig } = this.logConfig;
+    if (ossConfig && logPrefix) {
       await this.logger.oss({
-        ...this.ossConfig,
-        codeUri: path.join(this.logPrefix, `step_${item.stepCount}.log`),
+        ...ossConfig,
+        codeUri: path.join(logPrefix, `step_${item.stepCount}.log`),
       });
     }
   }
@@ -317,19 +326,20 @@ class Engine extends EventEmitter {
     // uses
     if (usesItem.uses) {
       this.logName(item);
+      // 本地路径调试时，不在安装依赖
+      if (!fs.existsSync(usesItem.uses)) {
+        const cp = command(`npm i ${usesItem.uses} --no-save`);
+        this.childProcess.push(cp);
+        await this.onFinish(cp);
+      }
       const app = require(usesItem.uses);
-      const params = {
-        inputs: get(usesItem, 'inputs', {}),
-        context: this.getFilterContext(),
-        logger: this.logger,
-      };
-      return usesItem.type === 'run' ? await app.run(params) : await app.postRun(params);
+      return usesItem.type === 'run'
+        ? await app.run(get(usesItem, 'inputs', {}), this.getFilterContext(), this.logger)
+        : await app.postRun(get(usesItem, 'inputs', {}), this.getFilterContext(), this.logger);
     }
     // script
     if (scriptItem.script) {
       this.logName(item);
-      const ifCondition = artTemplate.compile(scriptItem.script);
-      scriptItem.script = ifCondition(this.getFilterContext());
       return await this.doScript(scriptItem);
     }
   }
@@ -338,6 +348,8 @@ class Engine extends EventEmitter {
     if (fs.existsSync(item.script)) {
       item.script = fs.readFileSync(item.script, 'utf-8');
     }
+    const ifCondition = artTemplate.compile(item.script);
+    item.script = ifCondition(this.getFilterContext());
     const script = getScript(item.script);
     try {
       const fun = new Function(script);
@@ -419,7 +431,7 @@ class Engine extends EventEmitter {
     if (scriptItem.script) {
       msg = runItem.name || `Run ${scriptItem.script}`;
     }
-    this.logger.info(isSkip ? `[skipped] ${msg}` : msg);
+    this.logger.debug(isSkip ? `[skipped] ${msg}` : msg);
     this.doWarn();
   }
   private onFinish(cp: any) {

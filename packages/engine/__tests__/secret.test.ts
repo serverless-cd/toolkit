@@ -27,7 +27,7 @@ describe('${{secret.name}} => 日志需要为 ***', () => {
         env: { name: 'xiaoming', age: '20', long: 'iamxiaoming' },
       },
     ] as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     const res = await engine.start();
     expect(get(res, 'steps.xuse.status')).toBe('success');
   });
@@ -43,7 +43,7 @@ describe('${{secret.name}} => 日志需要为 ***', () => {
         },
       },
     ] as unknown as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     const res = await engine.start();
     expect(get(res, 'steps.xrun.status')).toBe('success');
   });
@@ -59,7 +59,7 @@ describe('${{secret.name}} => 日志需要为 ***', () => {
         },
       },
     ] as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     engine.on('completed', (data) => {
       const newData = map(data, (item) => omit(item, 'stepCount'));
       expect(newData).toEqual([

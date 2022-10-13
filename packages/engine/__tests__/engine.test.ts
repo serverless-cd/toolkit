@@ -11,16 +11,38 @@ test.skip('logger oss', async () => {
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
-    logPrefix,
-    ossConfig: {
-      accessKeyId: 'xxx',
-      accessKeySecret: 'xxx',
-      bucket: 'shl-test',
-      region: 'cn-chengdu',
+    logConfig: {
+      logPrefix,
+      ossConfig: {
+        accessKeyId: 'xxx',
+        accessKeySecret: 'xxx',
+        bucket: 'shl-test',
+        region: 'cn-chengdu',
+      },
     },
   });
   const res = await engine.start();
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
+});
+
+test('自定义logger', async () => {
+  const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
+
+  const customLogger = {
+    info: (msg: string) => {
+      console.log('customLogger info', msg);
+    },
+    warn: (msg: string) => {
+      console.log('customLogger warn', msg);
+    },
+    debug: (msg: string) => {
+      console.log('customLogger debug', msg);
+    },
+  };
+
+  const engine = new Engine({ steps, logConfig: { customLogger } });
+  const res = await engine.start();
+  expect(get(res, 'steps.xhello.status')).toBe('success');
 });
 
 test('获取某一步的outputs', async () => {
@@ -29,7 +51,7 @@ test('获取某一步的outputs', async () => {
     { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' } });
   const res = await engine.start();
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
 });
@@ -45,7 +67,7 @@ test('全局status测试', async () => {
     },
     { run: 'echo "world"', if: '${{status === "success"}}' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xuse.status')).toBe('skipped');
 });
@@ -62,7 +84,7 @@ test('cancel测试', (done) => {
     { run: 'node packages/engine/__tests__/cancel-test.js' },
     { run: 'echo "world"' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const callback = jest.fn(() => {
     engine.cancel();
   });
@@ -79,7 +101,7 @@ test('uses：应用测试返回值', async () => {
     { run: 'echo "hello"', id: 'xhello' },
     { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
   // error case
@@ -94,7 +116,7 @@ test('script 测试', async () => {
       id: 'xscript',
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'steps.xscript.status')).toBe('success');
 });
@@ -107,7 +129,7 @@ test('inputs测试', async () => {
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
-    logPrefix,
+    logConfig: { logPrefix },
     inputs: { name: 'xiaoming', env: { name: 'xiaoming' } },
   });
   const res = await engine.start();

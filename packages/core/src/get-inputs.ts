@@ -5,13 +5,7 @@ interface IkeyValue {
   [key: string]: any;
 }
 
-interface IConfig {
-  inputs: IkeyValue;
-  context: IkeyValue;
-}
-
-export function getInputs(config: IConfig) {
-  const { inputs, context } = config;
+export function getInputs(inputs: IkeyValue, context: IkeyValue) {
   if (isEmpty(inputs)) return;
   function deepCopy(obj: any) {
     let result: any = obj.constructor === Array ? [] : {};
@@ -32,8 +26,7 @@ export function getInputs(config: IConfig) {
   return deepCopy(inputs);
 }
 
-export function getSecretInputs(config: IConfig) {
-  const { inputs, context } = config;
+export function getSecretInputs(inputs: IkeyValue, context: IkeyValue) {
   if (isEmpty(inputs)) return;
   function deepCopy(obj: any) {
     let result: any = obj.constructor === Array ? [] : {};

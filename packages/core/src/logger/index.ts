@@ -53,22 +53,28 @@ class _FileTransport extends FileTransport {
   }
 }
 
+interface IProps {
+  file?: string;
+  level?: LoggerLevel;
+}
 class EngineLogger extends Logger {
-  constructor(file: string) {
+  constructor(props: IProps) {
+    const { file, level = 'INFO' } = props;
     super({});
     this.set(
       'console',
       new _ConsoleTransport({
-        level: 'DEBUG',
+        level,
       }),
     );
-    this.set(
-      'file',
-      new _FileTransport({
-        file,
-        level: 'INFO',
-      }),
-    );
+    file &&
+      this.set(
+        'file',
+        new _FileTransport({
+          file,
+          level,
+        }),
+      );
   }
   async oss(ossConfig: IOssConfig) {
     return await new OssLogger(ossConfig).init();
@@ -83,4 +89,5 @@ export {
   _ConsoleTransport as ConsoleTransport,
   _FileTransport as FileTransport,
   IOssConfig,
+  LoggerLevel,
 };

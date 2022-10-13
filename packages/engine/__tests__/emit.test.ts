@@ -9,7 +9,7 @@ describe('执行终态emit测试', () => {
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'echo "world"' },
     ] as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     engine.on('success', (data) => {
       const newData = map(data, (item) => omit(item, 'stepCount'));
 
@@ -29,7 +29,7 @@ describe('执行终态emit测试', () => {
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'echo "world"' },
     ] as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     engine.on('completed', (data) => {
       const newData = map(data, (item) => omit(item, 'stepCount'));
       expect(newData).toEqual([
@@ -48,7 +48,7 @@ describe('执行终态emit测试', () => {
       { run: 'echo "hello"', id: 'xhello' },
       { run: 'npm run error', id: 'xerror' },
     ] as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     engine.on('failure', (data) => {
       const newData = map(data, (item) => omit(item, ['stepCount', 'errorMessage']));
       expect(newData).toEqual([
@@ -72,7 +72,7 @@ describe('执行终态emit测试', () => {
       { run: 'echo "world"' },
       { run: 'echo "end"', if: '${{ cancelled() }}' },
     ] as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     const callback = jest.fn(() => {
       engine.cancel();
     });
@@ -106,7 +106,7 @@ describe('步骤执行过程中emit测试', () => {
       { run: 'npm run error1', id: 'xerror1' },
       { run: 'echo "world1"', id: 'xworld1' },
     ] as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     const newData: any = [];
     engine.on('process', (data) => {
       newData.push({
@@ -125,7 +125,7 @@ describe('步骤执行过程中emit测试', () => {
     ]);
   });
 
-  test('cancelled', (done) => {
+  test.only('cancelled', (done) => {
     const lazy = (fn: any) => {
       setTimeout(() => {
         console.log('3s后执行 callback');
@@ -137,7 +137,7 @@ describe('步骤执行过程中emit测试', () => {
       { run: 'node packages/engine/__tests__/cancel-test.js', id: 'xcancel' },
       { run: 'echo "world"', id: 'xworld' },
     ] as IStepOptions[];
-    const engine = new Engine({ steps, logPrefix });
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
     const callback = jest.fn(() => {
       engine.cancel();
     });
@@ -152,6 +152,8 @@ describe('步骤执行过程中emit测试', () => {
     });
     engine.start();
     setTimeout(() => {
+      console.log(newData);
+
       expect(newData).toEqual([
         { run: 'echo "hello"', id: 'xhello', status: 'success' },
         {

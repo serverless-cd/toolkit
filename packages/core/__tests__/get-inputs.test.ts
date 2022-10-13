@@ -1,8 +1,8 @@
 import { getInputs, getSecretInputs } from '../src';
 
 test('getInputs 测试', () => {
-  const res = getInputs({
-    inputs: {
+  const res = getInputs(
+    {
       name: '{{secret.name}}',
       obj: {
         name: '{{secret.name}}',
@@ -15,10 +15,10 @@ test('getInputs 测试', () => {
         },
       ],
     },
-    context: {
+    {
       env: { name: 'xiaoming', age: '20' },
     },
-  });
+  );
   expect(res).toEqual({
     name: 'xiaoming',
     obj: { name: 'xiaoming', age: '20' },
@@ -27,8 +27,8 @@ test('getInputs 测试', () => {
 });
 
 test('getSecretInputs 测试', () => {
-  const res = getSecretInputs({
-    inputs: {
+  const res = getSecretInputs(
+    {
       name: '{{secret.name}}',
       obj: {
         name: '{{secret.name}}',
@@ -42,10 +42,10 @@ test('getSecretInputs 测试', () => {
         },
       ],
     },
-    context: {
+    {
       env: { name: 'xiaoming', age: '20', long: 'iamxiaoming' },
     },
-  });
+  );
   expect(res).toEqual({
     name: '***',
     obj: { name: '***', age: '20', long: 'iam*****ing' },

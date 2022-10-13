@@ -10,7 +10,7 @@ test('某一步执行失败，后续步骤执行状态为skip', async () => {
     { run: 'echo "world"', id: 'xworld' },
   ] as IStepOptions[];
 
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 failure
   expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -24,7 +24,7 @@ test('某一步执行失败，但该步骤添加了continue-on-error: true，后
     { run: 'npm run error', id: 'xerror', 'continue-on-error': true },
     { run: 'echo "world"', id: 'xworld' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 error-with-continue
   expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
@@ -37,7 +37,7 @@ test('某一步执行失败，但该步骤添加了continue-on-error: true，但
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror', 'continue-on-error': true },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 error-with-continue
   expect(get(res, 'steps.xerror.status')).toBe('error-with-continue');
@@ -52,7 +52,7 @@ test('某一步执行失败，后续某步骤标记了if: ${{ failure() }}', asy
     { run: 'echo "world"', id: 'xworld' },
     { run: 'echo "end"', id: 'xend', if: '${{ failure() }}' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 failure
   expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -69,7 +69,7 @@ test('某一步执行失败，后续多个步骤标记了if: ${{ failure() }}', 
     { run: 'echo "world"', id: 'xworld', if: '${{ failure() }}' },
     { run: 'echo "end"', id: 'xend', if: '${{ failure() }}' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 failure
   expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -91,7 +91,7 @@ test("某一步执行失败，后续某步骤标记了if: ${{ failure() && steps
     },
   ] as IStepOptions[];
 
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 failure
   expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -112,7 +112,7 @@ test("某一步执行失败，后续某步骤标记了if: ${{ failure() && steps
       if: "${{ failure() && steps.xerror.status !== 'failure' }}",
     },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 failure
   expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -129,7 +129,7 @@ test('某一步执行失败，后续某步骤标记了if: ${{ success() }}', asy
     { run: 'echo "world"', if: '${{ success() }}', id: 'xworld' },
     { run: 'echo "end"', id: 'xend' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 failure
   expect(get(res, 'steps.xerror.status')).toBe('failure');
@@ -146,7 +146,7 @@ test('某一步执行失败，后续某步骤标记了if: ${{ always() }}', asyn
     { run: 'echo "world"', if: '${{ always() }}', id: 'xworld' },
     { run: 'echo "end"', id: 'xend' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logPrefix });
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   // 步骤2 状态是 failure
   expect(get(res, 'steps.xerror.status')).toBe('failure');
