@@ -98,6 +98,30 @@ describe('执行终态emit测试', () => {
 });
 
 describe('步骤执行过程中emit测试', () => {
+  test.only('uses throw error', async () => {
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      {
+        uses: path.join(__dirname, 'fixtures', 'error'),
+        id: 'xuse',
+        inputs: { milliseconds: 10 },
+      },
+      { run: 'echo "world"', id: 'xworld' },
+    ] as IStepOptions[];
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
+    engine.on('failure', (data) => {
+      const newData = map(data, (item) => ({
+        status: item.status,
+        errorMessage: item.errorMessage,
+      }));
+      expect(newData).toEqual([
+        { status: 'success' },
+        { status: 'failure', errorMessage: 'my error' },
+        { status: 'failure' },
+      ]);
+    });
+    await engine.start();
+  });
   test('success, failure, skipped, error-with-continue', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
@@ -125,7 +149,7 @@ describe('步骤执行过程中emit测试', () => {
     ]);
   });
 
-  test.only('cancelled', (done) => {
+  test('cancelled', (done) => {
     const lazy = (fn: any) => {
       setTimeout(() => {
         console.log('3s后执行 callback');
@@ -152,8 +176,6 @@ describe('步骤执行过程中emit测试', () => {
     });
     engine.start();
     setTimeout(() => {
-      console.log(newData);
-
       expect(newData).toEqual([
         { run: 'echo "hello"', id: 'xhello', status: 'success' },
         {

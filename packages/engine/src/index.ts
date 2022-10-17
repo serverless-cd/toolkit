@@ -241,13 +241,9 @@ class Engine extends EventEmitter {
   }
   // 将执行终态进行emit
   private doEmit() {
-    const data = map(this.steps, (item: IStepsStatus) => {
-      item.status = get(this.$context, `${item.stepCount}.status`);
-      return item;
-    });
-    this.emit(this.context.status, data);
+    this.emit(this.context.status, this.context.steps);
     this.context.status = this.context.status;
-    this.emit('completed', data);
+    this.emit('completed', this.context.steps);
   }
   private async handleSrc(item: IStepOptions) {
     try {
@@ -296,9 +292,9 @@ class Engine extends EventEmitter {
         };
       }
       if (item['continue-on-error'] !== true) {
-        this.emit('process', this.getProcessData(item));
+        this.emit('process', { ...this.getProcessData(item), errorMessage: err.message });
         // step 执行失败，记录 errorMessage
-        this.recordContext(item, { errorMessage: err });
+        this.recordContext(item, { errorMessage: err.message });
         await this.doFinal(item);
         throw err;
       }
@@ -451,7 +447,7 @@ class Engine extends EventEmitter {
       cp.on('exit', (code: number) => {
         code === 0 || this.context.status === STEP_STATUS.CANCEL
           ? resolve({})
-          : reject(Buffer.concat(stderr).toString());
+          : reject(new Error(Buffer.concat(stderr).toString()));
       });
     });
   }
