@@ -3,6 +3,16 @@ export interface IEngineOptions {
   steps: IStepOptions[];
   inputs?: IkeyValue;
   logConfig?: ILogConfig;
+  cwd?: string; // 当前工作目录
+  events?: IEvent;
+}
+
+interface IEvent {
+  onProgress?: (data: IkeyValue) => Promise<void>;
+  onSuccess?: (data: IkeyValue[]) => Promise<void>;
+  onFailure?: (data: IkeyValue[]) => Promise<void>;
+  onCancelled?: (data: IkeyValue[]) => Promise<void>;
+  onCompleted?: (data: IkeyValue[]) => Promise<void>;
 }
 
 export interface ILogConfig {
@@ -17,7 +27,7 @@ export interface IkeyValue {
 
 export interface IRunOptions {
   run: string;
-  stepCount: string;
+  stepCount?: string;
   id?: string;
   name?: string;
   if?: string;
@@ -28,7 +38,7 @@ export interface IRunOptions {
 
 export interface IScriptOptions {
   script: string;
-  stepCount: string;
+  stepCount?: string;
   id?: string;
   name?: string;
   if?: string;
@@ -38,7 +48,7 @@ export interface IScriptOptions {
 
 export interface IUsesOptions {
   uses: string;
-  stepCount: string;
+  stepCount?: string;
   id?: string;
   name?: string;
   if?: string;
@@ -50,18 +60,46 @@ export interface IUsesOptions {
 
 export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
 
-export type IStepsStatus = IStepOptions & { status: string; errorMessage?: string };
-
-export type IStatus = 'success' | 'failure' | 'cancelled' | 'pending' | 'running';
-export interface IContext {
-  editStatusAble: boolean; // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
-  steps: IkeyValue; // 记录每个 step 的执行状态以及输出，后续step可以通过steps[$step_id].outputs使用该数据
-  env: IkeyValue; // 记录合并后的环境变量
-  [key: string]: any; // item.stepCount
+export enum STEP_IF {
+  SUCCESS = 'success()',
+  FAILURE = 'failure()',
+  ALWAYS = 'always()',
+  CANCEL = 'cancelled()',
 }
 
-export interface IPublicContext {
+export enum STEP_STATUS_BASE {
+  SUCCESS = 'success',
+  FAILURE = 'failure',
+  CANCEL = 'cancelled',
+  RUNNING = 'running',
+  PENING = 'pending',
+  ERROR_WITH_CONTINUE = 'error-with-continue',
+}
+
+export type IStatus = `${STEP_STATUS_BASE}`;
+
+enum STEP_STATUS_SKIP {
+  SKIP = 'skipped',
+}
+
+export const STEP_STATUS = { ...STEP_STATUS_BASE, ...STEP_STATUS_SKIP };
+
+export type ISteps = IStepOptions & {
+  status?: string;
+  errorMessage?: string;
+  outputs?: IkeyValue;
+  name?: string; // step title
+};
+
+export interface IRecord {
+  editStatusAble: boolean; // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
+  steps: IkeyValue; // 记录每个 step 的执行状态以及输出，后续step可以通过steps[$step_id].outputs使用该数据
+}
+
+export interface IContext {
   status: IStatus; // 记录task的状态
   stepCount: string; // 记录当前执行的step
-  steps: IStepsStatus[];
+  steps: ISteps[];
+  env: IkeyValue; // 记录合并后的环境变量
+  secrets: IkeyValue;
 }

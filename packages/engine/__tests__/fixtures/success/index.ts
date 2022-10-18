@@ -20,15 +20,6 @@ export async function run(
   // 注意，实际开发中不要写入敏感信息，此处只是为了方便调试
   logger.info(`config :${JSON.stringify({ inputs, context })}`);
   const newIputs = getInputs(inputs, context);
-  console.log(`newIputs :${JSON.stringify(newIputs)}`);
-  return { success: true };
-}
-
-export async function postRun(
-  inputs: IkeyValue,
-  context: IkeyValue,
-  logger: IkeyValue,
-): Promise<IkeyValue> {
-  logger.info(`this is postRun ${JSON.stringify({ inputs, context })}`);
+  logger.info(`newIputs :${JSON.stringify(newIputs)}`);
   return { success: true };
 }

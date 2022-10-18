@@ -21,14 +21,6 @@ export async function run(
   logger.info(`config :${JSON.stringify({ inputs, context })}`);
   const newIputs = getInputs(inputs, context);
   console.log(`newIputs :${JSON.stringify(newIputs)}`);
-  return { success: true };
-}
-
-export async function postRun(
-  inputs: IkeyValue,
-  context: IkeyValue,
-  logger: IkeyValue,
-): Promise<IkeyValue> {
-  logger.info(`this is postRun ${JSON.stringify({ inputs, context })}`);
+  throw new Error('my error');
   return { success: true };
 }

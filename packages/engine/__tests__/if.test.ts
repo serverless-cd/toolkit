@@ -1,5 +1,5 @@
-import Engine, { IStepOptions } from '../src';
-import { get } from 'lodash';
+import Engine, { IStepOptions, IContext } from '../src';
+import { get, map } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
@@ -14,11 +14,25 @@ test('模版可以识别${{steps.xhello.status === "success"}}', async () => {
     { run: 'echo "end"', id: 'xend' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
-  const res = await engine.start();
-  // 获取步骤1的status
-  expect(get(res, 'steps.xhello.status')).toBe('success');
-  // 步骤2执行成功说明模版识别成功
-  expect(get(res, 'steps.xworld.status')).toBe('success');
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item: any) => ({
+    status: item.status,
+    run: item.run,
+  }));
+  expect(data).toEqual([
+    {
+      status: 'success',
+      run: 'echo "hello"',
+    },
+    {
+      status: 'success',
+      run: 'echo "world"',
+    },
+    {
+      status: 'success',
+      run: 'echo "end"',
+    },
+  ]);
 });
 
 test('模版可以识别${{steps.xhello.status !== "success"}}', async () => {
@@ -32,11 +46,25 @@ test('模版可以识别${{steps.xhello.status !== "success"}}', async () => {
     { run: 'echo "end"', id: 'xend' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
-  const res = await engine.start();
-  // 获取步骤1的status
-  expect(get(res, 'steps.xhello.status')).toBe('success');
-  // 步骤2的执行状态为skip，说明模版识别成功
-  expect(get(res, 'steps.xworld.status')).toBe('skipped');
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item: any) => ({
+    status: item.status,
+    run: item.run,
+  }));
+  expect(data).toEqual([
+    {
+      status: 'success',
+      run: 'echo "hello"',
+    },
+    {
+      status: 'skipped',
+      run: 'echo "world"',
+    },
+    {
+      status: 'success',
+      run: 'echo "end"',
+    },
+  ]);
 });
 
 test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.status === 'success' }}", async () => {
@@ -50,13 +78,25 @@ test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.st
     },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
-  const res = await engine.start();
-  // 获取步骤1的状态
-  expect(get(res, 'steps.xhello.status')).toBe('success');
-  // 获取步骤2的状态
-  expect(get(res, 'steps.xworld.status')).toBe('success');
-  // 步骤3执行成功说明模版识别成功
-  expect(get(res, 'steps.xend.status')).toBe('success');
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item: any) => ({
+    status: item.status,
+    run: item.run,
+  }));
+  expect(data).toEqual([
+    {
+      status: 'success',
+      run: 'echo "hello"',
+    },
+    {
+      status: 'success',
+      run: 'echo "world"',
+    },
+    {
+      status: 'success',
+      run: 'echo "end"',
+    },
+  ]);
 });
 
 test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.status !== 'success' }}", async () => {
@@ -71,13 +111,25 @@ test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.st
   ] as IStepOptions[];
 
   const engine = new Engine({ steps, logConfig: { logPrefix } });
-  const res = await engine.start();
-  // 获取步骤1的状态
-  expect(get(res, 'steps.xhello.status')).toBe('success');
-  // 获取步骤2的状态
-  expect(get(res, 'steps.xworld.status')).toBe('success');
-  // 步骤3的执行状态为skip，说明模版识别成功
-  expect(get(res, 'steps.xend.status')).toBe('skipped');
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item: any) => ({
+    status: item.status,
+    run: item.run,
+  }));
+  expect(data).toEqual([
+    {
+      status: 'success',
+      run: 'echo "hello"',
+    },
+    {
+      status: 'success',
+      run: 'echo "world"',
+    },
+    {
+      status: 'skipped',
+      run: 'echo "end"',
+    },
+  ]);
 });
 test('模版可以识别 ${{env.name === "xiaoming"}}', async () => {
   const steps = [
@@ -90,9 +142,19 @@ test('模版可以识别 ${{env.name === "xiaoming"}}', async () => {
     },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
-  const res = await engine.start();
-  expect(get(res, 'steps')).toEqual({
-    xhello: { status: 'skipped' },
-    xworld: { status: 'success', outputs: {} },
-  });
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item: any) => ({
+    status: item.status,
+    run: item.run,
+  }));
+  expect(data).toEqual([
+    {
+      status: 'skipped',
+      run: 'echo "hello"',
+    },
+    {
+      status: 'success',
+      run: 'echo "world"',
+    },
+  ]);
 });
