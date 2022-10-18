@@ -4,6 +4,15 @@ export interface IEngineOptions {
   inputs?: IkeyValue;
   logConfig?: ILogConfig;
   cwd?: string; // 当前工作目录
+  events?: IEvent;
+}
+
+interface IEvent {
+  onProgress?: (data: IkeyValue) => Promise<void>;
+  onSuccess?: (data: IkeyValue[]) => Promise<void>;
+  onFailure?: (data: IkeyValue[]) => Promise<void>;
+  onCancelled?: (data: IkeyValue[]) => Promise<void>;
+  onCompleted?: (data: IkeyValue[]) => Promise<void>;
 }
 
 export interface ILogConfig {
@@ -18,7 +27,7 @@ export interface IkeyValue {
 
 export interface IRunOptions {
   run: string;
-  stepCount: string;
+  stepCount?: string;
   id?: string;
   name?: string;
   if?: string;
@@ -29,7 +38,7 @@ export interface IRunOptions {
 
 export interface IScriptOptions {
   script: string;
-  stepCount: string;
+  stepCount?: string;
   id?: string;
   name?: string;
   if?: string;
@@ -39,7 +48,7 @@ export interface IScriptOptions {
 
 export interface IUsesOptions {
   uses: string;
-  stepCount: string;
+  stepCount?: string;
   id?: string;
   name?: string;
   if?: string;

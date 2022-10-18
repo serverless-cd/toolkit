@@ -15,7 +15,7 @@ import {
   ISteps,
   STEP_IF,
 } from './types';
-import { isEmpty, get, each, replace, map, find } from 'lodash';
+import { isEmpty, get, each, replace, map, find, isFunction } from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
 import EventEmitter from 'events';
@@ -52,14 +52,14 @@ class Engine extends EventEmitter {
         final: {
           type: 'final',
           invoke: {
-            src: () => {
+            src: async () => {
               // 执行终态是 error-with-continue 的时候，改为 success
               const status =
                 this.context.status === STEP_STATUS.ERROR_WITH_CONTINUE
                   ? STEP_STATUS.SUCCESS
                   : this.context.status;
               this.context.status = status as IStatus;
-              this.doEmit();
+              await this.doEmit();
               // resolve(this.context);
               resolve({
                 status: this.context.status,
@@ -72,7 +72,7 @@ class Engine extends EventEmitter {
 
       each(steps, (item, index) => {
         const target = steps[index + 1] ? get(steps, `[${index + 1}].stepCount`) : 'final';
-        states[item.stepCount] = {
+        states[item.stepCount as string] = {
           invoke: {
             id: item.stepCount,
             src: () => {
@@ -173,7 +173,7 @@ class Engine extends EventEmitter {
       outputs,
     }: { status?: string; errorMessage?: string; outputs?: IkeyValue },
   ) {
-    this.context.stepCount = item.stepCount;
+    this.context.stepCount = item.stepCount as string;
     this.context.steps = map(this.context.steps, (obj) => {
       if (obj.stepCount === item.stepCount) {
         if (status) {
@@ -225,8 +225,14 @@ class Engine extends EventEmitter {
   }
   // 每个步骤最后的动作
   private async doFinal(item: IStepOptions) {
+    const { events } = this.options;
+
     const processData = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
     this.emit('process', processData);
+    if (isFunction(events?.onProgress)) {
+      await events?.onProgress(processData as ISteps);
+    }
+
     const logConfig = this.options.logConfig as ILogConfig;
     const { logPrefix, ossConfig } = logConfig;
     if (ossConfig && logPrefix) {
@@ -237,9 +243,23 @@ class Engine extends EventEmitter {
     }
   }
   // 将执行终态进行emit
-  private doEmit() {
-    this.emit(this.context.status, this.context.steps);
-    this.emit('completed', this.context.steps);
+  private async doEmit() {
+    const { status, steps } = this.context;
+    const { events } = this.options;
+    this.emit(status, steps);
+    if (status === STEP_STATUS.SUCCESS && isFunction(events?.onSuccess)) {
+      await events?.onSuccess(steps);
+    }
+    if (status === STEP_STATUS.FAILURE && isFunction(events?.onFailure)) {
+      await events?.onFailure(steps);
+    }
+    if (status === STEP_STATUS.CANCEL && isFunction(events?.onCancelled)) {
+      await events?.onCancelled(steps);
+    }
+    this.emit('completed', steps);
+    if (isFunction(events?.onCompleted)) {
+      await events?.onCompleted(steps);
+    }
   }
   private async handleSrc(item: IStepOptions) {
     try {
