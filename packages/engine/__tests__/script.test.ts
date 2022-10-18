@@ -12,7 +12,7 @@ test('系统命令:ls-la', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('promise', async () => {
@@ -24,7 +24,7 @@ test('promise', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('fs', async () => {
@@ -37,7 +37,7 @@ test('fs', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('os', async () => {
@@ -49,7 +49,7 @@ test('os', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('path', async () => {
@@ -61,7 +61,7 @@ test('path', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('chalk', async () => {
@@ -73,7 +73,7 @@ test('chalk', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('glob', async () => {
@@ -86,7 +86,7 @@ test('glob', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('YAML', async () => {
@@ -98,7 +98,7 @@ test('YAML', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('which', async () => {
@@ -110,7 +110,7 @@ test('which', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('文件路径', async () => {
@@ -122,7 +122,7 @@ test('文件路径', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('测试失败case', async () => {
@@ -142,7 +142,7 @@ test('测试失败case', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('failure');
+  expect(get(res, 'status')).toBe('failure');
 });
 
 test('cd', async () => {
@@ -154,7 +154,7 @@ test('cd', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('支持魔法变量', async () => {
@@ -171,5 +171,5 @@ test('支持魔法变量', async () => {
   ] as unknown as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });

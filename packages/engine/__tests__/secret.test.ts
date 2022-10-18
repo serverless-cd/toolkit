@@ -33,6 +33,6 @@ describe('${{secret.name}} => 日志需要为 ***', () => {
       inputs: { secrets: { name: 'xiaoming', long: 'iamxiaoming' } },
     });
     const res = await engine.start();
-    expect(get(res, 'steps.xuse.status')).toBe('success');
+    expect(get(res, 'status')).toBe('success');
   });
 });

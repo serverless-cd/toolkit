@@ -116,7 +116,7 @@ describe('执行终态emit测试', () => {
 });
 
 describe('步骤执行过程中emit测试', () => {
-  test.only('uses success on process', async () => {
+  test('uses success on process', async () => {
     const steps = [
       {
         uses: path.join(__dirname, 'fixtures', 'success'),

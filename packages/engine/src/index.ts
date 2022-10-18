@@ -24,7 +24,7 @@ import * as os from 'os';
 import * as zx from '@serverless-cd/zx';
 import { getScript, getSteps } from './utils';
 
-export { IStepOptions } from './types';
+export { IStepOptions, IContext } from './types';
 
 class Engine extends EventEmitter {
   private childProcess: any[] = [];
@@ -39,7 +39,7 @@ class Engine extends EventEmitter {
       return item;
     });
   }
-  async start() {
+  async start(): Promise<IContext | undefined> {
     const { steps, inputs = {} } = this.options;
     if (isEmpty(steps)) return;
     return new Promise((resolve) => {
@@ -60,11 +60,7 @@ class Engine extends EventEmitter {
                   : this.context.status;
               this.context.status = status as IStatus;
               await this.doEmit();
-              // resolve(this.context);
-              resolve({
-                status: this.context.status,
-                steps: this.record.steps,
-              });
+              resolve(this.context);
             },
           },
         },

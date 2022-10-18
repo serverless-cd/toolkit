@@ -1,5 +1,5 @@
-import Engine, { IStepOptions } from '../src';
-import { get } from 'lodash';
+import Engine, { IStepOptions, IContext } from '../src';
+import { get, map } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
@@ -21,8 +21,8 @@ test.skip('logger oss', async () => {
       },
     },
   });
-  const res = await engine.start();
-  expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
+  const res: IContext | undefined = await engine.start();
+  expect(res?.status).toBe('success');
 });
 
 test('自定义logger', async () => {
@@ -41,8 +41,8 @@ test('自定义logger', async () => {
   };
 
   const engine = new Engine({ steps, logConfig: { customLogger } });
-  const res = await engine.start();
-  expect(get(res, 'steps.xhello.status')).toBe('success');
+  const res: IContext | undefined = await engine.start();
+  expect(res?.status).toBe('success');
 });
 
 test('获取某一步的outputs', async () => {
@@ -52,8 +52,19 @@ test('获取某一步的outputs', async () => {
     { run: 'echo "world"' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' } });
-  const res = await engine.start();
-  expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item) => ({
+    status: item.status,
+    outputs: item.outputs,
+  }));
+
+  expect(res?.status).toBe('success');
+  expect(data).toEqual([
+    { status: 'success', outputs: {} },
+    { status: 'success', outputs: { success: true } },
+    { status: 'success', outputs: {} },
+    { status: 'success', outputs: { success: true } },
+  ]);
 });
 
 test('全局status测试', async () => {
@@ -65,11 +76,33 @@ test('全局status测试', async () => {
       inputs: { milliseconds: 10 },
       if: '${{status === "failture"}}',
     },
-    { run: 'echo "world"', if: '${{status === "success"}}' },
+    { run: 'echo "world"', id: 'xworld', if: '${{status === "success"}}' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
-  const res = await engine.start();
-  expect(get(res, 'steps.xuse.status')).toBe('skipped');
+
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item) => ({
+    status: item.status,
+    id: item.id,
+  }));
+  expect(data).toEqual([
+    {
+      status: 'success',
+      id: 'xhello',
+    },
+    {
+      status: 'skipped',
+      id: 'xuse',
+    },
+    {
+      status: 'success',
+      id: 'xworld',
+    },
+    {
+      status: 'skipped',
+      id: 'xuse',
+    },
+  ]);
 });
 
 test('cancel测试', (done) => {
@@ -102,10 +135,33 @@ test('uses：应用测试返回值', async () => {
     { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
-  const res = await engine.start();
-  expect(get(res, 'steps.xuse.outputs')).toEqual({ success: true });
-  // error case
-  // expect(get(res, 'steps.xuse.errorMessage').toString()).toMatch('Error');
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item) => ({
+    status: item.status,
+    id: item.id,
+    outputs: item.outputs,
+  }));
+  expect(data).toEqual([
+    {
+      status: 'success',
+      id: 'xhello',
+      outputs: {},
+    },
+    {
+      status: 'success',
+      id: 'xuse',
+      outputs: {
+        success: true,
+      },
+    },
+    {
+      status: 'success',
+      id: 'xuse',
+      outputs: {
+        success: true,
+      },
+    },
+  ]);
 });
 
 test('script 测试', async () => {
@@ -118,7 +174,7 @@ test('script 测试', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
-  expect(get(res, 'steps.xscript.status')).toBe('success');
+  expect(get(res, 'status')).toBe('success');
 });
 
 test('inputs测试', async () => {
@@ -132,6 +188,23 @@ test('inputs测试', async () => {
     logConfig: { logPrefix },
     inputs: { name: 'xiaoming', env: { name: 'xiaoming' } },
   });
-  const res = await engine.start();
-  expect(get(res, 'steps.xname.status')).toBe('success');
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item) => ({
+    status: item.status,
+    id: item.id,
+  }));
+  expect(data).toEqual([
+    {
+      status: 'success',
+      id: 'xhello',
+    },
+    {
+      status: 'skipped',
+      id: 'xworld',
+    },
+    {
+      status: 'success',
+      id: 'xname',
+    },
+  ]);
 });
