@@ -3,7 +3,7 @@ import { get, omit, map } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
-describe('${{secret.name}} => 日志需要为 ***', () => {
+describe.skip('${{secret.name}} => 日志需要为 ***', () => {
   test('uses case', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },

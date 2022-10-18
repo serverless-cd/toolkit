@@ -6,14 +6,14 @@ import {
   IScriptOptions,
   IUsesOptions,
   IStepsStatus,
-  IContext,
+  IRecord,
   IStatus,
   IkeyValue,
   IEngineOptions,
   IPublicContext,
   ILogConfig,
 } from './types';
-import { isEmpty, get, each, replace, map, noop } from 'lodash';
+import { isEmpty, get, each, replace, map, find } from 'lodash';
 import { command } from 'execa';
 import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
@@ -26,34 +26,25 @@ import { mark, getScript, getSteps } from './utils';
 export { IStepOptions } from './types';
 class Engine extends EventEmitter {
   private childProcess: any[] = [];
-  public context = {
-    status: STEP_STATUS.PENING,
-  } as IPublicContext;
-  private $context = {
-    editStatusAble: true,
-  } as IContext;
-  private steps: IStepOptions[] = [];
+  public context = { status: STEP_STATUS.PENING } as IPublicContext;
+  private record = { editStatusAble: true } as IRecord;
   private logger: any;
-  private logConfig: ILogConfig;
-  private inputs: IkeyValue | undefined;
-  constructor(options: IEngineOptions) {
-    const { steps, logConfig = {}, inputs } = options;
+  constructor(private options: IEngineOptions) {
     super();
-    this.logConfig = logConfig;
-    this.inputs = inputs;
-    this.steps = getSteps(steps, this.childProcess);
-    this.context.steps = map(this.steps as IStepsStatus[], (item) => {
+    options.steps = getSteps(options.steps, this.childProcess);
+    this.context.steps = map(options.steps as IStepsStatus[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
     });
   }
   async start() {
-    if (isEmpty(this.steps)) return;
+    const { steps } = this.options;
+    if (isEmpty(steps)) return;
     return new Promise((resolve) => {
       const states: any = {
         init: {
           on: {
-            INIT: get(this.steps, '[0].stepCount'),
+            INIT: get(steps, '[0].stepCount'),
           },
         },
         final: {
@@ -67,19 +58,18 @@ class Engine extends EventEmitter {
                   : this.context.status;
               this.context.status = status as IStatus;
               this.doEmit();
+              // resolve(this.context);
               resolve({
                 status: this.context.status,
-                steps: this.$context.steps,
+                steps: this.record.steps,
               });
             },
           },
         },
       };
 
-      each(this.steps, (item, index) => {
-        const target = this.steps[index + 1]
-          ? get(this.steps, `[${index + 1}].stepCount`)
-          : 'final';
+      each(steps, (item, index) => {
+        const target = steps[index + 1] ? get(steps, `[${index + 1}].stepCount`) : 'final';
         states[item.stepCount] = {
           invoke: {
             id: item.stepCount,
@@ -89,7 +79,7 @@ class Engine extends EventEmitter {
               // 记录 context
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
-              this.$context.env = item.env as IkeyValue;
+              this.context.env = item.env as IkeyValue;
               this.doReplace$(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
@@ -105,7 +95,7 @@ class Engine extends EventEmitter {
                   STEP_IF.SUCCESS,
                   this.context.status !== STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
-                // 替换 success()
+                // 替换 cancelled()
                 item.if = replace(
                   item.if,
                   STEP_IF.CANCEL,
@@ -148,7 +138,8 @@ class Engine extends EventEmitter {
   }
 
   private setLogger(item: IStepOptions) {
-    const { customLogger, logPrefix, logLevel } = this.logConfig;
+    const logConfig = this.options.logConfig as ILogConfig;
+    const { customLogger, logPrefix, logLevel } = logConfig;
     if (customLogger) {
       return (this.logger = customLogger);
     }
@@ -174,7 +165,11 @@ class Engine extends EventEmitter {
   }
   private recordContext(
     item: IStepOptions,
-    { status, errorMessage }: { status?: string; errorMessage?: string },
+    {
+      status,
+      errorMessage,
+      outputs,
+    }: { status?: string; errorMessage?: string; outputs?: IkeyValue },
   ) {
     this.context.stepCount = item.stepCount;
     this.context.steps = map(this.context.steps, (obj) => {
@@ -185,53 +180,53 @@ class Engine extends EventEmitter {
         if (errorMessage) {
           obj.errorMessage = errorMessage;
         }
+        if (outputs) {
+          obj.outputs = outputs;
+        }
       }
       return obj;
     });
   }
   cancel() {
     this.context.status = STEP_STATUS.CANCEL as IStatus;
-    this.$context.editStatusAble = false;
+    this.record.editStatusAble = false;
     // kill child process, 后续的步骤正常执行，但状态标记为cancelled
     each(this.childProcess, (item) => {
       item.kill();
     });
   }
   private getFilterContext() {
-    const env = get(this.$context, 'env', {});
+    const { inputs } = this.options;
+    const { env = {} } = this.context;
     return {
-      ...this.inputs,
+      inputs,
       status: this.context.status,
-      steps: this.$context.steps,
+      steps: this.record.steps,
       env,
       secret: env,
     };
   }
   private getSecretFilterContext() {
-    const env = this.$context.env;
+    const { inputs } = this.options;
+    const { env } = this.context;
     const secret = {} as IkeyValue;
     for (const key in env) {
       const val = env[key];
       secret[key] = mark(val);
     }
     return {
-      ...this.inputs,
-      steps: this.$context.steps,
+      ...inputs,
+      steps: this.record.steps,
       env,
       secret,
     };
   }
-  private getProcessData(item: IStepOptions) {
-    return {
-      ...item,
-      status: this.$context[item.stepCount].status,
-      env: this.$context.env,
-    };
-  }
   // 每个步骤最后的动作
   private async doFinal(item: IStepOptions) {
-    this.recordContext(item, { status: this.context.status });
-    const { logPrefix, ossConfig } = this.logConfig;
+    const processData = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
+    this.emit('process', processData);
+    const logConfig = this.options.logConfig as ILogConfig;
+    const { logPrefix, ossConfig } = logConfig;
     if (ossConfig && logPrefix) {
       await this.logger.oss({
         ...ossConfig,
@@ -242,7 +237,6 @@ class Engine extends EventEmitter {
   // 将执行终态进行emit
   private doEmit() {
     this.emit(this.context.status, this.context.steps);
-    this.context.status = this.context.status;
     this.emit('completed', this.context.steps);
   }
   private async handleSrc(item: IStepOptions) {
@@ -252,55 +246,49 @@ class Engine extends EventEmitter {
       const isCancel = item.if !== 'true' && this.context.status === STEP_STATUS.CANCEL;
       if (isCancel) return this.doCancel(item);
       // 记录全局的执行状态
-      if (this.$context.editStatusAble) {
+      if (this.record.editStatusAble) {
         this.context.status = STEP_STATUS.SUCCESS as IStatus;
       }
-      // stepCount 添加状态
-      this.$context[item.stepCount] = {
-        status: STEP_STATUS.SUCCESS,
-      };
       // id 添加状态
       if (item.id) {
-        this.$context.steps = {
-          ...this.$context.steps,
+        this.record.steps = {
+          ...this.record.steps,
           [item.id]: {
             status: STEP_STATUS.SUCCESS,
             outputs: response,
           },
         };
       }
+      this.recordContext(item, { status: STEP_STATUS.SUCCESS, outputs: response });
+      await this.doFinal(item);
     } catch (err: any) {
       const status =
         item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
       // 记录全局的执行状态
-      if (this.$context.editStatusAble) {
+      if (this.record.editStatusAble) {
         this.context.status = status as IStatus;
       }
       if (status === STEP_STATUS.FAILURE) {
         // 全局的执行状态一旦失败，便不可修改
-        this.$context.editStatusAble = false;
+        this.record.editStatusAble = false;
       }
-      this.$context[item.stepCount] = {
-        status,
-      };
       if (item.id) {
-        this.$context.steps = {
-          ...this.$context.steps,
+        this.record.steps = {
+          ...this.record.steps,
           [item.id]: {
             status,
           },
         };
       }
-      if (item['continue-on-error'] !== true) {
-        this.emit('process', { ...this.getProcessData(item), errorMessage: err.message });
-        // step 执行失败，记录 errorMessage
-        this.recordContext(item, { errorMessage: err.message });
+      if (item['continue-on-error']) {
+        this.recordContext(item, { status });
+        await this.doFinal(item);
+      } else {
+        this.recordContext(item, { status, errorMessage: err.message });
         await this.doFinal(item);
         throw err;
       }
     }
-    this.emit('process', this.getProcessData(item));
-    await this.doFinal(item);
   }
   private async doSrc(_item: IStepOptions) {
     const item = { ..._item };
@@ -359,51 +347,44 @@ class Engine extends EventEmitter {
     }
   }
   private async doSkip(item: IStepOptions) {
-    // stepCount 添加状态
-    this.$context[item.stepCount] = {
-      status: STEP_STATUS.SKIP,
-    };
     // id 添加状态
     if (item.id) {
-      this.$context.steps = {
-        ...this.$context.steps,
+      this.record.steps = {
+        ...this.record.steps,
         [item.id]: {
           status: STEP_STATUS.SKIP,
         },
       };
     }
     this.logName(item);
-    this.emit('process', this.getProcessData(item));
+    this.recordContext(item, { status: STEP_STATUS.SKIP });
     await this.doFinal(item);
     return Promise.resolve();
   }
   private async doCancel(item: IStepOptions) {
-    // stepCount 添加状态
-    this.$context[item.stepCount] = {
-      status: STEP_STATUS.CANCEL,
-    };
     // id 添加状态
     if (item.id) {
-      this.$context.steps = {
-        ...this.$context.steps,
+      this.record.steps = {
+        ...this.record.steps,
         [item.id]: {
           status: STEP_STATUS.CANCEL,
         },
       };
     }
     this.logName(item);
-    this.emit('process', this.getProcessData(item));
+    this.recordContext(item, { status: STEP_STATUS.CANCEL });
     await this.doFinal(item);
     return Promise.resolve();
   }
   private doWarn() {
+    const { inputs = {} } = this.options;
     let msg = '';
-    if (this.inputs?.env && this.inputs?.steps) {
+    if (inputs.env && inputs.steps) {
       msg =
         'env and steps are built-in fields, and env and steps fields in the inputs will be ignored.';
-    } else if (this.inputs?.env) {
+    } else if (inputs.env) {
       msg = 'env is a built-in fields, and the env field in the inputs will be ignored.';
-    } else if (this.inputs?.steps) {
+    } else if (inputs.steps) {
       msg = 'steps is a built-in fields, and the steps field in the inputs will be ignored.';
     }
     msg && this.logger.warn(msg);
@@ -414,7 +395,7 @@ class Engine extends EventEmitter {
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;
-    const isSkip = get(this.$context, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
+    const isSkip = get(this.record, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
     let msg = '';
     if (runItem.run) {
       const ifCondition = artTemplate.compile(runItem.run);

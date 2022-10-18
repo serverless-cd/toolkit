@@ -1,5 +1,5 @@
 import Engine, { IStepOptions } from '../src';
-import { omit, map } from 'lodash';
+import { map } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
@@ -11,14 +11,9 @@ describe('执行终态emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
     engine.on('success', (data) => {
-      const newData = map(data, (item) => omit(item, 'stepCount'));
-
+      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
       expect(newData).toEqual([
-        {
-          run: 'echo "hello"',
-          id: 'xhello',
-          status: 'success',
-        },
+        { run: 'echo "hello"', status: 'success' },
         { run: 'echo "world"', status: 'success' },
       ]);
     });
@@ -31,13 +26,9 @@ describe('执行终态emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
     engine.on('completed', (data) => {
-      const newData = map(data, (item) => omit(item, 'stepCount'));
+      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
       expect(newData).toEqual([
-        {
-          run: 'echo "hello"',
-          id: 'xhello',
-          status: 'success',
-        },
+        { run: 'echo "hello"', status: 'success' },
         { run: 'echo "world"', status: 'success' },
       ]);
     });
@@ -50,10 +41,10 @@ describe('执行终态emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
     engine.on('failure', (data) => {
-      const newData = map(data, (item) => omit(item, ['stepCount', 'errorMessage']));
+      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
       expect(newData).toEqual([
-        { run: 'echo "hello"', id: 'xhello', status: 'success' },
-        { run: 'npm run error', id: 'xerror', status: 'failure' },
+        { run: 'echo "hello"', status: 'success' },
+        { run: 'npm run error', status: 'failure' },
       ]);
     });
     await engine.start();
@@ -78,7 +69,7 @@ describe('执行终态emit测试', () => {
     });
     lazy(callback);
     engine.on('cancelled', (data) => {
-      const newData = map(data, (item) => omit(item, 'stepCount'));
+      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
       expect(newData).toEqual([
         { run: 'echo "hello"', status: 'success' },
         {
@@ -86,7 +77,7 @@ describe('执行终态emit测试', () => {
           status: 'cancelled',
         },
         { run: 'echo "world"', status: 'cancelled' },
-        { run: 'echo "end"', if: 'true', status: 'success' },
+        { run: 'echo "end"', status: 'success' },
       ]);
     });
     engine.start();
@@ -98,9 +89,14 @@ describe('执行终态emit测试', () => {
 });
 
 describe('步骤执行过程中emit测试', () => {
-  test.only('uses throw error', async () => {
+  test('uses throw error on failture', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
+      {
+        uses: path.join(__dirname, 'fixtures', 'error'),
+        id: 'xuse',
+        inputs: { milliseconds: 10 },
+      },
       {
         uses: path.join(__dirname, 'fixtures', 'error'),
         id: 'xuse',
@@ -110,17 +106,61 @@ describe('步骤执行过程中emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
     engine.on('failure', (data) => {
-      const newData = map(data, (item) => ({
-        status: item.status,
-        errorMessage: item.errorMessage,
-      }));
+      const newData = map(data, (item) => {
+        const obj: any = {
+          status: item.status,
+        };
+        if (item.errorMessage) {
+          obj['errorMessage'] = item.errorMessage;
+        }
+        return obj;
+      });
       expect(newData).toEqual([
         { status: 'success' },
         { status: 'failure', errorMessage: 'my error' },
-        { status: 'failure' },
+        { status: 'skipped' },
+        { status: 'skipped' },
       ]);
     });
     await engine.start();
+  });
+  test('uses throw error on process', async () => {
+    const steps = [
+      {
+        uses: path.join(__dirname, 'fixtures', 'success'),
+        id: 'xapp',
+        inputs: { milliseconds: 10 },
+      },
+      {
+        uses: path.join(__dirname, 'fixtures', 'error'),
+        id: 'xerror',
+        inputs: { milliseconds: 10 },
+      },
+      { run: 'echo "world"', id: 'xworld' },
+    ] as IStepOptions[];
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
+    const newData: any = [];
+    engine.on('process', (data) => {
+      const obj: any = {
+        status: data.status,
+      };
+      if (data.errorMessage) {
+        obj['errorMessage'] = data.errorMessage;
+      }
+      if (data.outputs) {
+        obj['outputs'] = data.outputs;
+      }
+      newData.push(obj);
+    });
+    await engine.start();
+    expect(newData).toEqual([
+      {
+        status: 'success',
+        outputs: { success: true },
+      },
+      { status: 'failure', errorMessage: 'my error' },
+      { status: 'skipped' },
+    ]);
   });
   test('success, failure, skipped, error-with-continue', async () => {
     const steps = [
@@ -149,7 +189,7 @@ describe('步骤执行过程中emit测试', () => {
     ]);
   });
 
-  test('cancelled', (done) => {
+  test.skip('cancelled', (done) => {
     const lazy = (fn: any) => {
       setTimeout(() => {
         console.log('3s后执行 callback');
