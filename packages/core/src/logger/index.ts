@@ -9,6 +9,7 @@ import {
 } from 'egg-logger';
 import chalk from 'chalk';
 import OssLogger, { IOssConfig } from './oss-logger';
+import { each } from 'lodash';
 
 const duartionRegexp = /([0-9]+ms)/g;
 const categoryRegexp = /(\[[\w\-_.:]+\])/g;
@@ -20,10 +21,32 @@ interface IMeta {
   pid: number;
   hostname: string;
   message: string;
+  secrets?: string[];
 }
+
+interface MyConsoleTransportOptions extends ConsoleTransportOptions {
+  secrets?: string[];
+}
+
+interface MyFileTransportOptions extends FileTransportOptions {
+  secrets?: string[];
+}
+
+function mark(val: string) {
+  return val.length > 8
+    ? val.slice(0, 3) + '*'.repeat(val.length - 6) + val.slice(val.length - 3, val.length)
+    : '***';
+}
+
 const formatter = (meta?: object) => {
   const metaObj = meta as IMeta;
+  const { secrets = [] } = metaObj;
   let msg = metaObj.message;
+  secrets &&
+    each(secrets, (str) => {
+      msg = msg.replace(str, mark(str));
+    });
+
   if (metaObj.level === 'ERROR') {
     return chalk.red(msg);
   } else if (metaObj.level === 'WARN') {
@@ -36,18 +59,18 @@ const formatter = (meta?: object) => {
 };
 
 class _ConsoleTransport extends ConsoleTransport {
-  constructor(options: ConsoleTransportOptions) {
+  constructor(options: MyConsoleTransportOptions) {
     super({
-      formatter,
+      formatter: (data: object | undefined) => formatter({ ...data, secrets: options.secrets }),
       ...options,
     });
   }
 }
 
 class _FileTransport extends FileTransport {
-  constructor(options: FileTransportOptions) {
+  constructor(options: MyFileTransportOptions) {
     super({
-      formatter,
+      formatter: (data: object | undefined) => formatter({ ...data, secrets: options.secrets }),
       ...options,
     });
   }
@@ -56,14 +79,16 @@ class _FileTransport extends FileTransport {
 interface IProps {
   file?: string;
   level?: LoggerLevel;
+  secrets?: string[];
 }
 class EngineLogger extends Logger {
   constructor(props: IProps) {
-    const { file, level = 'INFO' } = props;
+    const { file, level = 'INFO', secrets } = props;
     super({});
     this.set(
       'console',
       new _ConsoleTransport({
+        secrets,
         level,
       }),
     );
@@ -71,6 +96,7 @@ class EngineLogger extends Logger {
       this.set(
         'file',
         new _FileTransport({
+          secrets,
           file,
           level,
         }),
@@ -90,4 +116,5 @@ export {
   _FileTransport as FileTransport,
   IOssConfig,
   LoggerLevel,
+  mark,
 };

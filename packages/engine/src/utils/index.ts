@@ -3,12 +3,6 @@ import { IStepOptions, IUsesOptions } from '../types';
 import { fs } from '@serverless-cd/core';
 import { command } from 'execa';
 
-export function mark(val: string) {
-  return val.length > 8
-    ? val.slice(0, 3) + '*'.repeat(val.length - 6) + val.slice(val.length - 3, val.length)
-    : '***';
-}
-
 export function getScript(val: string) {
   return `
     return async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }) {

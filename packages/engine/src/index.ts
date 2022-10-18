@@ -1,4 +1,4 @@
-import { EngineLogger, artTemplate, fs } from '@serverless-cd/core';
+import { EngineLogger, artTemplate, fs, mark } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -22,7 +22,7 @@ import EventEmitter from 'events';
 import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
-import { mark, getScript, getSteps } from './utils';
+import { getScript, getSteps } from './utils';
 
 export { IStepOptions } from './types';
 
