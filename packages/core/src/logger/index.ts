@@ -9,7 +9,7 @@ import {
 } from 'egg-logger';
 import chalk from 'chalk';
 import OssLogger, { IOssConfig } from './oss-logger';
-import { each } from 'lodash';
+import { each, includes } from 'lodash';
 
 const duartionRegexp = /([0-9]+ms)/g;
 const categoryRegexp = /(\[[\w\-_.:]+\])/g;
@@ -44,7 +44,9 @@ const formatter = (meta?: object) => {
   let msg = metaObj.message;
   secrets &&
     each(secrets, (str) => {
-      msg = msg.replace(str, mark(str));
+      do {
+        msg = msg.replace(str, mark(str));
+      } while (includes(msg, str));
     });
 
   if (metaObj.level === 'ERROR') {

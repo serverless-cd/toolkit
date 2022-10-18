@@ -84,7 +84,12 @@ enum STEP_STATUS_SKIP {
 
 export const STEP_STATUS = { ...STEP_STATUS_BASE, ...STEP_STATUS_SKIP };
 
-export type ISteps = IStepOptions & { status?: string; errorMessage?: string; outputs?: IkeyValue };
+export type ISteps = IStepOptions & {
+  status?: string;
+  errorMessage?: string;
+  outputs?: IkeyValue;
+  name?: string; // step title
+};
 
 export interface IRecord {
   editStatusAble: boolean; // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
@@ -96,4 +101,5 @@ export interface IContext {
   stepCount: string; // 记录当前执行的step
   steps: ISteps[];
   env: IkeyValue; // 记录合并后的环境变量
+  secrets: IkeyValue;
 }

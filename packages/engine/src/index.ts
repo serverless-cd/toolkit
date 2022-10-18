@@ -1,4 +1,4 @@
-import { EngineLogger, artTemplate, fs, mark } from '@serverless-cd/core';
+import { EngineLogger, artTemplate, fs } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -15,7 +15,7 @@ import {
   ISteps,
   STEP_IF,
 } from './types';
-import { isEmpty, get, each, replace, map, find, isFunction } from 'lodash';
+import { isEmpty, get, each, replace, map, find, isFunction, values } from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
 import EventEmitter from 'events';
@@ -40,7 +40,7 @@ class Engine extends EventEmitter {
     });
   }
   async start() {
-    const { steps } = this.options;
+    const { steps, inputs = {} } = this.options;
     if (isEmpty(steps)) return;
     return new Promise((resolve) => {
       const states: any = {
@@ -82,6 +82,7 @@ class Engine extends EventEmitter {
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
               this.context.env = item.env as IkeyValue;
+              this.context.secrets = inputs.secrets;
               this.doReplace$(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
@@ -142,12 +143,14 @@ class Engine extends EventEmitter {
   private setLogger(item: IStepOptions) {
     const logConfig = this.options.logConfig as ILogConfig;
     const { customLogger, logPrefix, logLevel } = logConfig;
+    const { inputs } = this.options;
     if (customLogger) {
       return (this.logger = customLogger);
     }
     this.logger = new EngineLogger({
       file: logPrefix && path.join(logPrefix, `step_${item.stepCount}.log`),
       level: logLevel,
+      secrets: inputs?.secrets ? values(inputs.secrets) : undefined,
     });
   }
 
@@ -165,14 +168,7 @@ class Engine extends EventEmitter {
       item.if = fn(item.if);
     }
   }
-  private recordContext(
-    item: IStepOptions,
-    {
-      status,
-      errorMessage,
-      outputs,
-    }: { status?: string; errorMessage?: string; outputs?: IkeyValue },
-  ) {
+  private recordContext(item: IStepOptions, { status, errorMessage, outputs, name }: IkeyValue) {
     this.context.stepCount = item.stepCount as string;
     this.context.steps = map(this.context.steps, (obj) => {
       if (obj.stepCount === item.stepCount) {
@@ -184,6 +180,9 @@ class Engine extends EventEmitter {
         }
         if (outputs) {
           obj.outputs = outputs;
+        }
+        if (name) {
+          obj.name = name;
         }
       }
       return obj;
@@ -199,28 +198,13 @@ class Engine extends EventEmitter {
   }
   private getFilterContext() {
     const { inputs } = this.options;
-    const { env = {} } = this.context;
+    const { env = {}, secrets = {} } = this.context;
     return {
       inputs,
       status: this.context.status,
       steps: this.record.steps,
       env,
-      secret: env,
-    };
-  }
-  private getSecretFilterContext() {
-    const { inputs } = this.options;
-    const { env } = this.context;
-    const secret = {} as IkeyValue;
-    for (const key in env) {
-      const val = env[key];
-      secret[key] = mark(val);
-    }
-    return {
-      ...inputs,
-      steps: this.record.steps,
-      env,
-      secret,
+      secrets,
     };
   }
   // 每个步骤最后的动作
@@ -414,15 +398,11 @@ class Engine extends EventEmitter {
   }
   private logName(item: IStepOptions) {
     // 打印 step 名称
-    // serect数据进行加*，此时item修改了原有对象，保证emit callback 数据也是加*的
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;
-    const isSkip = get(this.record, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
     let msg = '';
     if (runItem.run) {
-      const ifCondition = artTemplate.compile(runItem.run);
-      runItem.run = ifCondition(this.getSecretFilterContext());
       msg = runItem.name || `Run ${runItem.run}`;
     }
     if (usesItem.uses) {
@@ -431,7 +411,10 @@ class Engine extends EventEmitter {
     if (scriptItem.script) {
       msg = runItem.name || `Run ${scriptItem.script}`;
     }
-    this.logger.debug(isSkip ? `[skipped] ${msg}` : msg);
+    const isSkip = get(this.record, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
+    msg = isSkip ? `[skipped] ${msg}` : msg;
+    this.recordContext(item, { name: msg });
+    this.logger.debug(msg);
     this.doWarn();
   }
   private onFinish(cp: any) {
