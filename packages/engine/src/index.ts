@@ -293,14 +293,15 @@ class Engine extends EventEmitter {
     }
   }
   private async doSrc(_item: IStepOptions) {
+    const { cwd = process.cwd() } = this.options;
     const item = { ..._item };
     const runItem = item as IRunOptions;
     const usesItem = item as IUsesOptions;
     const scriptItem = item as IScriptOptions;
     // run
     if (runItem.run) {
-      let execPath = runItem['working-directory'] || process.cwd();
-      execPath = path.isAbsolute(execPath) ? execPath : path.join(process.cwd(), execPath);
+      let execPath = runItem['working-directory'] || cwd;
+      execPath = path.isAbsolute(execPath) ? execPath : path.join(cwd, execPath);
       this.logName(_item);
       const ifCondition = artTemplate.compile(runItem.run);
       runItem.run = ifCondition(this.getFilterContext());

@@ -3,6 +3,7 @@ export interface IEngineOptions {
   steps: IStepOptions[];
   inputs?: IkeyValue;
   logConfig?: ILogConfig;
+  cwd?: string; // 当前工作目录
 }
 
 export interface ILogConfig {
