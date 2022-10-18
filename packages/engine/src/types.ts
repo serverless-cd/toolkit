@@ -50,17 +50,38 @@ export interface IUsesOptions {
 
 export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
 
-export type IStepsStatus = IStepOptions & { status: string; errorMessage?: string };
+export enum STEP_IF {
+  SUCCESS = 'success()',
+  FAILURE = 'failure()',
+  ALWAYS = 'always()',
+  CANCEL = 'cancelled()',
+}
+
+export enum STEP_STATUS_BASE {
+  SUCCESS = 'success',
+  FAILURE = 'failure',
+  CANCEL = 'cancelled',
+  RUNNING = 'running',
+  PENING = 'pending',
+  ERROR_WITH_CONTINUE = 'error-with-continue',
+}
+
+export type IStatus = `${STEP_STATUS_BASE}`;
+
+enum STEP_STATUS_SKIP {
+  SKIP = 'skipped',
+}
+
+export const STEP_STATUS = { ...STEP_STATUS_BASE, ...STEP_STATUS_SKIP };
 
 export type ISteps = IStepOptions & { status?: string; errorMessage?: string; outputs?: IkeyValue };
 
-export type IStatus = 'success' | 'failure' | 'cancelled' | 'pending' | 'running';
 export interface IRecord {
   editStatusAble: boolean; // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
   steps: IkeyValue; // 记录每个 step 的执行状态以及输出，后续step可以通过steps[$step_id].outputs使用该数据
 }
 
-export interface IPublicContext {
+export interface IContext {
   status: IStatus; // 记录task的状态
   stepCount: string; // 记录当前执行的step
   steps: ISteps[];

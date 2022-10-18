@@ -5,17 +5,18 @@ import {
   IRunOptions,
   IScriptOptions,
   IUsesOptions,
-  IStepsStatus,
   IRecord,
   IStatus,
   IkeyValue,
   IEngineOptions,
-  IPublicContext,
+  IContext,
   ILogConfig,
+  STEP_STATUS,
+  ISteps,
+  STEP_IF,
 } from './types';
 import { isEmpty, get, each, replace, map, find } from 'lodash';
 import { command } from 'execa';
-import { STEP_STATUS, STEP_IF } from './constant';
 import * as path from 'path';
 import EventEmitter from 'events';
 import * as os from 'os';
@@ -24,15 +25,16 @@ import * as zx from '@serverless-cd/zx';
 import { mark, getScript, getSteps } from './utils';
 
 export { IStepOptions } from './types';
+
 class Engine extends EventEmitter {
   private childProcess: any[] = [];
-  public context = { status: STEP_STATUS.PENING } as IPublicContext;
+  public context = { status: STEP_STATUS.PENING } as IContext;
   private record = { editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
     super();
     options.steps = getSteps(options.steps, this.childProcess);
-    this.context.steps = map(options.steps as IStepsStatus[], (item) => {
+    this.context.steps = map(options.steps as ISteps[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
     });

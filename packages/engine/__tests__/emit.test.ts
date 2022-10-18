@@ -127,11 +127,6 @@ describe('步骤执行过程中emit测试', () => {
   test('uses throw error on process', async () => {
     const steps = [
       {
-        uses: path.join(__dirname, 'fixtures', 'success'),
-        id: 'xapp',
-        inputs: { milliseconds: 10 },
-      },
-      {
         uses: path.join(__dirname, 'fixtures', 'error'),
         id: 'xerror',
         inputs: { milliseconds: 10 },
@@ -154,12 +149,37 @@ describe('步骤执行过程中emit测试', () => {
     });
     await engine.start();
     expect(newData).toEqual([
-      {
-        status: 'success',
-        outputs: { success: true },
-      },
       { status: 'failure', errorMessage: 'my error' },
       { status: 'skipped' },
+    ]);
+  });
+  test('uses success on process', async () => {
+    const steps = [
+      {
+        uses: path.join(__dirname, 'fixtures', 'success'),
+        id: 'xapp',
+        inputs: { milliseconds: 10 },
+      },
+      { run: 'echo "world"', id: 'xworld' },
+    ] as IStepOptions[];
+    const engine = new Engine({ steps, logConfig: { logPrefix } });
+    const newData: any = [];
+    engine.on('process', (data) => {
+      const obj: any = {
+        status: data.status,
+      };
+      if (data.errorMessage) {
+        obj['errorMessage'] = data.errorMessage;
+      }
+      if (data.outputs) {
+        obj['outputs'] = data.outputs;
+      }
+      newData.push(obj);
+    });
+    await engine.start();
+    expect(newData).toEqual([
+      { status: 'success', outputs: { success: true } },
+      { status: 'success', outputs: {} },
     ]);
   });
   test('success, failure, skipped, error-with-continue', async () => {
