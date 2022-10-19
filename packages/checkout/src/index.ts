@@ -8,3 +8,5 @@ export default async function checkout(config: IConfig) {
 export async function run(config: IConfig) {
   await new Checkout(config).run();
 }
+
+export { default as checkFile } from './check-file';
