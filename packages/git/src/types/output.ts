@@ -6,6 +6,7 @@ export interface IRepoOutput {
   owner: string;
   private: boolean;
   description: string;
+  default_branch: string;
   source: any;
 }
 

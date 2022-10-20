@@ -36,6 +36,7 @@ export default class Github extends Base {
       url: row.clone_url,
       private: row.private,
       description: row.description,
+      default_branch: row.default_branch,
       source: row,
     }));
   }

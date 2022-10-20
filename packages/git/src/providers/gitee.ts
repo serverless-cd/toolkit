@@ -37,6 +37,7 @@ export default class Gitee extends Base {
       url: row.html_url,
       private: row.private,
       description: row.description,
+      default_branch: row.default_branch,
       source: row,
     }));
   }
