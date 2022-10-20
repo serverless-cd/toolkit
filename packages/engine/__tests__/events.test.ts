@@ -13,8 +13,11 @@ describe('执行终态emit测试', () => {
       steps,
       logConfig: { logPrefix },
       events: {
-        onSuccess: async function (data) {
-          const newData = map(data, (item) => ({ run: item.run, status: item.status }));
+        onSuccess: async function (context) {
+          const newData = map(context.steps, (item: any) => ({
+            run: item.run,
+            status: item.status,
+          }));
           expect(newData).toEqual([
             { run: 'echo "hello"', status: 'success' },
             { run: 'echo "world"', status: 'success' },
@@ -33,8 +36,11 @@ describe('执行终态emit测试', () => {
       steps,
       logConfig: { logPrefix },
       events: {
-        onCompleted: async function (data) {
-          const newData = map(data, (item) => ({ run: item.run, status: item.status }));
+        onCompleted: async function (context) {
+          const newData = map(context.steps, (item: any) => ({
+            run: item.run,
+            status: item.status,
+          }));
           expect(newData).toEqual([
             { run: 'echo "hello"', status: 'success' },
             { run: 'echo "world"', status: 'success' },
@@ -60,8 +66,11 @@ describe('执行终态emit测试', () => {
       steps,
       logConfig: { logPrefix },
       events: {
-        onFailure: async function (data) {
-          const newData = map(data, (item) => ({ run: item.run, status: item.status }));
+        onFailure: async function (context) {
+          const newData = map(context.steps, (item: any) => ({
+            run: item.run,
+            status: item.status,
+          }));
           expect(newData).toEqual([
             { run: 'echo "hello"', status: 'success' },
             { run: 'npm run error', status: 'failure' },
@@ -89,8 +98,11 @@ describe('执行终态emit测试', () => {
       steps,
       logConfig: { logPrefix },
       events: {
-        onCancelled: async function (data) {
-          const newData = map(data, (item) => ({ run: item.run, status: item.status }));
+        onCancelled: async function (context) {
+          const newData = map(context.steps, (item: any) => ({
+            run: item.run,
+            status: item.status,
+          }));
           expect(newData).toEqual([
             { run: 'echo "hello"', status: 'success' },
             {

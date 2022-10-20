@@ -10,8 +10,8 @@ describe('执行终态emit测试', () => {
       { run: 'echo "world"' },
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
-    engine.on('success', (data) => {
-      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
+    engine.on('success', (context) => {
+      const newData = map(context.steps, (item) => ({ run: item.run, status: item.status }));
       expect(newData).toEqual([
         { run: 'echo "hello"', status: 'success' },
         { run: 'echo "world"', status: 'success' },
@@ -25,8 +25,8 @@ describe('执行终态emit测试', () => {
       { run: 'echo "world"' },
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
-    engine.on('completed', (data) => {
-      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
+    engine.on('completed', (context) => {
+      const newData = map(context.steps, (item) => ({ run: item.run, status: item.status }));
       expect(newData).toEqual([
         { run: 'echo "hello"', status: 'success' },
         { run: 'echo "world"', status: 'success' },
@@ -40,8 +40,8 @@ describe('执行终态emit测试', () => {
       { run: 'npm run error', id: 'xerror' },
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
-    engine.on('failure', (data) => {
-      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
+    engine.on('failure', (context) => {
+      const newData = map(context.steps, (item) => ({ run: item.run, status: item.status }));
       expect(newData).toEqual([
         { run: 'echo "hello"', status: 'success' },
         { run: 'npm run error', status: 'failure' },
@@ -68,8 +68,8 @@ describe('执行终态emit测试', () => {
       engine.cancel();
     });
     lazy(callback);
-    engine.on('cancelled', (data) => {
-      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
+    engine.on('cancelled', (context) => {
+      const newData = map(context.steps, (item) => ({ run: item.run, status: item.status }));
       expect(newData).toEqual([
         { run: 'echo "hello"', status: 'success' },
         {
@@ -105,8 +105,8 @@ describe('步骤执行过程中emit测试', () => {
       { run: 'echo "world"', id: 'xworld' },
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
-    engine.on('failure', (data) => {
-      const newData = map(data, (item) => {
+    engine.on('failure', (context) => {
+      const newData = map(context.steps, (item) => {
         const obj: any = {
           status: item.status,
         };

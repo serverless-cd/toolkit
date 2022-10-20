@@ -156,9 +156,9 @@ class Engine extends EventEmitter {
   private async doPreRun(item: IStepOptions) {
     const { events } = this.options;
     const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('preRun', data);
+    this.emit('preRun', data, this.context);
     if (isFunction(events?.onPreRun)) {
-      await events?.onPreRun(data as ISteps);
+      await events?.onPreRun(data as ISteps, this.context);
     }
   }
 
@@ -220,9 +220,9 @@ class Engine extends EventEmitter {
     const { events } = this.options;
 
     const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('postRun', data);
+    this.emit('postRun', data, this.context);
     if (isFunction(events?.onPostRun)) {
-      await events?.onPostRun(data as ISteps);
+      await events?.onPostRun(data as ISteps, this.context);
     }
 
     const logConfig = this.options.logConfig as ILogConfig;
@@ -236,21 +236,21 @@ class Engine extends EventEmitter {
   }
   // 将执行终态进行emit
   private async doEmit() {
-    const { status, steps } = this.context;
+    const { status } = this.context;
     const { events } = this.options;
-    this.emit(status, steps);
+    this.emit(status, this.context);
     if (status === STEP_STATUS.SUCCESS && isFunction(events?.onSuccess)) {
-      await events?.onSuccess(steps);
+      await events?.onSuccess(this.context);
     }
     if (status === STEP_STATUS.FAILURE && isFunction(events?.onFailure)) {
-      await events?.onFailure(steps);
+      await events?.onFailure(this.context);
     }
     if (status === STEP_STATUS.CANCEL && isFunction(events?.onCancelled)) {
-      await events?.onCancelled(steps);
+      await events?.onCancelled(this.context);
     }
-    this.emit('completed', steps);
+    this.emit('completed', this.context);
     if (isFunction(events?.onCompleted)) {
-      await events?.onCompleted(steps);
+      await events?.onCompleted(this.context);
     }
   }
   private async handleSrc(item: IStepOptions) {
