@@ -16,11 +16,15 @@ async function checkFile(config: IConfig) {
   fs.ensureDirSync(baseDir);
   const git: SimpleGit = simpleGit(baseDir);
   await git.clone(url, baseDir, ['--no-checkout']);
+  console.log('clone success');
+
   const branch = startsWith(ref, 'refs/heads/') ? replace(ref, 'refs/heads/', '') : undefined;
   let isExist = false;
   try {
     const cmd = branch ? `origin/${branch}:${file}` : `${ref}:${file}`;
-    await git.raw(['show', cmd]);
+    console.log(`git cat-file -e ${cmd}`);
+    await git.raw(['cat-file', '-e', cmd]);
+    console.log('cat-file success');
     isExist = true;
   } catch (error) {
     isExist = false;
@@ -30,12 +34,15 @@ async function checkFile(config: IConfig) {
   if (['.yaml', '.yml'].includes(path.extname(file))) {
     try {
       const newFile = replace(
-        url,
-        path.extname(url),
-        path.extname(url) === '.yaml' ? '.yml' : '.yaml',
+        file,
+        path.extname(file),
+        path.extname(file) === '.yaml' ? '.yml' : '.yaml',
       );
       const cmd = branch ? `origin/${branch}:${newFile}` : `${ref}:${newFile}`;
-      await git.raw(['show', cmd]);
+      console.log(`git cat-file -e ${cmd}`);
+
+      await git.raw(['cat-file', '-e', cmd]);
+      console.log('cat-file success');
       isExist = true;
     } catch (error) {
       isExist = false;
