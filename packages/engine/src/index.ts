@@ -174,15 +174,15 @@ class Engine extends EventEmitter {
       item.if = fn(item.if);
     }
   }
-  private recordContext(item: IStepOptions, { status, errorMessage, outputs, name }: IkeyValue) {
+  private recordContext(item: IStepOptions, { status, error, outputs, name }: IkeyValue) {
     this.context.stepCount = item.stepCount as string;
     this.context.steps = map(this.context.steps, (obj) => {
       if (obj.stepCount === item.stepCount) {
         if (status) {
           obj.status = status;
         }
-        if (errorMessage) {
-          obj.errorMessage = errorMessage;
+        if (error) {
+          obj.error = error;
         }
         if (outputs) {
           obj.outputs = outputs;
@@ -273,7 +273,7 @@ class Engine extends EventEmitter {
       }
       this.recordContext(item, { status: STEP_STATUS.SUCCESS, outputs: response });
       await this.doFinal(item);
-    } catch (err: any) {
+    } catch (error: any) {
       const status =
         item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
       // 记录全局的执行状态
@@ -296,9 +296,9 @@ class Engine extends EventEmitter {
         this.recordContext(item, { status });
         await this.doFinal(item);
       } else {
-        this.recordContext(item, { status, errorMessage: err.message });
+        this.recordContext(item, { status, error });
         await this.doFinal(item);
-        throw err;
+        throw error;
       }
     }
   }

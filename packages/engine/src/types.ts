@@ -87,7 +87,7 @@ export const STEP_STATUS = { ...STEP_STATUS_BASE, ...STEP_STATUS_SKIP };
 
 export type ISteps = IStepOptions & {
   status?: string;
-  errorMessage?: string;
+  error?: Error;
   outputs?: IkeyValue;
   name?: string; // step title
 };

@@ -110,14 +110,11 @@ describe('步骤执行过程中emit测试', () => {
         const obj: any = {
           status: item.status,
         };
-        if (item.errorMessage) {
-          obj['errorMessage'] = item.errorMessage;
-        }
         return obj;
       });
       expect(newData).toEqual([
         { status: 'success' },
-        { status: 'failure', errorMessage: 'my error' },
+        { status: 'failure' },
         { status: 'skipped' },
         { status: 'skipped' },
       ]);
@@ -135,23 +132,17 @@ describe('步骤执行过程中emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
     const newData: any = [];
-    engine.on('process', (data) => {
+    engine.on('postRun', (data) => {
       const obj: any = {
         status: data.status,
       };
-      if (data.errorMessage) {
-        obj['errorMessage'] = data.errorMessage;
-      }
       if (data.outputs) {
         obj['outputs'] = data.outputs;
       }
       newData.push(obj);
     });
     await engine.start();
-    expect(newData).toEqual([
-      { status: 'failure', errorMessage: 'my error' },
-      { status: 'skipped' },
-    ]);
+    expect(newData).toEqual([{ status: 'failure' }, { status: 'skipped' }]);
   });
   test('uses success on process', async () => {
     const steps = [
@@ -164,7 +155,7 @@ describe('步骤执行过程中emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
     const newData: any = [];
-    engine.on('process', (data) => {
+    engine.on('postRun', (data) => {
       const obj: any = {
         status: data.status,
       };
@@ -192,7 +183,7 @@ describe('步骤执行过程中emit测试', () => {
     ] as IStepOptions[];
     const engine = new Engine({ steps, logConfig: { logPrefix } });
     const newData: any = [];
-    engine.on('process', (data) => {
+    engine.on('postRun', (data) => {
       newData.push({
         run: data.run,
         id: data.id,
@@ -227,7 +218,7 @@ describe('步骤执行过程中emit测试', () => {
     });
     lazy(callback);
     const newData: any = [];
-    engine.on('process', (data) => {
+    engine.on('postRun', (data) => {
       newData.push({
         run: data.run,
         id: data.id,
