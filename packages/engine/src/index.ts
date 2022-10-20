@@ -71,11 +71,12 @@ class Engine extends EventEmitter {
         states[item.stepCount as string] = {
           invoke: {
             id: item.stepCount,
-            src: () => {
+            src: async () => {
               // logger
               this.setLogger(item);
               // 记录 context
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
+              await this.doPreRun(item);
               // 记录环境变量
               this.context.env = item.env as IkeyValue;
               this.context.secrets = inputs.secrets;
@@ -150,6 +151,15 @@ class Engine extends EventEmitter {
     });
   }
 
+  private async doPreRun(item: IStepOptions) {
+    const { events } = this.options;
+    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
+    this.emit('preRun', data);
+    if (isFunction(events?.onPreRun)) {
+      await events?.onPreRun(data as ISteps);
+    }
+  }
+
   private doReplace$(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const scriptItem = item as IScriptOptions;
@@ -207,10 +217,10 @@ class Engine extends EventEmitter {
   private async doFinal(item: IStepOptions) {
     const { events } = this.options;
 
-    const processData = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('process', processData);
-    if (isFunction(events?.onProgress)) {
-      await events?.onProgress(processData as ISteps);
+    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
+    this.emit('postRun', data);
+    if (isFunction(events?.onPostRun)) {
+      await events?.onPostRun(data as ISteps);
     }
 
     const logConfig = this.options.logConfig as ILogConfig;

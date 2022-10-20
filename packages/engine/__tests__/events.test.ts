@@ -130,7 +130,7 @@ describe('步骤执行过程中emit测试', () => {
       steps,
       logConfig: { logPrefix },
       events: {
-        async onProgress(data) {
+        async onPostRun(data) {
           const obj: any = {
             status: data.status,
           };
@@ -149,5 +149,36 @@ describe('步骤执行过程中emit测试', () => {
       { status: 'success', outputs: { success: true } },
       { status: 'success', outputs: {} },
     ]);
+  });
+  test.only('uses success on process', async () => {
+    const steps = [
+      {
+        uses: path.join(__dirname, 'fixtures', 'success'),
+        id: 'xapp',
+        inputs: { milliseconds: 10 },
+      },
+      { run: 'echo "world"', id: 'xworld' },
+    ] as IStepOptions[];
+    const newData: any = [];
+    const engine = new Engine({
+      steps,
+      logConfig: { logPrefix },
+      events: {
+        async onPreRun(data) {
+          const obj: any = {
+            status: data.status,
+          };
+          if (data.errorMessage) {
+            obj['errorMessage'] = data.errorMessage;
+          }
+          if (data.outputs) {
+            obj['outputs'] = data.outputs;
+          }
+          newData.push(obj);
+        },
+      },
+    });
+    await engine.start();
+    expect(newData).toEqual([{ status: 'running' }, { status: 'running' }]);
   });
 });

@@ -8,7 +8,8 @@ export interface IEngineOptions {
 }
 
 interface IEvent {
-  onProgress?: (data: IkeyValue) => Promise<void>;
+  onPreRun?: (data: IkeyValue) => Promise<void>;
+  onPostRun?: (data: IkeyValue) => Promise<void>;
   onSuccess?: (data: IkeyValue[]) => Promise<void>;
   onFailure?: (data: IkeyValue[]) => Promise<void>;
   onCancelled?: (data: IkeyValue[]) => Promise<void>;
