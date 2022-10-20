@@ -131,7 +131,9 @@ class Engine extends EventEmitter {
       });
 
       const stepService = interpret(fetchMachine)
-        .onTransition((state) => console.log(state.value))
+        .onTransition((state) => {
+          this.logger?.debug(`step: ${state.value}`);
+        })
         .start();
       stepService.send('INIT');
     });
