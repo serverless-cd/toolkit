@@ -6,17 +6,17 @@ import * as fs from 'fs-extra';
 interface IConfig {
   file: string;
   url: string;
-  branch: string;
+  ref: string;
 }
 
 async function checkFile(config: IConfig) {
-  const { file, url, branch } = config;
+  const { file, url, ref } = config;
   const baseDir = path.join(os.tmpdir(), Date.now().toString());
   fs.ensureDirSync(baseDir);
   const git: SimpleGit = simpleGit(baseDir);
   await git.clone(url, baseDir, ['--no-checkout']);
   try {
-    await git.raw(['show', `${branch}:${file}`]);
+    await git.raw(['show', ref ? `${ref}:${file}` : file]);
     return true;
   } catch (error) {
     return false;
