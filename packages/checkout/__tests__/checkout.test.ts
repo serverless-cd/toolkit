@@ -1,4 +1,4 @@
-import { IProvider } from '../src';
+import { IProvider } from '../src/types';
 import { EngineLogger } from '@serverless-cd/core';
 import * as path from 'path';
 import * as os from 'os';
@@ -7,7 +7,7 @@ const app = require('../src');
 const checkout = app.run;
 require('dotenv').config();
 
-const logger = new EngineLogger(path.join(__dirname, 'logs', 'checkout.log'));
+const logger = new EngineLogger({ file: path.join(__dirname, 'logs', 'checkout.log') });
 const execDir = path.join(os.tmpdir(), 'checkout-init');
 
 describe('仓库未初始化', () => {

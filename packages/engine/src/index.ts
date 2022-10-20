@@ -71,11 +71,12 @@ class Engine extends EventEmitter {
         states[item.stepCount as string] = {
           invoke: {
             id: item.stepCount,
-            src: () => {
+            src: async () => {
               // logger
               this.setLogger(item);
               // 记录 context
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
+              await this.doPreRun(item);
               // 记录环境变量
               this.context.env = item.env as IkeyValue;
               this.context.secrets = inputs.secrets;
@@ -130,7 +131,9 @@ class Engine extends EventEmitter {
       });
 
       const stepService = interpret(fetchMachine)
-        .onTransition((state) => console.log(state.value))
+        .onTransition((state) => {
+          this.logger?.debug(`step: ${state.value}`);
+        })
         .start();
       stepService.send('INIT');
     });
@@ -150,6 +153,15 @@ class Engine extends EventEmitter {
     });
   }
 
+  private async doPreRun(item: IStepOptions) {
+    const { events } = this.options;
+    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
+    this.emit('preRun', data, this.context);
+    if (isFunction(events?.onPreRun)) {
+      await events?.onPreRun(data as ISteps, this.context);
+    }
+  }
+
   private doReplace$(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const scriptItem = item as IScriptOptions;
@@ -164,15 +176,15 @@ class Engine extends EventEmitter {
       item.if = fn(item.if);
     }
   }
-  private recordContext(item: IStepOptions, { status, errorMessage, outputs, name }: IkeyValue) {
+  private recordContext(item: IStepOptions, { status, error, outputs, name }: IkeyValue) {
     this.context.stepCount = item.stepCount as string;
     this.context.steps = map(this.context.steps, (obj) => {
       if (obj.stepCount === item.stepCount) {
         if (status) {
           obj.status = status;
         }
-        if (errorMessage) {
-          obj.errorMessage = errorMessage;
+        if (error) {
+          obj.error = error;
         }
         if (outputs) {
           obj.outputs = outputs;
@@ -207,10 +219,10 @@ class Engine extends EventEmitter {
   private async doFinal(item: IStepOptions) {
     const { events } = this.options;
 
-    const processData = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('process', processData);
-    if (isFunction(events?.onProgress)) {
-      await events?.onProgress(processData as ISteps);
+    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
+    this.emit('postRun', data, this.context);
+    if (isFunction(events?.onPostRun)) {
+      await events?.onPostRun(data as ISteps, this.context);
     }
 
     const logConfig = this.options.logConfig as ILogConfig;
@@ -224,21 +236,21 @@ class Engine extends EventEmitter {
   }
   // 将执行终态进行emit
   private async doEmit() {
-    const { status, steps } = this.context;
+    const { status } = this.context;
     const { events } = this.options;
-    this.emit(status, steps);
+    this.emit(status, this.context);
     if (status === STEP_STATUS.SUCCESS && isFunction(events?.onSuccess)) {
-      await events?.onSuccess(steps);
+      await events?.onSuccess(this.context);
     }
     if (status === STEP_STATUS.FAILURE && isFunction(events?.onFailure)) {
-      await events?.onFailure(steps);
+      await events?.onFailure(this.context);
     }
     if (status === STEP_STATUS.CANCEL && isFunction(events?.onCancelled)) {
-      await events?.onCancelled(steps);
+      await events?.onCancelled(this.context);
     }
-    this.emit('completed', steps);
+    this.emit('completed', this.context);
     if (isFunction(events?.onCompleted)) {
-      await events?.onCompleted(steps);
+      await events?.onCompleted(this.context);
     }
   }
   private async handleSrc(item: IStepOptions) {
@@ -263,7 +275,7 @@ class Engine extends EventEmitter {
       }
       this.recordContext(item, { status: STEP_STATUS.SUCCESS, outputs: response });
       await this.doFinal(item);
-    } catch (err: any) {
+    } catch (error: any) {
       const status =
         item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
       // 记录全局的执行状态
@@ -286,9 +298,9 @@ class Engine extends EventEmitter {
         this.recordContext(item, { status });
         await this.doFinal(item);
       } else {
-        this.recordContext(item, { status, errorMessage: err.message });
+        this.recordContext(item, { status, error });
         await this.doFinal(item);
-        throw err;
+        throw error;
       }
     }
   }

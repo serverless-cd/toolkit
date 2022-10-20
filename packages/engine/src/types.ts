@@ -8,11 +8,12 @@ export interface IEngineOptions {
 }
 
 interface IEvent {
-  onProgress?: (data: IkeyValue) => Promise<void>;
-  onSuccess?: (data: IkeyValue[]) => Promise<void>;
-  onFailure?: (data: IkeyValue[]) => Promise<void>;
-  onCancelled?: (data: IkeyValue[]) => Promise<void>;
-  onCompleted?: (data: IkeyValue[]) => Promise<void>;
+  onPreRun?: (data: IkeyValue, context: IContext) => Promise<void>;
+  onPostRun?: (data: IkeyValue, context: IContext) => Promise<void>;
+  onSuccess?: (context: IContext) => Promise<void>;
+  onFailure?: (context: IContext) => Promise<void>;
+  onCancelled?: (context: IContext) => Promise<void>;
+  onCompleted?: (context: IContext) => Promise<void>;
 }
 
 export interface ILogConfig {
@@ -86,7 +87,7 @@ export const STEP_STATUS = { ...STEP_STATUS_BASE, ...STEP_STATUS_SKIP };
 
 export type ISteps = IStepOptions & {
   status?: string;
-  errorMessage?: string;
+  error?: Error;
   outputs?: IkeyValue;
   name?: string; // step title
 };
