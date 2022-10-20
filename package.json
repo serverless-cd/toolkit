@@ -13,7 +13,7 @@
     "test:engine": "jest --testTimeout 10000 packages/engine --watchAll",
     "test:core": "jest --testTimeout 10000 packages/core --watchAll",
     "test:trigger": "jest --testTimeout 10000 packages/trigger --watchAll",
-    "test:checkout": "jest --testTimeout 10000 packages/checkout --watchAll",
+    "test:checkout": "jest --testTimeout 100000 packages/checkout --watchAll",
     "test:git": "jest --testTimeout 10000 packages/git --watchAll",
     "test:git-coverage": "jest --testTimeout 10000 packages/git --coverage --coverageDirectory coverage/git",
     "test:trigger-coverage": "jest --testTimeout 10000 packages/trigger --coverage --coverageDirectory coverage/trigger",

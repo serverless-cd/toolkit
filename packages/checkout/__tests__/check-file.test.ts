@@ -8,3 +8,12 @@ test('check file', async () => {
   });
   expect(res).toBe(true);
 });
+
+test('check file 2', async () => {
+  const res = await checkFile({
+    url: 'https://github.com/xsahxl/git-action-test.git',
+    ref: 'refs/heads/dev',
+    file: 'serverless-pipeline.yaml',
+  });
+  expect(res).toBe(true);
+});
