@@ -96,12 +96,13 @@ export type ISteps = IStepOptions & {
 export interface IRecord {
   editStatusAble: boolean; // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
   steps: IkeyValue; // 记录每个 step 的执行状态以及输出，后续step可以通过steps[$step_id].outputs使用该数据
+  status: IStatus; // 记录step的状态
 }
 
 export interface IContext {
-  status: IStatus; // 记录task的状态
   stepCount: string; // 记录当前执行的step
   steps: ISteps[];
   env: IkeyValue; // 记录合并后的环境变量
   secrets: IkeyValue;
+  status: IStatus; // 记录task的状态
 }

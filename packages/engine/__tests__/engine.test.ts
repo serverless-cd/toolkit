@@ -67,44 +67,6 @@ test('获取某一步的outputs', async () => {
   ]);
 });
 
-test('全局status测试', async () => {
-  const steps = [
-    { run: 'echo "hello"', id: 'xhello' },
-    {
-      uses: path.join(__dirname, 'fixtures', 'app'),
-      id: 'xuse',
-      inputs: { milliseconds: 10 },
-      if: '${{status === "failture"}}',
-    },
-    { run: 'echo "world"', id: 'xworld', if: '${{status === "success"}}' },
-  ] as IStepOptions[];
-  const engine = new Engine({ steps, logConfig: { logPrefix } });
-
-  const res: IContext | undefined = await engine.start();
-  const data = map(res?.steps, (item) => ({
-    status: item.status,
-    id: item.id,
-  }));
-  expect(data).toEqual([
-    {
-      status: 'success',
-      id: 'xhello',
-    },
-    {
-      status: 'skipped',
-      id: 'xuse',
-    },
-    {
-      status: 'success',
-      id: 'xworld',
-    },
-    {
-      status: 'skipped',
-      id: 'xuse',
-    },
-  ]);
-});
-
 test('cancel测试', (done) => {
   const lazy = (fn: any) => {
     setTimeout(() => {
@@ -177,7 +139,7 @@ test('script 测试', async () => {
   expect(get(res, 'status')).toBe('success');
 });
 
-test.only('inputs测试', async () => {
+test('inputs测试', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'echo "world', id: 'xworld', if: '${{name==="xiaoming"}}' },

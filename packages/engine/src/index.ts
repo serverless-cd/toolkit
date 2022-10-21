@@ -29,7 +29,7 @@ export { IStepOptions, IContext } from './types';
 class Engine extends EventEmitter {
   private childProcess: any[] = [];
   public context = { status: STEP_STATUS.PENING } as IContext;
-  private record = { editStatusAble: true } as IRecord;
+  private record = { status: STEP_STATUS.PENING, editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
     super();
@@ -40,7 +40,7 @@ class Engine extends EventEmitter {
     });
   }
   async start(): Promise<IContext | undefined> {
-    const { steps, inputs = {}, events } = this.options;
+    const { steps, inputs = {} } = this.options;
     if (isEmpty(steps)) return;
     return new Promise(async (resolve) => {
       const states: any = {
@@ -55,10 +55,10 @@ class Engine extends EventEmitter {
             src: async () => {
               // 执行终态是 error-with-continue 的时候，改为 success
               const status =
-                this.context.status === STEP_STATUS.ERROR_WITH_CONTINUE
+                this.record.status === STEP_STATUS.ERROR_WITH_CONTINUE
                   ? STEP_STATUS.SUCCESS
-                  : this.context.status;
-              this.context.status = status as IStatus;
+                  : this.record.status;
+              this.context.status = status;
               await this.doEmit();
               resolve(this.context);
             },
@@ -87,19 +87,19 @@ class Engine extends EventEmitter {
                 item.if = replace(
                   item.if,
                   STEP_IF.FAILURE,
-                  this.context.status === STEP_STATUS.FAILURE ? 'true' : 'false',
+                  this.record.status === STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
                 // 替换 success()
                 item.if = replace(
                   item.if,
                   STEP_IF.SUCCESS,
-                  this.context.status !== STEP_STATUS.FAILURE ? 'true' : 'false',
+                  this.record.status !== STEP_STATUS.FAILURE ? 'true' : 'false',
                 );
                 // 替换 cancelled()
                 item.if = replace(
                   item.if,
                   STEP_IF.CANCEL,
-                  this.context.status === STEP_STATUS.CANCEL ? 'true' : 'false',
+                  this.record.status === STEP_STATUS.CANCEL ? 'true' : 'false',
                 );
                 // 替换 always()
                 item.if = replace(item.if, STEP_IF.ALWAYS, 'true');
@@ -108,9 +108,9 @@ class Engine extends EventEmitter {
                 return item.if === 'true' ? this.handleSrc(item) : this.doSkip(item);
               }
               // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
-              if (this.context.status === STEP_STATUS.CANCEL) return this.doCancel(item);
+              if (this.record.status === STEP_STATUS.CANCEL) return this.doCancel(item);
               // 其次检查全局的执行状态，如果是failure，则不执行该步骤, 并记录状态为 skipped
-              if (this.context.status === STEP_STATUS.FAILURE) {
+              if (this.record.status === STEP_STATUS.FAILURE) {
                 return this.doSkip(item);
               }
               return this.handleSrc(item);
@@ -135,13 +135,18 @@ class Engine extends EventEmitter {
           this.logger?.debug(`step: ${state.value}`);
         })
         .start();
-
-      this.emit('init', this.context);
-      if (isFunction(events?.onInit)) {
-        await events?.onInit(this.context);
-      }
+      await this.doInit();
       stepService.send('INIT');
     });
+  }
+
+  private async doInit() {
+    const { events } = this.options;
+    this.context.status = STEP_STATUS.RUNNING;
+    this.emit('init', this.context);
+    if (isFunction(events?.onInit)) {
+      await events?.onInit(this.context);
+    }
   }
 
   private setLogger(item: IStepOptions) {
@@ -202,7 +207,7 @@ class Engine extends EventEmitter {
     });
   }
   cancel() {
-    this.context.status = STEP_STATUS.CANCEL as IStatus;
+    this.record.status = STEP_STATUS.CANCEL;
     this.record.editStatusAble = false;
     // kill child process, 后续的步骤正常执行，但状态标记为cancelled
     each(this.childProcess, (item) => {
@@ -214,7 +219,6 @@ class Engine extends EventEmitter {
     const { env = {}, secrets = {} } = this.context;
     return {
       ...inputs,
-      status: this.context.status,
       steps: this.record.steps,
       env,
       secrets,
@@ -241,7 +245,7 @@ class Engine extends EventEmitter {
   }
   // 将执行终态进行emit
   private async doEmit() {
-    const { status } = this.context;
+    const { status } = this.record;
     const { events } = this.options;
     this.emit(status, this.context);
     if (status === STEP_STATUS.SUCCESS && isFunction(events?.onSuccess)) {
@@ -262,11 +266,11 @@ class Engine extends EventEmitter {
     try {
       const response: any = await this.doSrc(item);
       // 如果已取消且if条件不成功，则不执行该步骤, 并记录状态为 cancelled
-      const isCancel = item.if !== 'true' && this.context.status === STEP_STATUS.CANCEL;
+      const isCancel = item.if !== 'true' && this.record.status === STEP_STATUS.CANCEL;
       if (isCancel) return this.doCancel(item);
       // 记录全局的执行状态
       if (this.record.editStatusAble) {
-        this.context.status = STEP_STATUS.SUCCESS as IStatus;
+        this.record.status = STEP_STATUS.SUCCESS;
       }
       // id 添加状态
       if (item.id) {
@@ -285,7 +289,7 @@ class Engine extends EventEmitter {
         item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
       // 记录全局的执行状态
       if (this.record.editStatusAble) {
-        this.context.status = status as IStatus;
+        this.record.status = status as IStatus;
       }
       if (status === STEP_STATUS.FAILURE) {
         // 全局的执行状态一旦失败，便不可修改
@@ -440,7 +444,7 @@ class Engine extends EventEmitter {
       });
 
       cp.on('exit', (code: number) => {
-        code === 0 || this.context.status === STEP_STATUS.CANCEL
+        code === 0 || this.record.status === STEP_STATUS.CANCEL
           ? resolve({})
           : reject(new Error(Buffer.concat(stderr).toString()));
       });
