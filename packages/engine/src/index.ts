@@ -28,7 +28,7 @@ export { IStepOptions, IContext } from './types';
 
 class Engine extends EventEmitter {
   private childProcess: any[] = [];
-  public context = { status: STEP_STATUS.PENING } as IContext;
+  public context = { status: STEP_STATUS.PENING, completed: false } as IContext;
   private record = { status: STEP_STATUS.PENING, editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
@@ -59,6 +59,7 @@ class Engine extends EventEmitter {
                   ? STEP_STATUS.SUCCESS
                   : this.record.status;
               this.context.status = status;
+              this.context.completed = true;
               await this.doEmit();
               resolve(this.context);
             },

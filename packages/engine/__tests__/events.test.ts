@@ -191,7 +191,7 @@ describe('步骤执行过程中emit测试', () => {
   });
 });
 
-test('收集context status(task status)', async () => {
+test('测试context status(task status)', async () => {
   const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
   const statusList: string[] = [];
   const engine = new Engine({
@@ -208,4 +208,23 @@ test('收集context status(task status)', async () => {
   });
   await engine.start();
   expect(statusList).toEqual(['running', 'success']);
+});
+
+test('测试context completed(task status)', async () => {
+  const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
+  const statusList: boolean[] = [];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+    events: {
+      onInit: async function (context) {
+        statusList.push(context.completed);
+      },
+      onCompleted: async function (context) {
+        statusList.push(context.completed);
+      },
+    },
+  });
+  await engine.start();
+  expect(statusList).toEqual([false, true]);
 });

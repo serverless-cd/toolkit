@@ -105,4 +105,5 @@ export interface IContext {
   env: IkeyValue; // 记录合并后的环境变量
   secrets: IkeyValue;
   status: IStatus; // 记录task的状态
+  completed: boolean; // 记录task是否执行完成
 }
