@@ -1,16 +1,12 @@
-import { IProvider, IGitConfig } from './types/input';
-import _ from 'lodash';
-import Base from './providers/base';
-import providers from './providers';
+import Checkout from './checkout';
+import { IConfig } from './types';
 
-
-export = function (provider: IProvider, config: IGitConfig) {
-  const ProviderGit = _.get(providers, provider);
-
-  const isExtendsBase = _.get(ProviderGit, 'prototype') instanceof Base;
-  if (!isExtendsBase) {
-    throw new Error(`Provider ${provider} does not support`);
-  }
-
-  return new ProviderGit(config);
+export default async function checkout(config: IConfig) {
+  await new Checkout(config).run();
 }
+
+export async function run(config: IConfig) {
+  await new Checkout(config).run();
+}
+
+export { default as checkFile } from './check-file';
