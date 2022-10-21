@@ -33,7 +33,10 @@ class Engine extends EventEmitter {
   private logger: any;
   constructor(private options: IEngineOptions) {
     super();
-    options.steps = getSteps(options.steps, this.childProcess);
+    const { steps, inputs } = options;
+    options.steps = getSteps(steps, this.childProcess);
+    this.context.inputs = inputs as IkeyValue;
+    this.context.secrets = inputs?.secrets;
     this.context.steps = map(options.steps as ISteps[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
@@ -80,7 +83,6 @@ class Engine extends EventEmitter {
               await this.doPreRun(item);
               // 记录环境变量
               this.context.env = item.env as IkeyValue;
-              this.context.secrets = inputs.secrets;
               this.doReplace$(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
@@ -221,7 +223,7 @@ class Engine extends EventEmitter {
     return {
       ...inputs,
       steps: this.record.steps,
-      env,
+      env: { ...inputs?.env, ...env },
       secrets,
     };
   }
@@ -342,9 +344,10 @@ class Engine extends EventEmitter {
         await this.onFinish(cp);
       }
       const app = require(usesItem.uses);
+      const newContext = { ...this.context, $variables: this.getFilterContext() };
       return usesItem.type === 'run'
-        ? await app.run(get(usesItem, 'inputs', {}), this.getFilterContext(), this.logger)
-        : await app.postRun(get(usesItem, 'inputs', {}), this.getFilterContext(), this.logger);
+        ? await app.run(get(usesItem, 'inputs', {}), newContext, this.logger)
+        : await app.postRun(get(usesItem, 'inputs', {}), newContext, this.logger);
     }
     // script
     if (scriptItem.script) {

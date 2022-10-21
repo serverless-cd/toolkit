@@ -106,4 +106,5 @@ export interface IContext {
   secrets: IkeyValue;
   status: IStatus; // 记录task的状态
   completed: boolean; // 记录task是否执行完成
+  inputs: IkeyValue; // 记录inputs的输入(魔法变量)
 }

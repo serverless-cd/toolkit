@@ -161,3 +161,26 @@ test('inputs测试', async () => {
     { status: 'success', id: 'xname' },
   ]);
 });
+
+test('inputs测试 env', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { run: 'echo ${{env.name}}', id: 'xname', env: { name: 'xiaohong' } },
+    { run: 'echo ${{env.name}}', id: 'xname' },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    inputs: { env: { name: 'xiaoming' } },
+  });
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item) => ({
+    status: item.status,
+    id: item.id,
+  }));
+  expect(data).toEqual([
+    { status: 'success', id: 'xhello' },
+    { status: 'success', id: 'xname' },
+    { status: 'success', id: 'xname' },
+  ]);
+});

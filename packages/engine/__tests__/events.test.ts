@@ -148,6 +148,9 @@ describe('步骤执行过程中emit测试', () => {
           newData.push(obj);
         },
       },
+      inputs: {
+        ak: 123,
+      },
     });
     await engine.start();
     expect(newData).toEqual([
