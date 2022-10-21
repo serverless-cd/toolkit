@@ -14,6 +14,7 @@ interface IEvent {
   onFailure?: (context: IContext) => Promise<void>;
   onCancelled?: (context: IContext) => Promise<void>;
   onCompleted?: (context: IContext) => Promise<void>;
+  onInit?: (context: IContext) => Promise<void>;
 }
 
 export interface ILogConfig {

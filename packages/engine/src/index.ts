@@ -40,9 +40,9 @@ class Engine extends EventEmitter {
     });
   }
   async start(): Promise<IContext | undefined> {
-    const { steps, inputs = {} } = this.options;
+    const { steps, inputs = {}, events } = this.options;
     if (isEmpty(steps)) return;
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       const states: any = {
         init: {
           on: {
@@ -135,6 +135,11 @@ class Engine extends EventEmitter {
           this.logger?.debug(`step: ${state.value}`);
         })
         .start();
+
+      this.emit('init', this.context);
+      if (isFunction(events?.onInit)) {
+        await events?.onInit(this.context);
+      }
       stepService.send('INIT');
     });
   }
@@ -208,7 +213,7 @@ class Engine extends EventEmitter {
     const { inputs } = this.options;
     const { env = {}, secrets = {} } = this.context;
     return {
-      inputs,
+      ...inputs,
       status: this.context.status,
       steps: this.record.steps,
       env,
@@ -394,12 +399,7 @@ class Engine extends EventEmitter {
   private doWarn() {
     const { inputs = {} } = this.options;
     let msg = '';
-    if (inputs.env && inputs.steps) {
-      msg =
-        'env and steps are built-in fields, and env and steps fields in the inputs will be ignored.';
-    } else if (inputs.env) {
-      msg = 'env is a built-in fields, and the env field in the inputs will be ignored.';
-    } else if (inputs.steps) {
+    if (inputs.steps) {
       msg = 'steps is a built-in fields, and the steps field in the inputs will be ignored.';
     }
     msg && this.logger.warn(msg);

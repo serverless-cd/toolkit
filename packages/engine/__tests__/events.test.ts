@@ -188,6 +188,9 @@ describe('步骤执行过程中emit测试', () => {
           }
           newData.push(obj);
         },
+        async onInit(context) {
+          expect(context.status).toBe('pending');
+        },
       },
     });
     await engine.start();
