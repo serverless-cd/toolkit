@@ -19,8 +19,8 @@ describe('仓库未初始化', () => {
       token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
-      username: 'shihuali',
-      url: 'https://gitee.com/shihuali/checkout.git',
+      owner: 'shihuali',
+      clone_url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
       ref: 'refs/heads/test',
     };
@@ -33,8 +33,8 @@ describe('仓库未初始化', () => {
       token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
-      username: 'shihuali',
-      url: 'https://gitee.com/shihuali/checkout.git',
+      owner: 'shihuali',
+      clone_url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
       ref: 'refs/tags/0.0.2',
     };
@@ -47,8 +47,8 @@ describe('仓库未初始化', () => {
       token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
-      username: 'shihuali',
-      url: 'https://gitee.com/shihuali/checkout.git',
+      owner: 'shihuali',
+      clone_url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
       commit: '3b763ea19e8e8a964e90e75962ccb8e0d68bdf46',
     };
@@ -61,8 +61,8 @@ describe('仓库未初始化', () => {
       token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
-      username: 'shihuali',
-      url: 'https://gitee.com/shihuali/checkout.git',
+      owner: 'shihuali',
+      clone_url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
     };
     await checkout(config);
@@ -76,8 +76,8 @@ describe('仓库已经初始化', () => {
       token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
-      username: 'shihuali',
-      url: 'https://gitee.com/shihuali/checkout.git',
+      owner: 'shihuali',
+      clone_url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
       ref: 'refs/heads/test',
     };
@@ -90,8 +90,8 @@ describe('仓库已经初始化', () => {
       token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
-      username: 'shihuali',
-      url: 'https://gitee.com/shihuali/checkout.git',
+      owner: 'shihuali',
+      clone_url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
       ref: 'refs/tags/0.0.4',
     };
@@ -104,8 +104,8 @@ describe('仓库已经初始化', () => {
       token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
-      username: 'shihuali',
-      url: 'https://gitee.com/shihuali/checkout.git',
+      owner: 'shihuali',
+      clone_url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
       commit: '1190412a9252dd618e45e7f87ccabd161c4fd357',
     };
@@ -118,8 +118,8 @@ describe('仓库已经初始化', () => {
       token: process.env.TOKEN,
       provider: 'gitee' as IProvider,
       logger,
-      username: 'shihuali',
-      url: 'https://gitee.com/shihuali/checkout.git',
+      owner: 'shihuali',
+      clone_url: 'https://gitee.com/shihuali/checkout.git',
       execDir,
     };
     await checkout(config);

@@ -5,17 +5,17 @@ import * as fs from 'fs-extra';
 import { startsWith, replace } from 'lodash';
 interface IConfig {
   file: string;
-  url: string;
+  clone_url: string;
   ref: string;
 }
 
 async function checkFile(config: IConfig) {
-  const { file, url, ref } = config;
+  const { file, clone_url, ref } = config;
   const baseDir = path.join(os.tmpdir(), Date.now().toString());
   console.log('baseDir', baseDir);
   fs.ensureDirSync(baseDir);
   const git: SimpleGit = simpleGit(baseDir);
-  await git.clone(url, baseDir, ['--no-checkout']);
+  await git.clone(clone_url, baseDir, ['--no-checkout']);
   console.log('clone success');
 
   const branch = startsWith(ref, 'refs/heads/') ? replace(ref, 'refs/heads/', '') : undefined;
