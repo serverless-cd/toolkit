@@ -67,44 +67,6 @@ test('获取某一步的outputs', async () => {
   ]);
 });
 
-test('全局status测试', async () => {
-  const steps = [
-    { run: 'echo "hello"', id: 'xhello' },
-    {
-      uses: path.join(__dirname, 'fixtures', 'app'),
-      id: 'xuse',
-      inputs: { milliseconds: 10 },
-      if: '${{status === "failture"}}',
-    },
-    { run: 'echo "world"', id: 'xworld', if: '${{status === "success"}}' },
-  ] as IStepOptions[];
-  const engine = new Engine({ steps, logConfig: { logPrefix } });
-
-  const res: IContext | undefined = await engine.start();
-  const data = map(res?.steps, (item) => ({
-    status: item.status,
-    id: item.id,
-  }));
-  expect(data).toEqual([
-    {
-      status: 'success',
-      id: 'xhello',
-    },
-    {
-      status: 'skipped',
-      id: 'xuse',
-    },
-    {
-      status: 'success',
-      id: 'xworld',
-    },
-    {
-      status: 'skipped',
-      id: 'xuse',
-    },
-  ]);
-});
-
 test('cancel测试', (done) => {
   const lazy = (fn: any) => {
     setTimeout(() => {
@@ -185,8 +147,8 @@ test('inputs测试', async () => {
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
-    logConfig: { logPrefix },
-    inputs: { name: 'xiaoming', env: { name: 'xiaoming' } },
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    inputs: { name: 'xiaoming' },
   });
   const res: IContext | undefined = await engine.start();
   const data = map(res?.steps, (item) => ({
@@ -194,17 +156,31 @@ test('inputs测试', async () => {
     id: item.id,
   }));
   expect(data).toEqual([
-    {
-      status: 'success',
-      id: 'xhello',
-    },
-    {
-      status: 'skipped',
-      id: 'xworld',
-    },
-    {
-      status: 'success',
-      id: 'xname',
-    },
+    { status: 'success', id: 'xhello' },
+    { status: 'success', id: 'xworld' },
+    { status: 'success', id: 'xname' },
+  ]);
+});
+
+test('inputs测试 env', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { run: 'echo ${{env.name}}', id: 'xname', env: { name: 'xiaohong' } },
+    { run: 'echo ${{env.name}}', id: 'xname' },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    inputs: { env: { name: 'xiaoming' } },
+  });
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item) => ({
+    status: item.status,
+    id: item.id,
+  }));
+  expect(data).toEqual([
+    { status: 'success', id: 'xhello' },
+    { status: 'success', id: 'xname' },
+    { status: 'success', id: 'xname' },
   ]);
 });

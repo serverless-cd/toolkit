@@ -15,7 +15,7 @@ export function getInputs(inputs: IkeyValue, context: IkeyValue) {
         if (typeof val === 'string') {
           val = replace(val, /\${{/g, '{{');
           const compile = artTemplate.compile(val);
-          val = compile(context);
+          val = compile(context['$variables']);
         }
         result[i] = typeof val === 'object' ? deepCopy(val) : val;
       }

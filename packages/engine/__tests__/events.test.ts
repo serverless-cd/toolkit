@@ -48,13 +48,6 @@ describe('执行终态emit测试', () => {
         },
       },
     });
-    engine.on('completed', (data) => {
-      const newData = map(data, (item) => ({ run: item.run, status: item.status }));
-      expect(newData).toEqual([
-        { run: 'echo "hello"', status: 'success' },
-        { run: 'echo "world"', status: 'success' },
-      ]);
-    });
     await engine.start();
   });
   test('failure', async () => {
@@ -155,6 +148,9 @@ describe('步骤执行过程中emit测试', () => {
           newData.push(obj);
         },
       },
+      inputs: {
+        ak: 123,
+      },
     });
     await engine.start();
     expect(newData).toEqual([
@@ -162,7 +158,7 @@ describe('步骤执行过程中emit测试', () => {
       { status: 'success', outputs: {} },
     ]);
   });
-  test.only('uses success on process', async () => {
+  test('uses success on process', async () => {
     const steps = [
       {
         uses: path.join(__dirname, 'fixtures', 'success'),
@@ -188,9 +184,50 @@ describe('步骤执行过程中emit测试', () => {
           }
           newData.push(obj);
         },
+        async onInit(context) {
+          expect(context.status).toBe('running');
+        },
       },
     });
     await engine.start();
     expect(newData).toEqual([{ status: 'running' }, { status: 'running' }]);
   });
+});
+
+test('测试context status(task status)', async () => {
+  const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
+  const statusList: string[] = [];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+    events: {
+      onInit: async function (context) {
+        statusList.push(context.status);
+      },
+      onCompleted: async function (context) {
+        statusList.push(context.status);
+      },
+    },
+  });
+  await engine.start();
+  expect(statusList).toEqual(['running', 'success']);
+});
+
+test('测试context completed(task status)', async () => {
+  const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
+  const statusList: boolean[] = [];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+    events: {
+      onInit: async function (context) {
+        statusList.push(context.completed);
+      },
+      onCompleted: async function (context) {
+        statusList.push(context.completed);
+      },
+    },
+  });
+  await engine.start();
+  expect(statusList).toEqual([false, true]);
 });

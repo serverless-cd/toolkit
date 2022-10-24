@@ -6,8 +6,8 @@ export interface IConfig {
   token: string;
   provider: IProvider;
   logger: EngineLogger;
-  username: string;
-  url: string;
+  owner: string;
+  clone_url: string;
   execDir: string;
   ref?: string;
   commit?: string;

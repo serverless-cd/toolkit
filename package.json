@@ -22,7 +22,7 @@
     "test:checkout-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/checkout"
   },
   "workspaces": [
-    "packages/checkout",
+    "packages/core",
     "packages/engine"
   ],
   "devDependencies": {
