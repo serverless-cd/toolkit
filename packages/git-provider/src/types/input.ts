@@ -1,10 +1,24 @@
-export type IProvider = 'github' | 'gitee';
+export enum PROVIDER {
+  github = 'github',
+  gitee = 'gitee',
+  codeup = 'codeup',
+  gitlib = 'gitlib',
+}
+
+export type IProvider = `${PROVIDER}`;
 
 export type IWebhookEvent = 'push' | 'release' | 'pull_request' | 'issues';
 
 export interface IGitConfig {
   access_token: string;
+  endpoint?: string;
 };
+
+export interface IAliConfig {
+  access_token: string;
+  accessKeyId: string;
+  accessKeySecret: string;
+}
 
 export interface IListBranchs {
   owner: string;
