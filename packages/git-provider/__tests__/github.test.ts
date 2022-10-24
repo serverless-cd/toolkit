@@ -32,7 +32,7 @@ test.only('create or update file', async () => {
       repo: REPO,
       path: 'test-push-file.txt',
       message: 'test 123',
-      content: Buffer.from('7788521').toString('base64')
+      content: '=====',
     })
     return true;
   }).toBeTruthy();

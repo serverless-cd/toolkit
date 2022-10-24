@@ -26,6 +26,8 @@ export default class Github extends Base {
 
   // https://docs.github.com/en/rest/repos/contents#create-or-update-file-contents
   async putFile(params: IGIThubPutFile): Promise<void> {
+    super.validatePutFileParams(params);
+    params.content = Buffer.from(params.content).toString('base64');
     await this.octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', params);
   }
 

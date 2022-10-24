@@ -19,6 +19,24 @@ export default abstract class Base {
     return _.get(params, 'events', ['push', 'release']);
   }
 
+  validatePutFileParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+    if (!_.has(params, 'path')) {
+      throw new Error('You must specify path');
+    }
+    if (!_.has(params, 'message')) {
+      throw new Error('You must specify message');
+    }
+    if (!_.has(params, 'content')) {
+      throw new Error('You must specify content');
+    }
+  }
+
   validateListBranchsParams(params: unknown) {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');
