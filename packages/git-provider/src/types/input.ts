@@ -45,3 +45,16 @@ export interface IGetWebhook {
   repo: string;
   hook_id: number;
 }
+
+export interface IPutFile {
+  owner: string;
+  repo: string;
+  path: string;
+  message: string;
+  content: string;
+  branch?: string;
+  committer?: {
+    name: string;
+    email: string;
+  };
+}

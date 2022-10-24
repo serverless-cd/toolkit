@@ -1,6 +1,6 @@
 
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent } from '../types/input';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile } from '../types/input';
 import { IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 
 export default abstract class Base {
@@ -13,6 +13,7 @@ export default abstract class Base {
   abstract updateWebhook(params: IUpdateWebhook): Promise<void>;
   abstract deleteWebhook(params: IDeleteWebhook): Promise<void>;
   abstract getWebhook(params: IGetWebhook): Promise<IGetWebhookOutput>;
+  abstract putFile(params: IPutFile): Promise<void>;
 
   getWebhookDefaults(params: any): IWebhookEvent[] {
     return _.get(params, 'events', ['push', 'release']);

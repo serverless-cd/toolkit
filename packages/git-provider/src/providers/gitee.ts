@@ -1,13 +1,16 @@
 import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook } from '../types/input';
+import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 
 const V5 = 'https://gitee.com/api/v5';
 
 export default class Gitee extends Base {
+  putFile(params: IPutFile): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
   private PARAMS = {
     per_page: 100,
     page: 1,

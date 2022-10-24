@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook } from '../types/github';
+import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile } from '../types/github';
 import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput } from '../types/output';
 import { IGitConfig, IListWebhook } from '../types/input';
 
@@ -22,6 +22,11 @@ export default class Github extends Base {
       throw new Error('Access token is required');
     }
     this.octokit = new Octokit({ auth: access_token });
+  }
+
+  // https://docs.github.com/en/rest/repos/contents#create-or-update-file-contents
+  async putFile(params: IGIThubPutFile): Promise<void> {
+    await this.octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', params);
   }
 
   // https://docs.github.com/en/rest/reference/repos#list-repositories-for-the-authenticated-user

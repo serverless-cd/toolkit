@@ -7,7 +7,7 @@ const access_token: string = process.env.GITHUB_ACCESS_TOKEN || '';
 const OWNER = 'wss-git';
 const REPO = 'git-action-test';
 
-test.only('list repo', async () => {
+test('list repo', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -20,6 +20,22 @@ test.only('list repo', async () => {
     expect(_.has(row, 'source')).toBeTruthy();
     expect(_.isString(row.url) && _.endsWith(row.url, '.git')).toBeTruthy();
   }
+});
+
+test.only('create or update file', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  expect(async () => {
+    await prioverd.putFile({
+      owner: OWNER,
+      repo: REPO,
+      path: 'test-push-file.txt',
+      message: 'test 123',
+      content: Buffer.from('7788521').toString('base64')
+    })
+    return true;
+  }).toBeTruthy();
 });
 
 test('list branchs', async () => {
