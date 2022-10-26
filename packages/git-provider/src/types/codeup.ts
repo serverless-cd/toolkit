@@ -1,7 +1,7 @@
 export interface IListBranch {
-  ProjectId: number;
-  OrganizationId: string;
-  Page?: number;
-  PageSize?: number;
-  Order?: string;
+  project_id: number;
+  organization_id: string;
+  page?: number;
+  page_size?: number;
+  order?: string;
 }

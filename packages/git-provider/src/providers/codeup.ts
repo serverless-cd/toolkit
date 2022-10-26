@@ -19,29 +19,40 @@ export default class Codeup {
 
     this.access_token = access_token;
     this.client = new ROAClient({
-      accessKeyId: config.accessKeyId,
-      accessKeySecret: config.accessKeySecret,
-      endpoint: 'https://codeup.cn-hangzhou.aliyuncs.com',
+      accessKeyId: _.get(config, 'accessKeyId'),
+      accessKeySecret: _.get(config, 'accessKeySecret'),
+      securityToken: _.get(config, 'securityToken'),
+      endpoint: _.get(config, 'endpoint', 'https://codeup.cn-hangzhou.aliyuncs.com'),
       apiVersion: '2020-04-14',
     });
   }
 
+  // https://help.aliyun.com/document_detail/215660.html
   async listBranchs(params: IListBranch): Promise<IBranchOutput[]> {
-    const projectId = _.get(params, 'ProjectId');
-    const OrganizationId = _.get(params, 'OrganizationId');
+    const projectId = _.get(params, 'project_id');
+    const organizationId = _.get(params, 'organization_id');
     if (!projectId) {
-      throw new Error('You must specify ProjectId');
+      throw new Error('You must specify project_id');
     }
-    if (!OrganizationId) {
-      throw new Error('You must specify OrganizationId');
+    if (!organizationId) {
+      throw new Error('You must specify organization_id');
     }
 
+    let rows = [];
     const url = `/api/v3/projects/${projectId}/repository/branches`;
-    if (params.Page) {
-      return await this.request({ url, params });
+    const p: any = {
+      ...PARAMS,
+      OrganizationId: organizationId,
+    };
+    // 查询指定页
+    if (params.page) {
+      p.Page = params.page;
+      p.Order = params.order;
+      p.PageSize = params.page_size;
+      rows = await this.request({ url, params: p });
+    } else {
+      rows = await this.requestList(url, p);
     }
-    const p = _.defaults(params, PARAMS);
-    const rows = await this.requestList(url, p);
 
     return _.map(rows, (row) => ({
       name: row.BranchName, commit_sha: _.get(row, 'CommitInfo.Id'), source: row,

@@ -11,7 +11,7 @@ const config = {
 test.only('list branch', async () => {
   const prioverd = git('codeup', config);
   await prioverd.listBranchs({
-    ProjectId: 2834398, // name 
-    OrganizationId: '60b045b52c5969c370c5a63e', // owner
+    project_id: 2834398,
+    organization_id: '60b045b52c5969c370c5a63e',
   });
 });

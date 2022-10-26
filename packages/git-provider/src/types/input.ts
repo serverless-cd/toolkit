@@ -18,6 +18,8 @@ export interface IAliConfig {
   access_token: string;
   accessKeyId: string;
   accessKeySecret: string;
+  securityToken?: string;
+  endpoint?: string;
 }
 
 export interface IListBranchs {

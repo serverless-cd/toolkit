@@ -1,7 +1,7 @@
 import { PROVIDER } from '../types/input';
 import Github from './github';
 import Gitee from './gitee';
-import Codeup from './Codeup';
+import Codeup from './codeup';
 import Gitlib from './gitlib';
 
 
