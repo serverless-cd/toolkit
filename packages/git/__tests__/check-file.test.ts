@@ -1,12 +1,20 @@
 import { checkFile } from '../src';
 
-test('check file by gitee', async () => {
+test.only('check file by gitee', async () => {
   const res = await checkFile({
     file: 'README.md',
     clone_url: 'https://gitee.com/shihuali/checkout.git',
     ref: 'refs/heads/main',
   });
   expect(res).toBe(true);
+});
+test.only('check file by gitee', async () => {
+  const res = await checkFile({
+    file: 'README.md',
+    clone_url: 'https://gitee.com/shihuali/checkout.git',
+    ref: 'refs/heads/test',
+  });
+  expect(res).toBe(false);
 });
 
 test('check file by github', async () => {
