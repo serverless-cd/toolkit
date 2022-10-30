@@ -14,7 +14,9 @@ async function checkFile(config: IConfig) {
   const baseDir = path.join(os.tmpdir(), path.basename(clone_url, '.git'));
   console.log('baseDir', baseDir);
   let git = {} as SimpleGit;
-  if (!fs.existsSync(baseDir)) {
+  if (fs.existsSync(baseDir)) {
+    git = simpleGit(baseDir);
+  } else {
     fs.ensureDirSync(baseDir);
     git = simpleGit(baseDir);
     await git.clone(clone_url, baseDir, ['--no-checkout']);
