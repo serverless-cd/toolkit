@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/git-provider",
-  "version": "0.0.1-alpha.39",
+  "version": "0.0.2",
   "description": "git",
   "keywords": [
     "serverless-cd",
@@ -25,6 +25,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@alicloud/pop-core": "^1.7.12",
     "@octokit/core": "^4.0.5",
     "axios": "^0.27.2",
     "lodash": "^4.17.21"

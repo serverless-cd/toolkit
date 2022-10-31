@@ -145,6 +145,10 @@ export default class Github extends Base {
     await this.octokit.request('DELETE /repos/{owner}/{repo}/hooks/{hook_id}', params)
   }
 
+  async request(path: string, _method: string, params: RequestParameters) {
+    return await this.octokit.request(path, params);
+  };
+
   private async requestList(path: string, params: RequestParameters): Promise<any[]> {
     let rows: any[] = [];
     let rowLength = 0;

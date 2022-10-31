@@ -1,7 +1,13 @@
+import { PROVIDER } from '../types/input';
 import Github from './github';
 import Gitee from './gitee';
+import Codeup from './codeup';
+import Gitlib from './gitlib';
+
 
 export default {
-  github: Github,
-  gitee: Gitee,
+  [PROVIDER.github]: Github,
+  [PROVIDER.gitee]: Gitee,
+  [PROVIDER.codeup]: Codeup,
+  [PROVIDER.gitlib]: Gitlib,
 }

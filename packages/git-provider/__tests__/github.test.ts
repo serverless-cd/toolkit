@@ -22,7 +22,7 @@ test('list repo', async () => {
   }
 });
 
-test.only('create or update file', async () => {
+test('create or update file', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -38,7 +38,7 @@ test.only('create or update file', async () => {
   }).toBeTruthy();
 });
 
-test('list branchs', async () => {
+test.only('list branchs', async () => {
   const prioverd = git('github', {
     access_token,
   });
