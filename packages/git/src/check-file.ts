@@ -11,13 +11,17 @@ interface IConfig {
 
 async function checkFile(config: IConfig) {
   const { file, clone_url, ref } = config;
-  const baseDir = path.join(os.tmpdir(), Date.now().toString());
+  const baseDir = path.join(os.tmpdir(), path.basename(clone_url, '.git'));
   console.log('baseDir', baseDir);
-  fs.ensureDirSync(baseDir);
-  const git: SimpleGit = simpleGit(baseDir);
-  await git.clone(clone_url, baseDir, ['--no-checkout']);
-  console.log('clone success');
-
+  let git = {} as SimpleGit;
+  if (fs.existsSync(baseDir)) {
+    git = simpleGit(baseDir);
+  } else {
+    fs.ensureDirSync(baseDir);
+    git = simpleGit(baseDir);
+    await git.clone(clone_url, baseDir, ['--no-checkout']);
+    console.log('clone success');
+  }
   const branch = startsWith(ref, 'refs/heads/') ? replace(ref, 'refs/heads/', '') : undefined;
   let isExist = false;
   try {
@@ -28,6 +32,7 @@ async function checkFile(config: IConfig) {
     isExist = true;
   } catch (error) {
     isExist = false;
+    console.log('cat-file failure');
   }
   if (isExist) return true;
 
