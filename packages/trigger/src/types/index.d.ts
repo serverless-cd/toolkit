@@ -13,7 +13,7 @@ export interface IGithubWebhook {
   headers: {
     [key: string]: string;
   };
-  body: string; // webhook 请求体【json 串】
+  body: any;
 }
 
 export interface ITigger {

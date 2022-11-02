@@ -1,7 +1,7 @@
-'use strict';
+import verifyLegitimacy from '../src';
 
-const eventTrigger = require('..');
-const assert = require('assert').strict;
-
-assert.strictEqual(eventTrigger(), 'Hello from eventTrigger');
-console.info("eventTrigger tests passed");
+test('check', async () => {
+  // @ts-ignore
+  const res = await verifyLegitimacy({}, {});
+  console.log('res: ', res);
+})

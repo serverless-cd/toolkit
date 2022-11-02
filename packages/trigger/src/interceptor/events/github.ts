@@ -2,7 +2,7 @@ import _ from 'lodash';
 import crypto from 'crypto';
 import jexl from 'jexl';
 import BaseEvent from './base';
-import { generateSuccessResult, generateErrorResult } from 'src/utils';
+import { generateSuccessResult, generateErrorResult } from '../../utils';
 
 export default class Github extends BaseEvent {
   async verify(): Promise<any> {
@@ -43,8 +43,8 @@ export default class Github extends BaseEvent {
       if (!_.isEmpty(filter)) {
         const filterStatus = await jexl.eval(filter, this.requestPayload);
         if (!filterStatus) {
-          const message = `Filter status error: ${filterStatus}`
-          return generateErrorResult(message);
+          console.log(`Filter status error: ${filterStatus}`);
+          continue;
         }
       }
 
