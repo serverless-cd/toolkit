@@ -91,12 +91,14 @@ export type ISteps = IStepOptions & {
   error?: Error;
   outputs?: IkeyValue;
   name?: string; // step title
+  process_time: number;
 };
 
 export interface IRecord {
   editStatusAble: boolean; // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
   steps: IkeyValue; // 记录每个 step 的执行状态以及输出，后续step可以通过steps[$step_id].outputs使用该数据
   status: IStatus; // 记录step的状态
+  startTime: number; // 记录step的开始时间
 }
 
 export interface IContext {
