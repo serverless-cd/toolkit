@@ -2,7 +2,7 @@ export enum PROVIDER {
   github = 'github',
   gitee = 'gitee',
   codeup = 'codeup',
-  gitlib = 'gitlib',
+  gitlab = 'gitlab',
 }
 
 export type IProvider = `${PROVIDER}`;

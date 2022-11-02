@@ -3,7 +3,7 @@ import git from '../src';
 import _ from 'lodash';
 
 const config = {
-  access_token: process.env.GITEE_ACCESS_TOKEN || '',
+  access_token: process.env.CODEUP_ACCESS_TOKEN || '',
   accessKeyId: process.env.ACCESS_KEY_ID || '',
   accessKeySecret: process.env.ACCESS_KEY_SECRET || '',
 };

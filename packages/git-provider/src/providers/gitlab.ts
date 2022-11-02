@@ -10,7 +10,7 @@ const PARAMS = {
 }
 
 
-export default class Gitlib extends Base {
+export default class Gitlab extends Base {
   private access_token: string;
   readonly endpoint: string;
 

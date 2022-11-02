@@ -4,12 +4,12 @@ import git from '../src';
 import _ from 'lodash';
 
 const config: IGitConfig = {
-  access_token: process.env.GITLIB_ACCESS_TOKEN || '',
-  endpoint: process.env.GITLIB_ENDPOINT || '',
+  access_token: process.env.GITLAB_ACCESS_TOKEN || '',
+  endpoint: process.env.GITLAB_ENDPOINT || '',
 };
 
 test.only('list branch', async () => {
-  const prioverd = git('gitlib', config);
+  const prioverd = git('gitlab', config);
   
   try {
     await prioverd.listBranchs({

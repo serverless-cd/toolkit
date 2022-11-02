@@ -49,7 +49,7 @@ export default class Github extends BaseEvent {
       }
 
       console.log('return success');
-      return generateSuccessResult({ ...event , interceptor: this.interceptor,  });
+      return generateSuccessResult({ ...event , interceptor: this.interceptor });
     }
   
     return generateErrorResult('Event type mismatch');
