@@ -12,7 +12,7 @@ test.only('list branch', async () => {
   const prioverd = git('gitlab', config);
   
   try {
-    await prioverd.listBranchs({
+    await prioverd.listBranches({
       // id: 3,
       // id: 'gitlab-instance-c434bdc1%2Ftest-wss',
       owner: 'gitlab-instance-c434bdc1',

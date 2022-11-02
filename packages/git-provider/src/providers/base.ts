@@ -6,7 +6,7 @@ import { IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWe
 export default abstract class Base {
   constructor(_config: any) { }
   abstract listRepos(): Promise<IRepoOutput[]>;
-  abstract listBranchs(params: IListBranchs): Promise<IBranchOutput[]>;
+  abstract listBranches(params: IListBranchs): Promise<IBranchOutput[]>;
   abstract getRefCommit(params: IGetRefCommit): Promise<ICommitOutput>;
   abstract listWebhook(params: IListWebhook): Promise<IGetWebhookOutput[]>;
   abstract createWebhook(params: ICreateWebhook): Promise<ICreateWebhookOutput>;

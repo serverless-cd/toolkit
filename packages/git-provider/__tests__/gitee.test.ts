@@ -22,7 +22,7 @@ test('list repo', async () => {
 
 test.only('list branchs', async () => {
   const prioverd = git('gitee', { access_token });
-  const rows = await prioverd.listBranchs({ owner: OWNER, repo: REPO });
+  const rows = await prioverd.listBranches({ owner: OWNER, repo: REPO });
 
   expect(_.isArray(rows)).toBeTruthy();
 

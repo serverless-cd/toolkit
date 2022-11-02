@@ -10,7 +10,7 @@ const config = {
 
 test.only('list branch', async () => {
   const prioverd = git('codeup', config);
-  await prioverd.listBranchs({
+  await prioverd.listBranches({
     project_id: 2834398,
     organization_id: '60b045b52c5969c370c5a63e',
   });

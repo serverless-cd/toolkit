@@ -49,7 +49,7 @@ export default class Github extends Base {
   }
 
   // https://docs.github.com/en/rest/branches/branches#list-branches
-  async listBranchs(params: IGithubListBranchs): Promise<IBranchOutput[]> {
+  async listBranches(params: IGithubListBranchs): Promise<IBranchOutput[]> {
     super.validateListBranchsParams(params);
 
     const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.PARAMS))

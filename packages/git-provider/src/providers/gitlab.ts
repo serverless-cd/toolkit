@@ -29,7 +29,7 @@ export default class Gitlab extends Base {
     this.endpoint = endpoint as string;
   }
 
-  async listBranchs(params: IListBranchs | { id: string }): Promise<IBranchOutput[]> {
+  async listBranches(params: IListBranchs | { id: string }): Promise<IBranchOutput[]> {
     let id = _.get(params, 'id');
     if (_.isNil(id)) {
       super.validateListBranchsParams(params);

@@ -28,7 +28,7 @@ export default class Codeup {
   }
 
   // https://help.aliyun.com/document_detail/215660.html
-  async listBranchs(params: IListBranch): Promise<IBranchOutput[]> {
+  async listBranches(params: IListBranch): Promise<IBranchOutput[]> {
     const projectId = _.get(params, 'project_id');
     const organizationId = _.get(params, 'organization_id');
     if (!projectId) {

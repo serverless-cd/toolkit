@@ -46,7 +46,7 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranches
-  async listBranchs(params: IListBranchs): Promise<IBranchOutput[]> {
+  async listBranches(params: IListBranchs): Promise<IBranchOutput[]> {
     super.validateListBranchsParams(params);
 
     const { owner, repo } = params;
