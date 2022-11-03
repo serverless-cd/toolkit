@@ -2,6 +2,7 @@ import OssClient from 'ali-oss';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import walkSync from 'walk-sync';
+import { startsWith } from 'lodash';
 
 const PUT_BUCKET_CORS = [
   {
@@ -26,7 +27,7 @@ class OssLogger {
     // 构造oss客户端
     this.client = new OssClient({
       ...config,
-      region: `oss-${region}`,
+      region: startsWith(region, 'oss-') ? region : `oss-${region}`,
     });
   }
   async init() {

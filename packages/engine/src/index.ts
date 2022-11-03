@@ -15,7 +15,7 @@ import {
   ISteps,
   STEP_IF,
 } from './types';
-import { isEmpty, get, each, replace, map, find, isFunction, values } from 'lodash';
+import { isEmpty, get, each, replace, map, find, isFunction, values, has } from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
 import EventEmitter from 'events';
@@ -63,7 +63,11 @@ class Engine extends EventEmitter {
                   : this.record.status;
               this.context.status = status;
               this.context.completed = true;
-              await this.doEmit();
+              try {
+                await this.doEmit();
+              } catch (error) {
+                this.logger.error(error);
+              }
               resolve(this.context);
             },
           },
@@ -76,11 +80,11 @@ class Engine extends EventEmitter {
           invoke: {
             id: item.stepCount,
             src: async () => {
+              this.record.startTime = Date.now();
               // logger
               this.setLogger(item);
               // 记录 context
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
-              await this.doPreRun(item);
               // 记录环境变量
               this.context.env = item.env as IkeyValue;
               this.doReplace$(item);
@@ -189,7 +193,9 @@ class Engine extends EventEmitter {
       item.if = fn(item.if);
     }
   }
-  private recordContext(item: IStepOptions, { status, error, outputs, name }: IkeyValue) {
+  private recordContext(item: IStepOptions, options: IkeyValue) {
+    const { status, error, outputs, name, process_time } = options;
+
     this.context.stepCount = item.stepCount as string;
     this.context.steps = map(this.context.steps, (obj) => {
       if (obj.stepCount === item.stepCount) {
@@ -204,6 +210,9 @@ class Engine extends EventEmitter {
         }
         if (name) {
           obj.name = name;
+        }
+        if (has(options, 'process_time')) {
+          obj.process_time = process_time;
         }
       }
       return obj;
@@ -229,14 +238,6 @@ class Engine extends EventEmitter {
   }
   // 每个步骤最后的动作
   private async doFinal(item: IStepOptions) {
-    const { events } = this.options;
-
-    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('postRun', data, this.context);
-    if (isFunction(events?.onPostRun)) {
-      await events?.onPostRun(data as ISteps, this.context);
-    }
-
     const logConfig = this.options.logConfig as ILogConfig;
     const { logPrefix, ossConfig } = logConfig;
     if (ossConfig && logPrefix) {
@@ -244,6 +245,16 @@ class Engine extends EventEmitter {
         ...ossConfig,
         codeUri: path.join(logPrefix, `step_${item.stepCount}.log`),
       });
+    }
+    const process_time = [STEP_STATUS.SKIP, STEP_STATUS.CANCEL].includes((item as any).status)
+      ? 0
+      : (Math.round((Date.now() - this.record.startTime) / 10) * 10) / 1000;
+    this.recordContext(item, { process_time });
+    const { events } = this.options;
+    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
+    this.emit('postRun', data, this.context);
+    if (isFunction(events?.onPostRun)) {
+      await events?.onPostRun(data as ISteps, this.context);
     }
   }
   // 将执行终态进行emit
@@ -267,6 +278,7 @@ class Engine extends EventEmitter {
   }
   private async handleSrc(item: IStepOptions) {
     try {
+      await this.doPreRun(item);
       const response: any = await this.doSrc(item);
       // 如果已取消且if条件不成功，则不执行该步骤, 并记录状态为 cancelled
       const isCancel = item.if !== 'true' && this.record.status === STEP_STATUS.CANCEL;

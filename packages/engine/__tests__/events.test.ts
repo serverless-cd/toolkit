@@ -27,6 +27,23 @@ describe('执行终态emit测试', () => {
     });
     await engine.start();
   });
+  test('success', async () => {
+    const steps = [
+      { run: 'echo "hello"', id: 'xhello' },
+      { run: 'echo "world"' },
+    ] as IStepOptions[];
+    const engine = new Engine({
+      steps,
+      logConfig: { logPrefix },
+      events: {
+        onSuccess: async function (context) {
+          throw new Error('onSuccess');
+        },
+      },
+    });
+    const context = await engine.start();
+    expect(context?.status).toBe('success');
+  });
   test('completed', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
@@ -191,6 +208,97 @@ describe('步骤执行过程中emit测试', () => {
     });
     await engine.start();
     expect(newData).toEqual([{ status: 'running' }, { status: 'running' }]);
+  });
+  test.only('onPreRun throw error', async () => {
+    const steps = [
+      {
+        run: "echo 'Hi {{ env.name }}'",
+        env: {},
+      },
+      {
+        run: "echo 'Hi {{ task_id }}'",
+        env: {},
+      },
+      {
+        run: "echo 'Hi {{ app.user_name }}'",
+        env: {},
+      },
+      {
+        run: "echo 'Hi {{ git.event_name }}'",
+        env: {},
+      },
+    ] as IStepOptions[];
+    const engine = new Engine({
+      steps,
+      logConfig: { logPrefix },
+      inputs: {
+        env: { name: 'xiaoming' },
+        task_id: 123,
+        app: { user_name: 'xiaohong' },
+        git: {
+          event_name: 'push',
+        },
+      },
+      events: {
+        onPreRun(data, context) {
+          console.log('onPreRun', data);
+          throw new Error('onPreRun');
+        },
+        async onPostRun(data, context) {
+          console.log('onPostRun', data);
+        },
+        onCompleted: async function (context) {
+          console.log('onCompleted', context);
+        },
+      },
+    });
+    const context = await engine.start();
+    console.log(context);
+
+    expect(context?.status).toBe('failure');
+  });
+  test('onPostRun throw error', async () => {
+    const steps = [
+      {
+        run: "echo 'Hi {{ env.name }}'",
+        env: {},
+      },
+      {
+        run: "echo 'Hi {{ task_id }}'",
+        env: {},
+      },
+      {
+        run: "echo 'Hi {{ app.user_name }}'",
+        env: {},
+      },
+      {
+        run: "echo 'Hi {{ git.event_name }}'",
+        env: {},
+      },
+    ] as IStepOptions[];
+    const engine = new Engine({
+      steps,
+      logConfig: { logPrefix },
+      inputs: {
+        env: { name: 'xiaoming' },
+        task_id: 123,
+        app: { user_name: 'xiaohong' },
+        git: {
+          event_name: 'push',
+        },
+      },
+      events: {
+        onPostRun(data, context) {
+          console.log('onPostRun');
+          throw new Error('onPostRun');
+        },
+        onCompleted: async function (context) {
+          console.log('onCompleted');
+        },
+      },
+    });
+    const context = await engine.start();
+    expect(context?.status).toBe('failure');
   });
 });
 
