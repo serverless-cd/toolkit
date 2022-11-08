@@ -6,11 +6,11 @@ import { generateSuccessResult, generateErrorResult } from '../../utils';
 
 export default class Github extends BaseEvent {
   async verify(): Promise<any> {
-    if (!_.has(this.triggers, this.interceptor)) {
-      throw new Error('The interceptor does not exist github');
+    if (!_.has(this.triggers, this.provider)) {
+      throw new Error('The triggers does not exist github');
     }
 
-    const github = _.get(this.triggers, this.interceptor);
+    const github = _.get(this.triggers, this.provider);
 
     console.log('verify secret status');
     const secret = _.get(github, 'secret', '');
@@ -19,14 +19,15 @@ export default class Github extends BaseEvent {
       throw new Error('Verify secret error');
     }
 
-    console.log('verify x-github-event empty');
     const eventName = _.get(this.headers, 'x-github-event');
+    console.log(`get x-github-event value: ${eventName}`);
+
     if (_.isEmpty(eventName)) {
       throw new Error("No 'x-github-event' found on request");
     }
 
-    console.log('verify events config empty');
     const events = _.get(github, 'events', []);
+    console.log(`get github events: ${JSON.stringify(events)}`);
     if (_.isEmpty(events)) {
       throw new Error('No event rules configured');
     }
@@ -37,21 +38,21 @@ export default class Github extends BaseEvent {
         console.log(`Event type mismatch,listen event: ${eventType}`);
         continue;
       }
-
       console.log('run filter');
       const filter = _.get(event, 'filter', '');
       if (!_.isEmpty(filter)) {
+        console.log(`filter: ${filter}`);
         const filterStatus = await jexl.eval(filter, this.requestPayload);
+        console.log(`filter status: ${filterStatus}`);
         if (!filterStatus) {
           console.log(`Filter status error: ${filterStatus}`);
           continue;
         }
       }
-
       console.log('return success');
-      return generateSuccessResult({ ...event , interceptor: this.interceptor });
+      return generateSuccessResult({ ...(event as {}), provider: this.provider });
     }
-  
+
     return generateErrorResult('Event type mismatch');
   }
 
@@ -61,7 +62,13 @@ export default class Github extends BaseEvent {
       return true;
     }
     const sig = Buffer.from(signature);
-    const signed = Buffer.from(`sha1=${crypto.createHmac('sha1', secret as string).update(this.body).digest('hex')}`)
+    const signed = Buffer.from(
+      `sha1=${crypto
+        .createHmac('sha1', secret as string)
+        .update(this.body)
+        .digest('hex')}`,
+    );
+
     if (sig.length !== signed.length) {
       return false;
     }

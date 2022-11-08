@@ -1,4 +1,3 @@
-
 export interface IGithubTrigger {
   // interceptor: 'github';
   secret?: string;
@@ -8,7 +7,6 @@ export interface IGithubTrigger {
   }[];
 }
 
-
 export interface IGithubWebhook {
   headers: {
     [key: string]: string;
@@ -16,8 +14,10 @@ export interface IGithubWebhook {
   body: any;
 }
 
-export interface ITigger {
+export interface ITriggers {
   github: IGithubTrigger;
 }
 
 export type IPayload = IGithubWebhook;
+
+export type IProvider = 'github';

@@ -1,15 +1,15 @@
 import _ from 'lodash';
-import { IGithubWebhook, ITigger } from '../../types';
+import { IGithubWebhook, ITriggers, IProvider } from '../../types';
 
 // webhook
 export default abstract class BaseEvent {
-  readonly triggers: ITigger;
-  readonly headers: { [key: string]: string; };
+  readonly triggers: ITriggers;
+  readonly headers: { [key: string]: string };
   readonly body: string;
   readonly requestPayload: any;
-  readonly interceptor: string;
+  readonly provider: IProvider;
 
-  constructor(triggers: ITigger, requestPayload: IGithubWebhook, interceptor: string) {
+  constructor(triggers: ITriggers, requestPayload: IGithubWebhook, provider: IProvider) {
     const headers = _.get(requestPayload, 'headers');
     if (_.isEmpty(headers)) {
       throw new TypeError("must provide a 'headers' option");
@@ -19,7 +19,7 @@ export default abstract class BaseEvent {
       throw new Error('Body is not a json');
     }
 
-    this.interceptor = interceptor;
+    this.provider = provider;
     this.triggers = triggers;
     this.headers = headers;
     this.requestPayload = requestPayload;
