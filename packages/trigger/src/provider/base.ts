@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { IGithubWebhook, ITriggers, IProvider } from '../../types';
+import { IGithubWebhook, ITriggers, IProvider } from '../type';
 
 // webhook
 export default abstract class BaseEvent {

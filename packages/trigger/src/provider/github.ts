@@ -2,7 +2,7 @@ import _ from 'lodash';
 import crypto from 'crypto';
 import jexl from 'jexl';
 import BaseEvent from './base';
-import { generateSuccessResult, generateErrorResult } from '../../utils';
+import { generateSuccessResult, generateErrorResult } from '../utils';
 
 export default class Github extends BaseEvent {
   async verify(): Promise<any> {

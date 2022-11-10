@@ -11,6 +11,14 @@ test('check github', async () => {
         },
       ],
       secret: '9u6g2w8v7x944qh8',
+      push: {
+        branches: {
+          prefix: ['feature'],
+          precise: ['main'],
+          exclude: ['main'],
+          include: ['mian'],
+        },
+      },
     },
   };
   const triggerInputs = {

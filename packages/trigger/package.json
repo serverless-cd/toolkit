@@ -18,8 +18,9 @@
     "url": "git+https://github.com/serverless-cd/serverless-cd-toolkit.git"
   },
   "scripts": {
-    "start": "esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=example/lib/index.js --watch",
-    "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --external:@serverless-devs/core --outfile=lib/index.js"
+    "watch": "tsc -w",
+    "start": "esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --outfile=example/lib/index.js --watch",
+    "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --outfile=lib/index.js"
   },
   "dependencies": {
     "jexl": "^2.3.0",

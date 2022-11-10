@@ -1,10 +1,17 @@
 export interface IGithubTrigger {
-  // interceptor: 'github';
   secret?: string;
   filters?: {
     eventName: string;
     filter?: string;
   }[];
+  push?: {
+    branches?: {
+      prefix?: string[];
+      precise?: string[];
+      exclude?: string[];
+      include?: string[];
+    };
+  };
 }
 
 export interface IGithubWebhook {

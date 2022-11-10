@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { IPayload, ITriggers } from './types';
-import webhook from './interceptor/events';
+import { IPayload, ITriggers } from './type';
+import webhook from './provider';
 
 async function verifyLegitimacy(triggers: ITriggers, payload: IPayload) {
   if (!_.isPlainObject(triggers)) {
