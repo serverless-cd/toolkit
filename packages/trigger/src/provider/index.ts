@@ -29,4 +29,4 @@ const getTriggerEvent = (payload: unknown): 'github' => {
 export default {
   github: Github,
   getTriggerEvent,
-}
+};

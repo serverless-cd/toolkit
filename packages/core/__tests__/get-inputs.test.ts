@@ -1,6 +1,6 @@
-import { getInputs, getSecretInputs } from '../src';
+import { getInputs } from '../src';
 
-test('getInputs 测试', () => {
+test.only('getInputs 测试', () => {
   const res = getInputs(
     {
       name: '{{secret.name}}',
@@ -16,39 +16,15 @@ test('getInputs 测试', () => {
       ],
     },
     {
-      env: { name: 'xiaoming', age: '20' },
-    },
-  );
-  expect(res).toEqual({
-    name: 'xiaoming',
-    obj: { name: 'xiaoming', age: '20' },
-    array: [{ name: 'xiaoming', age: '20' }],
-  });
-});
-
-test('getSecretInputs 测试', () => {
-  const res = getSecretInputs(
-    {
-      name: '{{secret.name}}',
-      obj: {
-        name: '{{secret.name}}',
-        age: '{{env.age}}',
-        long: '{{secret.long}}',
+      $variables: {
+        env: { name: 'xiaoming', age: '20' },
+        secret: { name: 'xiaohong' },
       },
-      array: [
-        {
-          name: '{{secret.name}}',
-          age: '{{env.age}}',
-        },
-      ],
-    },
-    {
-      env: { name: 'xiaoming', age: '20', long: 'iamxiaoming' },
     },
   );
   expect(res).toEqual({
-    name: '***',
-    obj: { name: '***', age: '20', long: 'iam*****ing' },
-    array: [{ name: '***', age: '20' }],
+    name: 'xiaohong',
+    obj: { name: 'xiaohong', age: '20' },
+    array: [{ name: 'xiaohong', age: '20' }],
   });
 });
