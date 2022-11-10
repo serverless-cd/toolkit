@@ -23,11 +23,10 @@
     "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --outfile=lib/index.js"
   },
   "dependencies": {
-    "jexl": "^2.3.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "micromatch": "^4.0.5"
   },
   "devDependencies": {
-    "@types/jexl": "^2.3.1",
     "@types/lodash": "^4.14.184",
     "@types/micromatch": "^4.0.2",
     "@types/node": "^18.7.1",

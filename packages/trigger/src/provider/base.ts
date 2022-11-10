@@ -23,7 +23,7 @@ export default abstract class BaseEvent {
     this.triggers = triggers;
     this.headers = headers;
     this.requestPayload = requestPayload;
-    this.body = JSON.stringify(body);
+    this.body = body;
   }
 
   abstract verify(): Promise<any>;

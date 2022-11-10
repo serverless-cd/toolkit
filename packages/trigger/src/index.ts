@@ -7,7 +7,7 @@ async function verifyLegitimacy(triggers: ITriggers, payload: IPayload) {
     throw new TypeError('The parameter format should be object');
   }
 
-  console.log('get trigger provider start');
+  console.log('get trigger provider...');
   const provider = webhook.getTriggerEvent(payload);
   console.log(`get trigger provider success: ${provider}`);
 

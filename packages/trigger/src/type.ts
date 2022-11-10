@@ -1,16 +1,17 @@
+export interface IBranches {
+  prefix?: string[];
+  precise?: string[];
+  exclude?: string[];
+  include?: string[];
+}
 export interface IGithubTrigger {
   secret?: string;
-  filters?: {
-    eventName: string;
-    filter?: string;
-  }[];
   push?: {
-    branches?: {
-      prefix?: string[];
-      precise?: string[];
-      exclude?: string[];
-      include?: string[];
-    };
+    branches?: IBranches;
+    tags?: IBranches;
+  };
+  pr?: {
+    branches?: IBranches;
   };
 }
 
@@ -28,3 +29,10 @@ export interface ITriggers {
 export type IPayload = IGithubWebhook;
 
 export type IProvider = 'github';
+
+export type IEventType = 'push' | 'pull_request';
+
+export interface IPushInfo {
+  branch?: string;
+  tag?: string;
+}
