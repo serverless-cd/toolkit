@@ -7,11 +7,11 @@ import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWe
 import { IGitConfig, IListWebhook } from '../types/input';
 
 export default class Github extends Base {
-  private PARAMS: RequestParameters = {
+  private getDefaultParame = (): RequestParameters => ({
     per_page: 100,
     page: 1,
     sort: 'updated',
-  };
+  });
   readonly octokit: Octokit;
 
   constructor(config: IGitConfig) {
@@ -31,9 +31,22 @@ export default class Github extends Base {
     await this.octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', params);
   }
 
-  // https://docs.github.com/en/rest/reference/repos#list-repositories-for-the-authenticated-user
   async listRepos(): Promise<IRepoOutput[]> {
-    const rows = await this.requestList('GET /user/repos', _.defaults(this.PARAMS, { affiliation: 'owner' }));
+    let rows: any[] = [];
+    // 获取用户的仓库：https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user
+    const userRepos = await this.requestList('GET /user/repos', _.defaults(this.getDefaultParame(), { affiliation: 'owner' }));
+    rows = rows.concat(userRepos);
+
+    const orgs = await this.listOrgs();
+    for (const { org } of orgs) {
+      // 获取组织的仓库: https://docs.github.com/cn/rest/repos/repos#list-organization-repositories
+      console.log('get org repository: ', org);
+      const orgRepos = await this.requestList('GET /orgs/{org}/repos', _.defaults(this.getDefaultParame(),  { org }));
+      const o = orgRepos.filter(orgRepo => orgRepo.permissions.admin);
+      console.log('orgRepos length: ', orgRepos.length, '; admin length: ', o.length);
+      rows = rows.concat(o);
+    }
+    console.log('\tlist repo length: ', rows.length);
 
     return _.map(rows, (row) => ({
       id: row.id,
@@ -46,13 +59,23 @@ export default class Github extends Base {
       default_branch: row.default_branch,
       source: row,
     }));
+  };
+
+  async listOrgs() {
+    // 获取用户组织：https://docs.github.com/en/rest/orgs/orgs#list-organizations-for-the-authenticated-user
+    const orgs = await this.requestList('GET /user/orgs', this.getDefaultParame());
+    return _.map(orgs, row => ({
+      org: row.login,
+      id: row.id,
+      source: row,
+    }));
   }
 
   // https://docs.github.com/en/rest/branches/branches#list-branches
   async listBranches(params: IGithubListBranchs): Promise<IBranchOutput[]> {
     super.validateListBranchsParams(params);
 
-    const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.PARAMS))
+    const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.getDefaultParame()))
 
     return _.map(rows, (row) => ({
       name: row.name, commit_sha: _.get(row, 'commit.sha'), source: row,
@@ -77,7 +100,7 @@ export default class Github extends Base {
   async listWebhook(params: IListWebhook): Promise<IGetWebhookOutput[]> {
     super.validateListWebhookParams(params);
 
-    const rows = await this.requestList('GET /repos/{owner}/{repo}/hooks', _.defaults(params, this.PARAMS))
+    const rows = await this.requestList('GET /repos/{owner}/{repo}/hooks', _.defaults(params, this.getDefaultParame()))
     return _.map(rows, (row) => ({
       id: row.id, url: _.get(row, 'config.url'), source: row,
     }));

@@ -7,7 +7,7 @@ const access_token: string = process.env.GITHUB_ACCESS_TOKEN || '';
 const OWNER = 'wss-git';
 const REPO = 'git-action-test';
 
-test('list repo', async () => {
+test.only('list repo', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -20,7 +20,7 @@ test('list repo', async () => {
     expect(_.has(row, 'source')).toBeTruthy();
     expect(_.isString(row.url) && _.endsWith(row.url, '.git')).toBeTruthy();
   }
-});
+}, 3 * 60 * 1000);
 
 test('create or update file', async () => {
   const prioverd = git('github', {
@@ -38,7 +38,7 @@ test('create or update file', async () => {
   }).toBeTruthy();
 });
 
-test.only('list branchs', async () => {
+test('list branchs', async () => {
   const prioverd = git('github', {
     access_token,
   });
