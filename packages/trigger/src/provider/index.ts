@@ -1,7 +1,9 @@
 import _ from 'lodash';
 import Github from './github';
+import Gitee from './gitee';
+import { IUserAgent, IProvider } from '../type';
 
-const getTriggerEvent = (payload: unknown): 'github' => {
+const getTriggerEvent = (payload: any): IProvider => {
   const triggerType = _.get(payload, 'body.triggerType');
 
   // TODO：手动触发
@@ -19,8 +21,14 @@ const getTriggerEvent = (payload: unknown): 'github' => {
 
   // webhook events
   const ua: string = _.get(payload, 'headers[user-agent]', '');
+  console.log(`get webhook user-agent: ${ua}`);
+
   if (_.startsWith(ua, 'GitHub-Hookshot')) {
-    return 'github';
+    return IUserAgent.GITHUB;
+  }
+  // https://gitee.com/help/articles/4186#article-header0
+  if (ua === 'git-oschina-hook') {
+    return IUserAgent.GITEE;
   }
 
   throw new Error('Unrecognized trigger type');
@@ -28,5 +36,6 @@ const getTriggerEvent = (payload: unknown): 'github' => {
 
 export default {
   github: Github,
+  gitee: Gitee,
   getTriggerEvent,
 };
