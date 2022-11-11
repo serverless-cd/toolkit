@@ -32,7 +32,8 @@ async function checkFile(config: IConfig) {
         break;
       } catch (error) {
         if (index === 2) {
-          throw error;
+          fs.removeSync(baseDir);
+          throw new Error(`git clone ${newCloneUrl} ${baseDir} --no-checkout failed`);
         }
       }
     }
