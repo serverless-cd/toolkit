@@ -14,7 +14,7 @@ interface IEvent {
   onFailure?: (context: IContext) => Promise<void>;
   onCancelled?: (context: IContext) => Promise<void>;
   onCompleted?: (context: IContext) => Promise<void>;
-  onInit?: (context: IContext) => Promise<any>;
+  onInit?: (context: IContext, logger: any) => Promise<any>;
 }
 
 export interface ILogConfig {
@@ -99,6 +99,8 @@ export interface IRecord {
   steps: IkeyValue; // 记录每个 step 的执行状态以及输出，后续step可以通过steps[$step_id].outputs使用该数据
   status: IStatus; // 记录step的状态
   startTime: number; // 记录step的开始时间
+  initData: Record<string, any>; // 记录初始化数据
+  isInit: boolean; // 是否将初始化的数据放到context.steps中
 }
 
 export interface IContext {
