@@ -8,7 +8,7 @@
     "orm"
   ],
   "author": "wss-git <wssgryx@163.com>",
-  "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit#readme",
+  "homepage": "https://github.com/serverless-cd/toolkit#readme",
   "license": "ISC",
   "main": "lib/index.js",
   "directories": {
@@ -19,22 +19,21 @@
     "lib"
   ],
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmmirror.com/"
+    "access": "public"
   },
   "dependencies": {
     "tablestore": "^5.2.2"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/serverless-cd/serverless-cd-toolkit.git"
+    "url": "git+https://github.com/serverless-cd/toolkit.git"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w"
   },
   "bugs": {
-    "url": "https://github.com/serverless-cd/serverless-cd-toolkit/issues"
+    "url": "https://github.com/serverless-cd/toolkit/issues"
   },
   "devDependencies": {
     "@types/tablestore": "^5.1.0",
