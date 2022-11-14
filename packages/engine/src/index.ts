@@ -33,18 +33,28 @@ class Engine extends EventEmitter {
   private logger: any;
   constructor(private options: IEngineOptions) {
     super();
-    const { steps, inputs } = options;
-    options.steps = getSteps(steps, this.childProcess);
+    const { inputs } = options;
     this.context.inputs = inputs as IkeyValue;
     this.context.secrets = inputs?.secrets;
-    this.context.steps = map(options.steps as ISteps[], (item) => {
+  }
+  private async doInit() {
+    const { events } = this.options;
+    this.context.status = STEP_STATUS.RUNNING;
+    this.emit('init', this.context);
+    return await events?.onInit?.(this.context);
+  }
+  async start(): Promise<IContext> {
+    const initValue = await this.doInit();
+    // 优先读取 doInit 返回的 steps 数据，其次 行参里的 steps 数据
+    const steps = getSteps(initValue?.steps || this.options.steps, this.childProcess);
+    if (isEmpty(steps)) {
+      throw new Error('steps is empty, please check your config');
+    }
+    this.context.steps = map(steps as ISteps[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
     });
-  }
-  async start(): Promise<IContext | undefined> {
-    const { steps, inputs = {} } = this.options;
-    if (isEmpty(steps)) return;
+
     return new Promise(async (resolve) => {
       const states: any = {
         init: {
@@ -142,20 +152,9 @@ class Engine extends EventEmitter {
           this.logger?.debug(`step: ${state.value}`);
         })
         .start();
-      await this.doInit();
       stepService.send('INIT');
     });
   }
-
-  private async doInit() {
-    const { events } = this.options;
-    this.context.status = STEP_STATUS.RUNNING;
-    this.emit('init', this.context);
-    if (isFunction(events?.onInit)) {
-      await events?.onInit(this.context);
-    }
-  }
-
   private setLogger(item: IStepOptions) {
     const logConfig = this.options.logConfig as ILogConfig;
     const { customLogger, logPrefix, logLevel } = logConfig;

@@ -209,7 +209,7 @@ describe('步骤执行过程中emit测试', () => {
     await engine.start();
     expect(newData).toEqual([{ status: 'running' }, { status: 'running' }]);
   });
-  test.only('onPreRun throw error', async () => {
+  test('onPreRun throw error', async () => {
     const steps = [
       {
         run: "echo 'Hi {{ env.name }}'",
@@ -319,6 +319,29 @@ test('测试context status(task status)', async () => {
   });
   await engine.start();
   expect(statusList).toEqual(['running', 'success']);
+});
+
+test.only('测试onInit返回steps数据', async () => {
+  const engine = new Engine({
+    logConfig: { logPrefix },
+    events: {
+      onInit: async function (context) {
+        return {
+          steps: [
+            { run: 'echo "hello from onInit"', id: 'xhello' },
+            { run: 'echo "world from onInit"' },
+          ],
+        };
+      },
+      onCompleted: async function (context) {},
+    },
+  });
+  const res = await engine.start();
+  const data = map(res?.steps, (item: any) => ({ run: item.run, status: item.status }));
+  expect(data).toEqual([
+    { run: 'echo "hello from onInit"', status: 'success' },
+    { run: 'echo "world from onInit"', status: 'success' },
+  ]);
 });
 
 test('测试context completed(task status)', async () => {

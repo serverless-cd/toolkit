@@ -1,6 +1,6 @@
 import { IOssConfig, LoggerLevel } from '@serverless-cd/core';
 export interface IEngineOptions {
-  steps: IStepOptions[];
+  steps?: IStepOptions[];
   inputs?: IkeyValue;
   logConfig?: ILogConfig;
   cwd?: string; // 当前工作目录
@@ -14,7 +14,7 @@ interface IEvent {
   onFailure?: (context: IContext) => Promise<void>;
   onCancelled?: (context: IContext) => Promise<void>;
   onCompleted?: (context: IContext) => Promise<void>;
-  onInit?: (context: IContext) => Promise<void>;
+  onInit?: (context: IContext) => Promise<any>;
 }
 
 export interface ILogConfig {
