@@ -44,3 +44,7 @@ export function getSteps(steps: IStepOptions[], childProcess: any[]) {
   });
   return [...runArray, ...postArray].map((item) => ({ ...item, stepCount: uniqueId() }));
 }
+
+export function getProcessTime(time: number) {
+  return (Math.round((Date.now() - time) / 10) * 10) / 1000;
+}

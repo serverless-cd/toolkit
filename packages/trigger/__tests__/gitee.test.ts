@@ -1,26 +1,16 @@
 import verifyLegitimacy from '../src';
-import { pushWithBranch, pushWithTag, prInputs } from './mock/github';
+import { pushWithBranch, pushWithTag, prInputs } from './mock/gitee';
 
-test('no trigger data', async () => {
+test('gitee webhook push with branch case', async () => {
   const eventConfig = {
-    github: {
-      secret: '9u6g2w8v7x944qh8',
-    },
-  };
-  const res = await verifyLegitimacy(eventConfig as any, pushWithBranch);
-  expect(res?.success).toEqual(false);
-});
-
-test('github webhook push with branch case', async () => {
-  const eventConfig = {
-    github: {
-      secret: '9u6g2w8v7x944qh8',
+    gitee: {
+      secret: 'shihuali123',
       push: {
         branches: {
           prefix: ['feature'],
-          precise: ['main'],
-          exclude: ['main'],
-          include: ['mian'],
+          precise: ['master'],
+          exclude: ['master'],
+          include: ['master'],
         },
       },
     },
@@ -29,9 +19,9 @@ test('github webhook push with branch case', async () => {
   expect(res?.success).toEqual(true);
 });
 
-test('github webhook push with tag case', async () => {
+test('gitee webhook push with tag case', async () => {
   const eventConfig = {
-    github: {
+    gitee: {
       push: {
         tags: {
           prefix: ['feature'],
@@ -46,15 +36,15 @@ test('github webhook push with tag case', async () => {
   expect(res?.success).toEqual(true);
 });
 
-test('github webhook pr case', async () => {
+test('gitee webhook pr case', async () => {
   const eventConfig = {
-    github: {
+    gitee: {
       pr: {
         branches: {
           prefix: ['feature'],
-          precise: ['main'],
-          exclude: ['main'],
-          include: ['mian'],
+          precise: ['master'],
+          exclude: ['master'],
+          include: ['master'],
         },
       },
     },

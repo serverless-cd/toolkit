@@ -4,7 +4,7 @@ export interface IBranches {
   exclude?: string[];
   include?: string[];
 }
-export interface IGithubTrigger {
+export interface ITrigger {
   secret?: string;
   push?: {
     branches?: IBranches;
@@ -15,22 +15,30 @@ export interface IGithubTrigger {
   };
 }
 
-export interface IGithubWebhook {
+export type ITriggers =
+  | {
+      github: ITrigger;
+    }
+  | {
+      gitee: ITrigger;
+    };
+
+export type IPayload = {
   headers: {
     [key: string]: string;
   };
   body: any;
+};
+
+export enum IUserAgent {
+  GITHUB = 'github',
+  GITEE = 'gitee',
 }
 
-export interface ITriggers {
-  github: IGithubTrigger;
-}
+export type IProvider = `${IUserAgent}`;
 
-export type IPayload = IGithubWebhook;
-
-export type IProvider = 'github';
-
-export type IEventType = 'push' | 'pull_request';
+export type IGithubEvent = 'push' | 'pull_request';
+export type IGiteeEvent = 'Push Hook' | 'Tag Push Hook' | 'Merge Request Hook';
 
 export interface IPushInfo {
   branch?: string;

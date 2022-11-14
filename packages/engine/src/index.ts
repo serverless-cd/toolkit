@@ -15,14 +15,14 @@ import {
   ISteps,
   STEP_IF,
 } from './types';
-import { isEmpty, get, each, replace, map, find, isFunction, values, has } from 'lodash';
+import { isEmpty, get, each, replace, map, find, isFunction, values, has, concat } from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
 import EventEmitter from 'events';
 import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
-import { getScript, getSteps } from './utils';
+import { getScript, getSteps, getProcessTime } from './utils';
 
 export { IStepOptions, IContext } from './types';
 
@@ -33,18 +33,57 @@ class Engine extends EventEmitter {
   private logger: any;
   constructor(private options: IEngineOptions) {
     super();
-    const { steps, inputs } = options;
-    options.steps = getSteps(steps, this.childProcess);
+    const { inputs } = options;
     this.context.inputs = inputs as IkeyValue;
     this.context.secrets = inputs?.secrets;
-    this.context.steps = map(options.steps as ISteps[], (item) => {
+  }
+  private async doInit() {
+    const startTime = Date.now();
+    const filePath = 'step_0.log';
+    const { events } = this.options;
+    this.context.status = STEP_STATUS.RUNNING;
+    this.emit('init', this.context);
+    this.logger = this.getLogger(filePath);
+    if (!isFunction(events?.onInit)) return;
+    try {
+      const res = await events?.onInit?.(this.context, this.logger);
+      await this.doOss(filePath);
+      const process_time = getProcessTime(startTime);
+      this.record.initData = {
+        name: get(res, 'name', 'Init'),
+        status: STEP_STATUS.SUCCESS,
+        process_time,
+        stepCount: '0',
+        outputs: res,
+      };
+      return res;
+    } catch (error) {
+      this.logger.error(error);
+      this.context.status = this.record.status = STEP_STATUS.FAILURE;
+      this.context.completed = true;
+      await this.doOss(filePath);
+      const process_time = getProcessTime(startTime);
+      this.record.initData = {
+        name: 'Init',
+        status: STEP_STATUS.FAILURE,
+        process_time,
+        stepCount: '0',
+        error,
+      };
+    }
+  }
+  async start(): Promise<IContext> {
+    const initValue = await this.doInit();
+    // 优先读取 doInit 返回的 steps 数据，其次 行参里的 steps 数据
+    const steps = getSteps(initValue?.steps || this.options.steps, this.childProcess);
+    if (isEmpty(steps)) {
+      throw new Error('steps is empty, please check your config');
+    }
+    this.context.steps = map(steps as ISteps[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
     });
-  }
-  async start(): Promise<IContext | undefined> {
-    const { steps, inputs = {} } = this.options;
-    if (isEmpty(steps)) return;
+
     return new Promise(async (resolve) => {
       const states: any = {
         init: {
@@ -82,7 +121,7 @@ class Engine extends EventEmitter {
             src: async () => {
               this.record.startTime = Date.now();
               // logger
-              this.setLogger(item);
+              this.logger = this.getLogger(`step_${item.stepCount}.log`);
               // 记录 context
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
@@ -142,29 +181,18 @@ class Engine extends EventEmitter {
           this.logger?.debug(`step: ${state.value}`);
         })
         .start();
-      await this.doInit();
       stepService.send('INIT');
     });
   }
-
-  private async doInit() {
-    const { events } = this.options;
-    this.context.status = STEP_STATUS.RUNNING;
-    this.emit('init', this.context);
-    if (isFunction(events?.onInit)) {
-      await events?.onInit(this.context);
-    }
-  }
-
-  private setLogger(item: IStepOptions) {
+  private getLogger(filePath: string) {
     const logConfig = this.options.logConfig as ILogConfig;
     const { customLogger, logPrefix, logLevel } = logConfig;
     const { inputs } = this.options;
     if (customLogger) {
       return (this.logger = customLogger);
     }
-    this.logger = new EngineLogger({
-      file: logPrefix && path.join(logPrefix, `step_${item.stepCount}.log`),
+    return new EngineLogger({
+      file: logPrefix && path.join(logPrefix, filePath),
       level: logLevel,
       secrets: inputs?.secrets ? values(inputs.secrets) : undefined,
     });
@@ -195,8 +223,10 @@ class Engine extends EventEmitter {
   }
   private recordContext(item: IStepOptions, options: IkeyValue) {
     const { status, error, outputs, name, process_time } = options;
+    const { events } = this.options;
 
     this.context.stepCount = item.stepCount as string;
+
     this.context.steps = map(this.context.steps, (obj) => {
       if (obj.stepCount === item.stepCount) {
         if (status) {
@@ -217,6 +247,10 @@ class Engine extends EventEmitter {
       }
       return obj;
     });
+    if (isFunction(events?.onInit) && !this.record.isInit) {
+      this.record.isInit = true;
+      this.context.steps = concat(this.record.initData, this.context.steps);
+    }
   }
   cancel() {
     this.record.status = STEP_STATUS.CANCEL;
@@ -238,17 +272,10 @@ class Engine extends EventEmitter {
   }
   // 每个步骤最后的动作
   private async doFinal(item: IStepOptions) {
-    const logConfig = this.options.logConfig as ILogConfig;
-    const { logPrefix, ossConfig } = logConfig;
-    if (ossConfig && logPrefix) {
-      await this.logger.oss({
-        ...ossConfig,
-        codeUri: path.join(logPrefix, `step_${item.stepCount}.log`),
-      });
-    }
+    await this.doOss(`step_${item.stepCount}.log`);
     const process_time = [STEP_STATUS.SKIP, STEP_STATUS.CANCEL].includes((item as any).status)
       ? 0
-      : (Math.round((Date.now() - this.record.startTime) / 10) * 10) / 1000;
+      : getProcessTime(this.record.startTime);
     this.recordContext(item, { process_time });
     const { events } = this.options;
     const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
@@ -257,24 +284,36 @@ class Engine extends EventEmitter {
       await events?.onPostRun(data as ISteps, this.context);
     }
   }
+  private async doOss(filePath: string) {
+    const logConfig = this.options.logConfig as ILogConfig;
+    const { logPrefix, ossConfig } = logConfig;
+    if (ossConfig && logPrefix) {
+      await this.logger.oss({
+        ...ossConfig,
+        codeUri: path.join(logPrefix, filePath),
+      });
+    }
+  }
   // 将执行终态进行emit
   private async doEmit() {
     const { status } = this.record;
     const { events } = this.options;
     this.emit(status, this.context);
-    if (status === STEP_STATUS.SUCCESS && isFunction(events?.onSuccess)) {
-      await events?.onSuccess(this.context);
+    if (status === STEP_STATUS.SUCCESS) {
+      await events?.onSuccess?.(this.context);
     }
-    if (status === STEP_STATUS.FAILURE && isFunction(events?.onFailure)) {
-      await events?.onFailure(this.context);
+    if (status === STEP_STATUS.FAILURE) {
+      await events?.onFailure?.(this.context);
     }
-    if (status === STEP_STATUS.CANCEL && isFunction(events?.onCancelled)) {
-      await events?.onCancelled(this.context);
+    if (status === STEP_STATUS.CANCEL) {
+      await events?.onCancelled?.(this.context);
     }
+    await this.doCompleted();
+  }
+  private async doCompleted() {
+    const { events } = this.options;
     this.emit('completed', this.context);
-    if (isFunction(events?.onCompleted)) {
-      await events?.onCompleted(this.context);
-    }
+    await events?.onCompleted?.(this.context);
   }
   private async handleSrc(item: IStepOptions) {
     try {
