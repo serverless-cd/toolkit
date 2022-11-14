@@ -42,15 +42,15 @@ class Engine extends EventEmitter {
     const filePath = 'step_0.log';
     const { events } = this.options;
     this.context.status = STEP_STATUS.RUNNING;
-    this.emit('init', this.context);
     this.logger = this.getLogger(filePath);
+    this.emit('init', this.context, this.logger);
     if (!isFunction(events?.onInit)) return;
     try {
       const res = await events?.onInit?.(this.context, this.logger);
       await this.doOss(filePath);
       const process_time = getProcessTime(startTime);
       this.record.initData = {
-        name: get(res, 'name', 'Init'),
+        name: 'Set up task',
         status: STEP_STATUS.SUCCESS,
         process_time,
         stepCount: '0',
@@ -73,6 +73,7 @@ class Engine extends EventEmitter {
     }
   }
   async start(): Promise<IContext> {
+    const { events } = this.options;
     const initValue = await this.doInit();
     // 优先读取 doInit 返回的 steps 数据，其次 行参里的 steps 数据
     const steps = getSteps(initValue?.steps || this.options.steps, this.childProcess);
@@ -83,6 +84,13 @@ class Engine extends EventEmitter {
       item.status = STEP_STATUS.PENING;
       return item;
     });
+    if (isFunction(events?.onCompleted)) {
+      this.context.steps.push({
+        name: 'Complete task',
+        status: STEP_STATUS.PENING,
+        stepCount: String(steps.length + 1),
+      } as ISteps);
+    }
 
     return new Promise(async (resolve) => {
       const states: any = {
@@ -198,13 +206,11 @@ class Engine extends EventEmitter {
     });
   }
 
-  private async doPreRun(item: IStepOptions) {
+  private async doPreRun(stepCount: string) {
     const { events } = this.options;
-    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('preRun', data, this.context);
-    if (isFunction(events?.onPreRun)) {
-      await events?.onPreRun(data as ISteps, this.context);
-    }
+    const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
+    this.emit('preRun', data, this.context, this.logger);
+    await events?.onPreRun?.(data as ISteps, this.context, this.logger);
   }
 
   private doReplace$(item: IStepOptions) {
@@ -279,10 +285,8 @@ class Engine extends EventEmitter {
     this.recordContext(item, { process_time });
     const { events } = this.options;
     const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('postRun', data, this.context);
-    if (isFunction(events?.onPostRun)) {
-      await events?.onPostRun(data as ISteps, this.context);
-    }
+    this.emit('postRun', data, this.context, this.logger);
+    await events?.onPostRun?.(data as ISteps, this.context, this.logger);
   }
   private async doOss(filePath: string) {
     const logConfig = this.options.logConfig as ILogConfig;
@@ -296,28 +300,69 @@ class Engine extends EventEmitter {
   }
   // 将执行终态进行emit
   private async doEmit() {
+    const stepCount = String(this.context.steps.length - 1);
+    const filePath = `step_${stepCount}.log`;
+    this.logger = this.getLogger(filePath);
     const { status } = this.record;
     const { events } = this.options;
-    this.emit(status, this.context);
+    this.emit(status, this.context, this.logger);
     if (status === STEP_STATUS.SUCCESS) {
-      await events?.onSuccess?.(this.context);
+      try {
+        await events?.onSuccess?.(this.context, this.logger);
+      } catch (error) {
+        this.logger.error(`onSuccess error`);
+        this.logger.error(error);
+      }
     }
     if (status === STEP_STATUS.FAILURE) {
-      await events?.onFailure?.(this.context);
+      try {
+        await events?.onFailure?.(this.context, this.logger);
+      } catch (error) {
+        this.logger.error(`onFailure error`);
+        this.logger.error(error);
+      }
     }
     if (status === STEP_STATUS.CANCEL) {
-      await events?.onCancelled?.(this.context);
+      try {
+        await events?.onCancelled?.(this.context, this.logger);
+      } catch (error) {
+        this.logger.error(`onCancel error`);
+        this.logger.error(error);
+      }
     }
-    await this.doCompleted();
-  }
-  private async doCompleted() {
-    const { events } = this.options;
-    this.emit('completed', this.context);
-    await events?.onCompleted?.(this.context);
+    this.emit('completed', this.context, this.logger);
+    if (isFunction(events?.onCompleted)) {
+      const startTime = Date.now();
+      try {
+        this.recordContext({ stepCount } as IStepOptions, { status: STEP_STATUS.RUNNING });
+        this.doPreRun(stepCount);
+        const response = await events?.onCompleted?.(this.context, this.logger);
+        const process_time = getProcessTime(startTime);
+        this.recordContext({ stepCount } as IStepOptions, {
+          status: STEP_STATUS.SUCCESS,
+          outputs: response,
+          process_time,
+        });
+        const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
+        await events?.onPostRun?.(data as ISteps, this.context, this.logger);
+      } catch (error) {
+        this.logger.error(`onCompleted error`);
+        this.logger.error(error);
+        const process_time = getProcessTime(startTime);
+        this.recordContext({ stepCount } as IStepOptions, {
+          status: STEP_STATUS.FAILURE,
+          process_time,
+          error,
+        });
+        const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
+        await events?.onPostRun?.(data as ISteps, this.context, this.logger);
+      }
+    }
+    await this.doOss(filePath);
   }
   private async handleSrc(item: IStepOptions) {
     try {
-      await this.doPreRun(item);
+      await this.doPreRun(item.stepCount as string);
       const response: any = await this.doSrc(item);
       // 如果已取消且if条件不成功，则不执行该步骤, 并记录状态为 cancelled
       const isCancel = item.if !== 'true' && this.record.status === STEP_STATUS.CANCEL;

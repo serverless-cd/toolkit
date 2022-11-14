@@ -8,12 +8,12 @@ export interface IEngineOptions {
 }
 
 interface IEvent {
-  onPreRun?: (data: IkeyValue, context: IContext) => Promise<void>;
-  onPostRun?: (data: IkeyValue, context: IContext) => Promise<void>;
-  onSuccess?: (context: IContext) => Promise<void>;
-  onFailure?: (context: IContext) => Promise<void>;
-  onCancelled?: (context: IContext) => Promise<void>;
-  onCompleted?: (context: IContext) => Promise<void>;
+  onPreRun?: (data: IkeyValue, context: IContext, logger: any) => Promise<void>;
+  onPostRun?: (data: IkeyValue, context: IContext, logger: any) => Promise<void>;
+  onSuccess?: (context: IContext, logger: any) => Promise<void>;
+  onFailure?: (context: IContext, logger: any) => Promise<void>;
+  onCancelled?: (context: IContext, logger: any) => Promise<void>;
+  onCompleted?: (context: IContext, logger: any) => Promise<any>;
   onInit?: (context: IContext, logger: any) => Promise<any>;
 }
 
