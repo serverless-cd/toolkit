@@ -22,7 +22,7 @@ import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
 import { getScript, getSteps, getProcessTime } from './utils';
-
+const pkg = require('../package.json');
 export { IStepOptions, IContext } from './types';
 
 class Engine {
@@ -36,15 +36,18 @@ class Engine {
     this.context.secrets = inputs?.secrets;
   }
   private async doInit() {
-    const startTime = Date.now();
-    const filePath = 'step_0.log';
     const { events } = this.options;
     this.context.status = STEP_STATUS.RUNNING;
-    this.logger = this.getLogger(filePath);
     if (!isFunction(events?.onInit)) return;
+    const startTime = Date.now();
+    const filePath = 'step_0.log';
+    this.logger = this.getLogger(filePath);
+    this.logger.info(
+      `Info: ${pkg.name}: ${pkg.version} ${process.platform}-${process.arch}`,
+      `node-${process.version}`,
+    );
     try {
       const res = await events?.onInit?.(this.context, this.logger);
-      await this.doOss(filePath);
       const process_time = getProcessTime(startTime);
       this.record.initData = {
         name: 'Set up task',
@@ -53,11 +56,11 @@ class Engine {
         stepCount: '0',
         outputs: res,
       };
+      await this.doOss(filePath);
       return res;
     } catch (error) {
       this.logger.error(error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
-      await this.doOss(filePath);
       const process_time = getProcessTime(startTime);
       this.record.initData = {
         name: 'Init',
@@ -66,6 +69,7 @@ class Engine {
         stepCount: '0',
         error,
       };
+      await this.doOss(filePath);
     }
   }
   async start(): Promise<IContext> {
@@ -106,7 +110,7 @@ class Engine {
                   ? STEP_STATUS.SUCCESS
                   : this.record.status;
               this.context.status = status;
-              await this.doFinal();
+              await this.doCompleted();
               resolve(this.context);
             },
           },
@@ -197,7 +201,16 @@ class Engine {
       secrets: inputs?.secrets ? values(inputs.secrets) : undefined,
     });
   }
-
+  private async doOss(filePath: string) {
+    const logConfig = this.options.logConfig as ILogConfig;
+    const { logPrefix, ossConfig } = logConfig;
+    if (ossConfig && logPrefix) {
+      await this.logger.oss({
+        ...ossConfig,
+        codeUri: path.join(logPrefix, filePath),
+      });
+    }
+  }
   private async doPreRun(stepCount: string) {
     const { events } = this.options;
     const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
@@ -277,28 +290,19 @@ class Engine {
       secrets,
     };
   }
-  private async doOss(filePath: string) {
-    const logConfig = this.options.logConfig as ILogConfig;
-    const { logPrefix, ossConfig } = logConfig;
-    if (ossConfig && logPrefix) {
-      await this.logger.oss({
-        ...ossConfig,
-        codeUri: path.join(logPrefix, filePath),
-      });
-    }
-  }
-  // 执行终态
-  private async doFinal() {
+  private async doCompleted() {
     const findObj = find(this.context.steps, (obj) => obj.isCompleted);
+    if (isEmpty(findObj)) return;
     const stepCount = get(findObj, 'stepCount');
     const filePath = `step_${stepCount}.log`;
     this.logger = this.getLogger(filePath);
+    this.logger.info('Cleaning up task');
     const { events } = this.options;
     if (isFunction(events?.onCompleted)) {
       const startTime = Date.now();
       try {
         this.recordContext({ stepCount } as IStepOptions, { status: STEP_STATUS.RUNNING });
-        this.doPreRun(stepCount);
+        await this.doPreRun(stepCount);
         const response = await events?.onCompleted?.(this.context, this.logger);
         const process_time = getProcessTime(startTime);
         this.recordContext({ stepCount } as IStepOptions, {
@@ -307,7 +311,7 @@ class Engine {
           process_time,
         });
         this.context.completed = true;
-        this.doPostRun({ stepCount } as IStepOptions);
+        await this.doPostRun({ stepCount } as IStepOptions);
       } catch (error) {
         this.logger.error(`onCompleted error`);
         this.logger.error(error);
@@ -318,7 +322,7 @@ class Engine {
           error,
         });
         this.context.completed = true;
-        this.doPostRun({ stepCount } as IStepOptions);
+        await this.doPostRun({ stepCount } as IStepOptions);
       }
     }
     await this.doOss(filePath);

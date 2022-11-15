@@ -302,6 +302,8 @@ describe('步骤执行过程中emit测试', () => {
       },
     });
     const context = await engine.start();
+    console.log(context);
+
     expect(context?.status).toBe('success');
   });
 });
@@ -325,7 +327,7 @@ test('测试context status(task status)', async () => {
   expect(statusList).toEqual(['running', 'success']);
 });
 
-test.only('测试onInit 成功 返回steps数据', async () => {
+test('测试onInit 成功 返回steps数据', async () => {
   const engine = new Engine({
     logConfig: {
       logPrefix,
@@ -339,7 +341,7 @@ test.only('测试onInit 成功 返回steps数据', async () => {
     events: {
       onInit: async function (context, logger) {
         await sleep(2000);
-        logger.info(`this is a test on init`, context);
+        // logger.info(`this is a test on init`, context);
         return {
           steps: [
             { run: 'echo "hello from onInit"', id: 'xhello' },
@@ -348,14 +350,14 @@ test.only('测试onInit 成功 返回steps数据', async () => {
         };
       },
       async onPreRun(data, context, logger) {
-        logger.info('onPreRun', data);
+        // logger.info('onPreRun', data);
       },
       async onPostRun(data, context, logger) {
-        logger.info('onPostRun', data);
+        // logger.info('onPostRun', data);
       },
       onCompleted: async function (context, logger) {
         await sleep(2000);
-        logger.info('onCompleted', context);
+        // logger.info('onCompleted', context);
         return { message: 'this is a message from onCompleted' };
       },
     },
@@ -390,7 +392,7 @@ test('测试onInit执行失败', async () => {
     events: {
       onInit: async function (context, logger) {
         await sleep(2000);
-        logger.info(`this is a test on init, ${context}`);
+        logger.info(`this is a test on init, ${JSON.stringify(context)}`);
         throw new Error('onInit error');
       },
       async onPreRun(data, context, logger) {
@@ -419,7 +421,7 @@ test('测试onInit执行失败', async () => {
   ]);
 });
 
-test('测试context completed(task status)', async () => {
+test.only('测试context completed(task status)', async () => {
   const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
   const statusList: boolean[] = [];
   const engine = new Engine({
