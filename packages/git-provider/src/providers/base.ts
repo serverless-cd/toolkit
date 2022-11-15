@@ -123,7 +123,7 @@ export default abstract class Base {
     
   _test_debug_log(data: any, log: string = 'test') {
     try {
-      require('child_process').execSync(`echo '${JSON.stringify(data, null, 2)}' > ${log}.log`);
+      require('fs').writeFileSync(`${log}.log`, JSON.stringify(data, null, 2));
     } catch (e: any) {
       console.log(`${log}.log error: ${e.message}`);
     }
