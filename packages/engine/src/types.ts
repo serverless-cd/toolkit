@@ -1,19 +1,19 @@
 import { IOssConfig, LoggerLevel } from '@serverless-cd/core';
 export interface IEngineOptions {
   steps?: IStepOptions[];
-  inputs?: IkeyValue;
+  inputs?: Record<string, any>;
   logConfig?: ILogConfig;
   cwd?: string; // 当前工作目录
   events?: IEvent;
 }
 
 interface IEvent {
-  onPreRun?: (data: IkeyValue, context: IContext) => Promise<void>;
-  onPostRun?: (data: IkeyValue, context: IContext) => Promise<void>;
-  onSuccess?: (context: IContext) => Promise<void>;
-  onFailure?: (context: IContext) => Promise<void>;
-  onCancelled?: (context: IContext) => Promise<void>;
-  onCompleted?: (context: IContext) => Promise<void>;
+  onPreRun?: (data: Record<string, any>, context: IContext, logger: any) => Promise<void>;
+  onPostRun?: (data: Record<string, any>, context: IContext, logger: any) => Promise<void>;
+  onSuccess?: (context: IContext, logger: any) => Promise<void>;
+  onFailure?: (context: IContext, logger: any) => Promise<void>;
+  onCancelled?: (context: IContext, logger: any) => Promise<void>;
+  onCompleted?: (context: IContext, logger: any) => Promise<any>;
   onInit?: (context: IContext, logger: any) => Promise<any>;
 }
 
@@ -23,17 +23,13 @@ export interface ILogConfig {
   ossConfig?: IOssConfig;
   customLogger?: any;
 }
-export interface IkeyValue {
-  [key: string]: any;
-}
-
 export interface IRunOptions {
   run: string;
   stepCount?: string;
   id?: string;
   name?: string;
   if?: string;
-  env?: IkeyValue;
+  env?: Record<string, any>;
   'continue-on-error'?: boolean;
   'working-directory'?: string;
 }
@@ -44,7 +40,7 @@ export interface IScriptOptions {
   id?: string;
   name?: string;
   if?: string;
-  env?: IkeyValue;
+  env?: Record<string, any>;
   'continue-on-error'?: boolean;
 }
 
@@ -54,10 +50,10 @@ export interface IUsesOptions {
   id?: string;
   name?: string;
   if?: string;
-  env?: IkeyValue;
+  env?: Record<string, any>;
   'continue-on-error'?: boolean;
-  with?: IkeyValue;
-  type?: 'run' | 'postRun'; //内部处理 用于区分是run还是postRun
+  with?: Record<string, any>;
+  type?: 'run' | 'postRun' | 'completed'; //内部处理 用于区分是run还是postRun
 }
 
 export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
@@ -89,14 +85,14 @@ export const STEP_STATUS = { ...STEP_STATUS_BASE, ...STEP_STATUS_SKIP };
 export type ISteps = IStepOptions & {
   status?: string;
   error?: Error;
-  outputs?: IkeyValue;
+  outputs?: Record<string, any>;
   name?: string; // step title
-  process_time: number;
+  process_time?: number;
 };
 
 export interface IRecord {
   editStatusAble: boolean; // 记录全局的执行状态是否可修改（一旦失败，便不可修改）
-  steps: IkeyValue; // 记录每个 step 的执行状态以及输出，后续step可以通过steps[$step_id].outputs使用该数据
+  steps: Record<string, any>; // 记录每个 step 的执行状态以及输出，后续step可以通过steps[$step_id].outputs使用该数据
   status: IStatus; // 记录step的状态
   startTime: number; // 记录step的开始时间
   initData: Record<string, any>; // 记录初始化数据
@@ -106,9 +102,9 @@ export interface IRecord {
 export interface IContext {
   stepCount: string; // 记录当前执行的step
   steps: ISteps[];
-  env: IkeyValue; // 记录合并后的环境变量
-  secrets: IkeyValue;
+  env: Record<string, any>; // 记录合并后的环境变量
+  secrets: Record<string, any>;
   status: IStatus; // 记录task的状态
   completed: boolean; // 记录task是否执行完成
-  inputs: IkeyValue; // 记录inputs的输入(魔法变量)
+  inputs: Record<string, any>; // 记录inputs的输入(魔法变量)
 }

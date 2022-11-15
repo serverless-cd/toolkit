@@ -1,7 +1,7 @@
 import Engine, { IStepOptions } from '../src';
 import { map } from 'lodash';
 import * as path from 'path';
-const logPrefix = path.join(__dirname, 'shltest');
+const logPrefix = path.join(__dirname, 'logs');
 const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
 describe('执行终态emit测试', () => {
@@ -289,17 +289,22 @@ describe('步骤执行过程中emit测试', () => {
         },
       },
       events: {
+        async onPreRun(data, context) {
+          console.log('onPreRun', data);
+        },
         onPostRun(data, context) {
           console.log('onPostRun');
           throw new Error('onPostRun');
         },
         onCompleted: async function (context) {
-          console.log('onCompleted');
+          console.log('onCompleted', context);
         },
       },
     });
     const context = await engine.start();
-    expect(context?.status).toBe('failure');
+    console.log(context);
+
+    expect(context?.status).toBe('success');
   });
 });
 
@@ -322,7 +327,7 @@ test('测试context status(task status)', async () => {
   expect(statusList).toEqual(['running', 'success']);
 });
 
-test('测试onInit 成功 返回steps数据', async () => {
+test.only('测试onInit 成功 返回steps数据', async () => {
   const engine = new Engine({
     logConfig: {
       logPrefix,
@@ -336,23 +341,23 @@ test('测试onInit 成功 返回steps数据', async () => {
     events: {
       onInit: async function (context, logger) {
         await sleep(2000);
-        logger.info(`this is a test on init`);
+        // logger.info(`this is a test on init`, context);
         return {
-          name: 'this is a title from onInit',
           steps: [
             { run: 'echo "hello from onInit"', id: 'xhello' },
             { run: 'echo "world from onInit"' },
           ],
         };
       },
-      async onPreRun(data, context) {
-        console.log('onPreRun', data);
+      async onPreRun(data, context, logger) {
+        // logger.info('onPreRun', data);
       },
-      async onPostRun(data, context) {
-        console.log('onPostRun', data);
+      async onPostRun(data, context, logger) {
+        logger.info('onPostRun', data);
       },
-      onCompleted: async function (context) {
-        console.log('onCompleted', context);
+      onCompleted: async function (context, logger) {
+        await sleep(2000);
+        logger.info('onCompleted', context);
       },
     },
   });
@@ -362,7 +367,7 @@ test('测试onInit 成功 返回steps数据', async () => {
     status: item.status,
   }));
   expect(data).toEqual([
-    { run: 'this is a title from onInit', status: 'success' },
+    { run: 'Set up task', status: 'success' },
     { run: 'echo "hello from onInit"', status: 'success' },
     { run: 'echo "world from onInit"', status: 'success' },
   ]);
@@ -385,23 +390,19 @@ test('测试onInit执行失败', async () => {
     events: {
       onInit: async function (context, logger) {
         await sleep(2000);
-        logger.info(`this is a test on init`);
+        logger.info(`this is a test on init, ${JSON.stringify(context)}`);
         throw new Error('onInit error');
-        return {
-          steps: [
-            { run: 'echo "hello from onInit"', id: 'xhello' },
-            { run: 'echo "world from onInit"' },
-          ],
-        };
       },
-      async onPreRun(data, context) {
-        console.log('onPreRun', data);
+      async onPreRun(data, context, logger) {
+        logger.info('onPreRun', data);
       },
-      async onPostRun(data, context) {
-        console.log('onPostRun', data);
+      async onPostRun(data, context, logger) {
+        logger.info('onPostRun', data);
       },
-      onCompleted: async function (context) {
-        console.log('onCompleted', context);
+      onCompleted: async function (context, logger) {
+        await sleep(2000);
+        logger.info('onCompleted', context);
+        throw new Error('onCompleted error');
       },
     },
   });

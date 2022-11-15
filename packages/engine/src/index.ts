@@ -7,7 +7,6 @@ import {
   IUsesOptions,
   IRecord,
   IStatus,
-  IkeyValue,
   IEngineOptions,
   IContext,
   ILogConfig,
@@ -18,58 +17,60 @@ import {
 import { isEmpty, get, each, replace, map, find, isFunction, values, has, concat } from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
-import EventEmitter from 'events';
 import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
-import { getScript, getSteps, getProcessTime } from './utils';
-
+import { getScript, getSteps, getProcessTime, getDefaultInitLog, getLogPath } from './utils';
+import {
+  INIT_STEP_COUNT,
+  INIT_STEP_NAME,
+  COMPLETED_STEP_COUNT,
+  DEFAULT_COMPLETED_LOG,
+} from './constants';
 export { IStepOptions, IContext } from './types';
 
-class Engine extends EventEmitter {
+class Engine {
   private childProcess: any[] = [];
   public context = { status: STEP_STATUS.PENING, completed: false } as IContext;
   private record = { status: STEP_STATUS.PENING, editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
-    super();
     const { inputs } = options;
-    this.context.inputs = inputs as IkeyValue;
+    this.context.inputs = inputs as {};
     this.context.secrets = inputs?.secrets;
   }
   private async doInit() {
-    const startTime = Date.now();
-    const filePath = 'step_0.log';
     const { events } = this.options;
     this.context.status = STEP_STATUS.RUNNING;
-    this.emit('init', this.context);
-    this.logger = this.getLogger(filePath);
     if (!isFunction(events?.onInit)) return;
+    const startTime = Date.now();
+    const filePath = getLogPath(INIT_STEP_COUNT);
+    this.logger = this.getLogger(filePath);
+    this.logger.info(getDefaultInitLog());
     try {
       const res = await events?.onInit?.(this.context, this.logger);
-      await this.doOss(filePath);
       const process_time = getProcessTime(startTime);
       this.record.initData = {
-        name: get(res, 'name', 'Init'),
+        name: get(res, 'name', INIT_STEP_NAME),
         status: STEP_STATUS.SUCCESS,
         process_time,
-        stepCount: '0',
+        stepCount: INIT_STEP_COUNT,
         outputs: res,
       };
+      await this.doOss(filePath);
       return res;
     } catch (error) {
       this.logger.error(error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
-      this.context.completed = true;
-      await this.doOss(filePath);
       const process_time = getProcessTime(startTime);
       this.record.initData = {
-        name: 'Init',
+        name: INIT_STEP_NAME,
         status: STEP_STATUS.FAILURE,
         process_time,
-        stepCount: '0',
+        stepCount: INIT_STEP_COUNT,
         error,
       };
+      await this.doOss(filePath);
     }
   }
   async start(): Promise<IContext> {
@@ -83,7 +84,6 @@ class Engine extends EventEmitter {
       item.status = STEP_STATUS.PENING;
       return item;
     });
-
     return new Promise(async (resolve) => {
       const states: any = {
         init: {
@@ -101,12 +101,7 @@ class Engine extends EventEmitter {
                   ? STEP_STATUS.SUCCESS
                   : this.record.status;
               this.context.status = status;
-              this.context.completed = true;
-              try {
-                await this.doEmit();
-              } catch (error) {
-                this.logger.error(error);
-              }
+              await this.doCompleted();
               resolve(this.context);
             },
           },
@@ -121,11 +116,11 @@ class Engine extends EventEmitter {
             src: async () => {
               this.record.startTime = Date.now();
               // logger
-              this.logger = this.getLogger(`step_${item.stepCount}.log`);
+              this.logger = this.getLogger(getLogPath(item.stepCount));
               // 记录 context
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
-              this.context.env = item.env as IkeyValue;
+              this.context.env = item.env as {};
               this.doReplace$(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
@@ -197,13 +192,29 @@ class Engine extends EventEmitter {
       secrets: inputs?.secrets ? values(inputs.secrets) : undefined,
     });
   }
-
-  private async doPreRun(item: IStepOptions) {
+  private async doOss(filePath: string) {
+    const logConfig = this.options.logConfig as ILogConfig;
+    const { logPrefix, ossConfig } = logConfig;
+    if (ossConfig && logPrefix) {
+      await this.logger.oss({
+        ...ossConfig,
+        codeUri: path.join(logPrefix, filePath),
+      });
+    }
+  }
+  private async doPreRun(stepCount: string) {
+    const { events } = this.options;
+    const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
+    await events?.onPreRun?.(data as ISteps, this.context, this.logger);
+  }
+  private async doPostRun(item: IStepOptions) {
     const { events } = this.options;
     const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('preRun', data, this.context);
-    if (isFunction(events?.onPreRun)) {
-      await events?.onPreRun(data as ISteps, this.context);
+    try {
+      await events?.onPostRun?.(data as ISteps, this.context, this.logger);
+    } catch (error) {
+      this.logger.error(`onPostRun error at step: ${JSON.stringify(item)}`);
+      this.logger.error(error);
     }
   }
 
@@ -221,7 +232,7 @@ class Engine extends EventEmitter {
       item.if = fn(item.if);
     }
   }
-  private recordContext(item: IStepOptions, options: IkeyValue) {
+  private recordContext(item: IStepOptions, options: Record<string, any>) {
     const { status, error, outputs, name, process_time } = options;
     const { events } = this.options;
 
@@ -270,54 +281,25 @@ class Engine extends EventEmitter {
       secrets,
     };
   }
-  // 每个步骤最后的动作
-  private async doFinal(item: IStepOptions) {
-    await this.doOss(`step_${item.stepCount}.log`);
-    const process_time = [STEP_STATUS.SKIP, STEP_STATUS.CANCEL].includes((item as any).status)
-      ? 0
-      : getProcessTime(this.record.startTime);
-    this.recordContext(item, { process_time });
-    const { events } = this.options;
-    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('postRun', data, this.context);
-    if (isFunction(events?.onPostRun)) {
-      await events?.onPostRun(data as ISteps, this.context);
-    }
-  }
-  private async doOss(filePath: string) {
-    const logConfig = this.options.logConfig as ILogConfig;
-    const { logPrefix, ossConfig } = logConfig;
-    if (ossConfig && logPrefix) {
-      await this.logger.oss({
-        ...ossConfig,
-        codeUri: path.join(logPrefix, filePath),
-      });
-    }
-  }
-  // 将执行终态进行emit
-  private async doEmit() {
-    const { status } = this.record;
-    const { events } = this.options;
-    this.emit(status, this.context);
-    if (status === STEP_STATUS.SUCCESS) {
-      await events?.onSuccess?.(this.context);
-    }
-    if (status === STEP_STATUS.FAILURE) {
-      await events?.onFailure?.(this.context);
-    }
-    if (status === STEP_STATUS.CANCEL) {
-      await events?.onCancelled?.(this.context);
-    }
-    await this.doCompleted();
-  }
   private async doCompleted() {
+    this.context.completed = true;
+    const filePath = getLogPath(COMPLETED_STEP_COUNT);
+    this.logger = this.getLogger(filePath);
+    this.logger.info(DEFAULT_COMPLETED_LOG);
     const { events } = this.options;
-    this.emit('completed', this.context);
-    await events?.onCompleted?.(this.context);
+    if (isFunction(events?.onCompleted)) {
+      try {
+        await events?.onCompleted?.(this.context, this.logger);
+      } catch (error) {
+        this.logger.error(`onCompleted error`);
+        this.logger.error(error);
+      }
+    }
+    await this.doOss(filePath);
   }
   private async handleSrc(item: IStepOptions) {
     try {
-      await this.doPreRun(item);
+      await this.doPreRun(item.stepCount as string);
       const response: any = await this.doSrc(item);
       // 如果已取消且if条件不成功，则不执行该步骤, 并记录状态为 cancelled
       const isCancel = item.if !== 'true' && this.record.status === STEP_STATUS.CANCEL;
@@ -336,8 +318,10 @@ class Engine extends EventEmitter {
           },
         };
       }
-      this.recordContext(item, { status: STEP_STATUS.SUCCESS, outputs: response });
-      await this.doFinal(item);
+      const process_time = getProcessTime(this.record.startTime);
+      this.recordContext(item, { status: STEP_STATUS.SUCCESS, outputs: response, process_time });
+      await this.doPostRun(item);
+      await this.doOss(getLogPath(item.stepCount as string));
     } catch (error: any) {
       const status =
         item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
@@ -357,12 +341,16 @@ class Engine extends EventEmitter {
           },
         };
       }
+      const process_time = getProcessTime(this.record.startTime);
+      const logPath = getLogPath(item.stepCount as string);
       if (item['continue-on-error']) {
-        this.recordContext(item, { status });
-        await this.doFinal(item);
+        this.recordContext(item, { status, process_time });
+        await this.doOss(logPath);
       } else {
-        this.recordContext(item, { status, error });
-        await this.doFinal(item);
+        this.recordContext(item, { status, error, process_time });
+        this.logger.error(`error at step: ${JSON.stringify(item)}`);
+        this.logger.error(error);
+        await this.doOss(logPath);
         throw error;
       }
     }
@@ -436,8 +424,8 @@ class Engine extends EventEmitter {
       };
     }
     this.logName(item);
-    this.recordContext(item, { status: STEP_STATUS.SKIP });
-    await this.doFinal(item);
+    this.recordContext(item, { status: STEP_STATUS.SKIP, process_time: 0 });
+    await this.doOss(getLogPath(item.stepCount as string));
     return Promise.resolve();
   }
   private async doCancel(item: IStepOptions) {
@@ -451,8 +439,8 @@ class Engine extends EventEmitter {
       };
     }
     this.logName(item);
-    this.recordContext(item, { status: STEP_STATUS.CANCEL });
-    await this.doFinal(item);
+    this.recordContext(item, { status: STEP_STATUS.CANCEL, process_time: 0 });
+    await this.doOss(getLogPath(item.stepCount as string));
     return Promise.resolve();
   }
   private doWarn() {
