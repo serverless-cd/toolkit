@@ -327,7 +327,7 @@ test('测试context status(task status)', async () => {
   expect(statusList).toEqual(['running', 'success']);
 });
 
-test('测试onInit 成功 返回steps数据', async () => {
+test.only('测试onInit 成功 返回steps数据', async () => {
   const engine = new Engine({
     logConfig: {
       logPrefix,
@@ -353,12 +353,11 @@ test('测试onInit 成功 返回steps数据', async () => {
         // logger.info('onPreRun', data);
       },
       async onPostRun(data, context, logger) {
-        // logger.info('onPostRun', data);
+        logger.info('onPostRun', data);
       },
       onCompleted: async function (context, logger) {
         await sleep(2000);
-        // logger.info('onCompleted', context);
-        return { message: 'this is a message from onCompleted' };
+        logger.info('onCompleted', context);
       },
     },
   });
@@ -371,7 +370,6 @@ test('测试onInit 成功 返回steps数据', async () => {
     { run: 'Set up task', status: 'success' },
     { run: 'echo "hello from onInit"', status: 'success' },
     { run: 'echo "world from onInit"', status: 'success' },
-    { run: 'Complete task', status: 'success' },
   ]);
 });
 
@@ -417,11 +415,10 @@ test('测试onInit执行失败', async () => {
     { run: 'Init', status: 'failure' },
     { run: 'echo "hello"', status: 'skipped' },
     { run: 'echo "world"', status: 'skipped' },
-    { run: 'Complete task', status: 'failure' },
   ]);
 });
 
-test.only('测试context completed(task status)', async () => {
+test('测试context completed(task status)', async () => {
   const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
   const statusList: boolean[] = [];
   const engine = new Engine({

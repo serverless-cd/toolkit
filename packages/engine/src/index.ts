@@ -73,7 +73,6 @@ class Engine {
     }
   }
   async start(): Promise<IContext> {
-    const { events } = this.options;
     const initValue = await this.doInit();
     // 优先读取 doInit 返回的 steps 数据，其次 行参里的 steps 数据
     const steps = getSteps(initValue?.steps || this.options.steps, this.childProcess);
@@ -84,15 +83,6 @@ class Engine {
       item.status = STEP_STATUS.PENING;
       return item;
     });
-    if (isFunction(events?.onCompleted)) {
-      this.context.steps.push({
-        isCompleted: true,
-        name: 'Complete task',
-        status: STEP_STATUS.PENING,
-        stepCount: String(steps.length + 1),
-      } as ISteps);
-    }
-
     return new Promise(async (resolve) => {
       const states: any = {
         init: {
@@ -291,38 +281,17 @@ class Engine {
     };
   }
   private async doCompleted() {
-    const findObj = find(this.context.steps, (obj) => obj.isCompleted);
-    if (isEmpty(findObj)) return;
-    const stepCount = get(findObj, 'stepCount');
-    const filePath = `step_${stepCount}.log`;
+    this.context.completed = true;
+    const filePath = `serverless-cd-completed.log`;
     this.logger = this.getLogger(filePath);
     this.logger.info('Cleaning up task');
     const { events } = this.options;
     if (isFunction(events?.onCompleted)) {
-      const startTime = Date.now();
       try {
-        this.recordContext({ stepCount } as IStepOptions, { status: STEP_STATUS.RUNNING });
-        await this.doPreRun(stepCount);
-        const response = await events?.onCompleted?.(this.context, this.logger);
-        const process_time = getProcessTime(startTime);
-        this.recordContext({ stepCount } as IStepOptions, {
-          status: STEP_STATUS.SUCCESS,
-          outputs: response,
-          process_time,
-        });
-        this.context.completed = true;
-        await this.doPostRun({ stepCount } as IStepOptions);
+        await events?.onCompleted?.(this.context, this.logger);
       } catch (error) {
         this.logger.error(`onCompleted error`);
         this.logger.error(error);
-        const process_time = getProcessTime(startTime);
-        this.recordContext({ stepCount } as IStepOptions, {
-          status: STEP_STATUS.FAILURE,
-          process_time,
-          error,
-        });
-        this.context.completed = true;
-        await this.doPostRun({ stepCount } as IStepOptions);
       }
     }
     await this.doOss(filePath);
