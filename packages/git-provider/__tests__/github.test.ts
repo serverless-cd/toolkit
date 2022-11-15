@@ -7,6 +7,23 @@ const access_token: string = process.env.GITHUB_ACCESS_TOKEN || '';
 const OWNER = 'wss-git';
 const REPO = 'git-action-test';
 
+test.only('list org and list repo', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const orgs = await prioverd.listOrgs();
+  for (const { org } of orgs) {
+    const rows = await prioverd.listOrgRepos(org);
+    for (const row of rows) {
+      expect(_.has(row, 'id')).toBeTruthy();
+      expect(_.isString(row.name)).toBeTruthy();
+      expect(_.has(row, 'source')).toBeTruthy();
+      expect(_.isString(row.url) && _.endsWith(row.url, '.git')).toBeTruthy();
+    }
+  }
+}, 3 * 60 * 1000);
+
+
 test.only('list repo', async () => {
   const prioverd = git('github', {
     access_token,
@@ -26,16 +43,15 @@ test('create or update file', async () => {
   const prioverd = git('github', {
     access_token,
   });
-  expect(async () => {
+  await expect((async () => {
     await prioverd.putFile({
       owner: OWNER,
       repo: REPO,
-      path: 'test-push-file.txt',
+      path: 'test-push-file2.txt',
       message: 'test 123',
       content: '=====',
-    })
-    return true;
-  }).toBeTruthy();
+    });
+  })()).resolves.not.toThrow();
 });
 
 test('list branchs', async () => {

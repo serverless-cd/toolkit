@@ -2,7 +2,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
 import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 
 const V5 = 'https://gitee.com/api/v5';
@@ -11,11 +11,11 @@ export default class Gitee extends Base {
   putFile(params: IPutFile): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  private PARAMS = {
+  private getDefaultParame = () => ({
     per_page: 100,
     page: 1,
     sort: 'updated',
-  };
+  });
   private access_token: string;
 
   constructor(config: IGitConfig) {
@@ -28,9 +28,19 @@ export default class Gitee extends Base {
     this.access_token = access_token;
   }
 
+  async listOrgs(): Promise<IOrgsOutput[]> {
+    const rows = await this.requestList('/user/orgs', this.getDefaultParame());
+
+    return _.map(rows, (row) => ({
+      id: row.id,
+      org: row.name,
+      source: row,
+    }));
+  }
+
   // https://gitee.com/api/v5/swagger#/getV5UserRepos
   async listRepos(): Promise<IRepoOutput[]> {
-    const rows = await this.requestList('/user/repos', _.defaults(this.PARAMS, { affiliation: 'owner' }));
+    const rows = await this.requestList('/user/repos', _.defaults(this.getDefaultParame(), { affiliation: 'owner' }));
 
     return _.map(rows, (row) => ({
       id: row.id,
@@ -50,7 +60,7 @@ export default class Gitee extends Base {
     super.validateListBranchsParams(params);
 
     const { owner, repo } = params;
-    const rows = await this.requestList(`/repos/${owner}/${repo}/branches`, _.defaults(params, this.PARAMS));
+    const rows = await this.requestList(`/repos/${owner}/${repo}/branches`, _.defaults(params, this.getDefaultParame()));
 
     return _.map(rows, (row) => ({
       name: row.name, commit_sha: _.get(row, 'commit.sha'), source: row,
@@ -91,7 +101,7 @@ export default class Gitee extends Base {
     super.validateListWebhookParams(params);
 
     const { owner, repo } = params;
-    const rows = await this.requestList(`/repos/${owner}/${repo}/hooks`, _.defaults(params, this.PARAMS));
+    const rows = await this.requestList(`/repos/${owner}/${repo}/hooks`, _.defaults(params, this.getDefaultParame()));
     
     return _.map(rows, (row) => ({
       id: _.get(row, 'id'),

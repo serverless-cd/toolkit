@@ -10,6 +10,12 @@ export interface IRepoOutput {
   source: any;
 }
 
+export interface IOrgsOutput {
+  org: string;
+  id: number;
+  source: any;
+}
+
 export interface IBranchOutput {
   name: string;
   commit_sha: string;
