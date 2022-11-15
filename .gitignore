@@ -7,3 +7,4 @@ logs/
 coverage/
 *.log
 .env
+!packages/engine/lib/
