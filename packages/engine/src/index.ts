@@ -7,7 +7,6 @@ import {
   IUsesOptions,
   IRecord,
   IStatus,
-  IkeyValue,
   IEngineOptions,
   IContext,
   ILogConfig,
@@ -21,8 +20,13 @@ import * as path from 'path';
 import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
-import { getScript, getSteps, getProcessTime } from './utils';
-const pkg = require('../package.json');
+import { getScript, getSteps, getProcessTime, getDefaultInitLog, getLogPath } from './utils';
+import {
+  INIT_STEP_COUNT,
+  INIT_STEP_NAME,
+  COMPLETED_STEP_COUNT,
+  DEFAULT_COMPLETED_LOG,
+} from './constants';
 export { IStepOptions, IContext } from './types';
 
 class Engine {
@@ -32,7 +36,7 @@ class Engine {
   private logger: any;
   constructor(private options: IEngineOptions) {
     const { inputs } = options;
-    this.context.inputs = inputs as IkeyValue;
+    this.context.inputs = inputs as {};
     this.context.secrets = inputs?.secrets;
   }
   private async doInit() {
@@ -40,20 +44,17 @@ class Engine {
     this.context.status = STEP_STATUS.RUNNING;
     if (!isFunction(events?.onInit)) return;
     const startTime = Date.now();
-    const filePath = 'step_0.log';
+    const filePath = getLogPath(INIT_STEP_COUNT);
     this.logger = this.getLogger(filePath);
-    this.logger.info(
-      `Info: ${pkg.name}: ${pkg.version} ${process.platform}-${process.arch}`,
-      `node-${process.version}`,
-    );
+    this.logger.info(getDefaultInitLog());
     try {
       const res = await events?.onInit?.(this.context, this.logger);
       const process_time = getProcessTime(startTime);
       this.record.initData = {
-        name: 'Set up task',
+        name: get(res, 'name', INIT_STEP_NAME),
         status: STEP_STATUS.SUCCESS,
         process_time,
-        stepCount: '0',
+        stepCount: INIT_STEP_COUNT,
         outputs: res,
       };
       await this.doOss(filePath);
@@ -63,10 +64,10 @@ class Engine {
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
       const process_time = getProcessTime(startTime);
       this.record.initData = {
-        name: 'Init',
+        name: INIT_STEP_NAME,
         status: STEP_STATUS.FAILURE,
         process_time,
-        stepCount: '0',
+        stepCount: INIT_STEP_COUNT,
         error,
       };
       await this.doOss(filePath);
@@ -115,11 +116,11 @@ class Engine {
             src: async () => {
               this.record.startTime = Date.now();
               // logger
-              this.logger = this.getLogger(`step_${item.stepCount}.log`);
+              this.logger = this.getLogger(getLogPath(item.stepCount));
               // 记录 context
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
-              this.context.env = item.env as IkeyValue;
+              this.context.env = item.env as {};
               this.doReplace$(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
@@ -231,7 +232,7 @@ class Engine {
       item.if = fn(item.if);
     }
   }
-  private recordContext(item: IStepOptions, options: IkeyValue) {
+  private recordContext(item: IStepOptions, options: Record<string, any>) {
     const { status, error, outputs, name, process_time } = options;
     const { events } = this.options;
 
@@ -282,9 +283,9 @@ class Engine {
   }
   private async doCompleted() {
     this.context.completed = true;
-    const filePath = `serverless-cd-completed.log`;
+    const filePath = getLogPath(COMPLETED_STEP_COUNT);
     this.logger = this.getLogger(filePath);
-    this.logger.info('Cleaning up task');
+    this.logger.info(DEFAULT_COMPLETED_LOG);
     const { events } = this.options;
     if (isFunction(events?.onCompleted)) {
       try {
@@ -320,7 +321,7 @@ class Engine {
       const process_time = getProcessTime(this.record.startTime);
       this.recordContext(item, { status: STEP_STATUS.SUCCESS, outputs: response, process_time });
       await this.doPostRun(item);
-      await this.doOss(`step_${item.stepCount}.log`);
+      await this.doOss(getLogPath(item.stepCount as string));
     } catch (error: any) {
       const status =
         item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
@@ -341,14 +342,15 @@ class Engine {
         };
       }
       const process_time = getProcessTime(this.record.startTime);
+      const logPath = getLogPath(item.stepCount as string);
       if (item['continue-on-error']) {
         this.recordContext(item, { status, process_time });
-        await this.doOss(`step_${item.stepCount}.log`);
+        await this.doOss(logPath);
       } else {
         this.recordContext(item, { status, error, process_time });
         this.logger.error(`error at step: ${JSON.stringify(item)}`);
         this.logger.error(error);
-        await this.doOss(`step_${item.stepCount}.log`);
+        await this.doOss(logPath);
         throw error;
       }
     }
@@ -423,7 +425,7 @@ class Engine {
     }
     this.logName(item);
     this.recordContext(item, { status: STEP_STATUS.SKIP, process_time: 0 });
-    await this.doOss(`step_${item.stepCount}.log`);
+    await this.doOss(getLogPath(item.stepCount as string));
     return Promise.resolve();
   }
   private async doCancel(item: IStepOptions) {
@@ -438,7 +440,7 @@ class Engine {
     }
     this.logName(item);
     this.recordContext(item, { status: STEP_STATUS.CANCEL, process_time: 0 });
-    await this.doOss(`step_${item.stepCount}.log`);
+    await this.doOss(getLogPath(item.stepCount as string));
     return Promise.resolve();
   }
   private doWarn() {

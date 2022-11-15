@@ -2,6 +2,15 @@ import { map, uniqueId } from 'lodash';
 import { IStepOptions, IUsesOptions } from '../types';
 import { fs } from '@serverless-cd/core';
 import { command } from 'execa';
+const pkg = require('../../package.json');
+
+export function getLogPath(filePath: string) {
+  return `step_${filePath}.log`;
+}
+
+export function getDefaultInitLog() {
+  return `Info: ${pkg.name}: ${pkg.version}, ${process.platform}-${process.arch}, node-${process.version}`;
+}
 
 export function getScript(val: string) {
   return `
