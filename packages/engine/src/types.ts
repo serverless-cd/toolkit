@@ -57,7 +57,7 @@ export interface IUsesOptions {
   env?: IkeyValue;
   'continue-on-error'?: boolean;
   with?: IkeyValue;
-  type?: 'run' | 'postRun'; //内部处理 用于区分是run还是postRun
+  type?: 'run' | 'postRun' | 'completed'; //内部处理 用于区分是run还是postRun
 }
 
 export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
@@ -91,7 +91,8 @@ export type ISteps = IStepOptions & {
   error?: Error;
   outputs?: IkeyValue;
   name?: string; // step title
-  process_time: number;
+  process_time?: number;
+  isCompleted?: boolean; // 最后一个 `completed` step
 };
 
 export interface IRecord {

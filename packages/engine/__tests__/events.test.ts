@@ -289,17 +289,20 @@ describe('步骤执行过程中emit测试', () => {
         },
       },
       events: {
+        async onPreRun(data, context) {
+          console.log('onPreRun', data);
+        },
         onPostRun(data, context) {
           console.log('onPostRun');
           throw new Error('onPostRun');
         },
         onCompleted: async function (context) {
-          console.log('onCompleted');
+          console.log('onCompleted', context);
         },
       },
     });
     const context = await engine.start();
-    expect(context?.status).toBe('failure');
+    expect(context?.status).toBe('success');
   });
 });
 
@@ -322,7 +325,7 @@ test('测试context status(task status)', async () => {
   expect(statusList).toEqual(['running', 'success']);
 });
 
-test('测试onInit 成功 返回steps数据', async () => {
+test.only('测试onInit 成功 返回steps数据', async () => {
   const engine = new Engine({
     logConfig: {
       logPrefix,

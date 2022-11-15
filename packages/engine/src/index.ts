@@ -18,7 +18,6 @@ import {
 import { isEmpty, get, each, replace, map, find, isFunction, values, has, concat } from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
-import EventEmitter from 'events';
 import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
@@ -26,13 +25,12 @@ import { getScript, getSteps, getProcessTime } from './utils';
 
 export { IStepOptions, IContext } from './types';
 
-class Engine extends EventEmitter {
+class Engine {
   private childProcess: any[] = [];
   public context = { status: STEP_STATUS.PENING, completed: false } as IContext;
   private record = { status: STEP_STATUS.PENING, editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
-    super();
     const { inputs } = options;
     this.context.inputs = inputs as IkeyValue;
     this.context.secrets = inputs?.secrets;
@@ -43,7 +41,6 @@ class Engine extends EventEmitter {
     const { events } = this.options;
     this.context.status = STEP_STATUS.RUNNING;
     this.logger = this.getLogger(filePath);
-    this.emit('init', this.context, this.logger);
     if (!isFunction(events?.onInit)) return;
     try {
       const res = await events?.onInit?.(this.context, this.logger);
@@ -60,7 +57,6 @@ class Engine extends EventEmitter {
     } catch (error) {
       this.logger.error(error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
-      this.context.completed = true;
       await this.doOss(filePath);
       const process_time = getProcessTime(startTime);
       this.record.initData = {
@@ -86,6 +82,7 @@ class Engine extends EventEmitter {
     });
     if (isFunction(events?.onCompleted)) {
       this.context.steps.push({
+        isCompleted: true,
         name: 'Complete task',
         status: STEP_STATUS.PENING,
         stepCount: String(steps.length + 1),
@@ -109,12 +106,7 @@ class Engine extends EventEmitter {
                   ? STEP_STATUS.SUCCESS
                   : this.record.status;
               this.context.status = status;
-              this.context.completed = true;
-              try {
-                await this.doEmit();
-              } catch (error) {
-                this.logger.error(error);
-              }
+              await this.doFinal();
               resolve(this.context);
             },
           },
@@ -209,8 +201,17 @@ class Engine extends EventEmitter {
   private async doPreRun(stepCount: string) {
     const { events } = this.options;
     const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
-    this.emit('preRun', data, this.context, this.logger);
     await events?.onPreRun?.(data as ISteps, this.context, this.logger);
+  }
+  private async doPostRun(item: IStepOptions) {
+    const { events } = this.options;
+    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
+    try {
+      await events?.onPostRun?.(data as ISteps, this.context, this.logger);
+    } catch (error) {
+      this.logger.error(`onPostRun error at step: ${JSON.stringify(item)}`);
+      this.logger.error(error);
+    }
   }
 
   private doReplace$(item: IStepOptions) {
@@ -276,18 +277,6 @@ class Engine extends EventEmitter {
       secrets,
     };
   }
-  // 每个步骤最后的动作
-  private async doFinal(item: IStepOptions) {
-    await this.doOss(`step_${item.stepCount}.log`);
-    const process_time = [STEP_STATUS.SKIP, STEP_STATUS.CANCEL].includes((item as any).status)
-      ? 0
-      : getProcessTime(this.record.startTime);
-    this.recordContext(item, { process_time });
-    const { events } = this.options;
-    const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
-    this.emit('postRun', data, this.context, this.logger);
-    await events?.onPostRun?.(data as ISteps, this.context, this.logger);
-  }
   private async doOss(filePath: string) {
     const logConfig = this.options.logConfig as ILogConfig;
     const { logPrefix, ossConfig } = logConfig;
@@ -298,39 +287,13 @@ class Engine extends EventEmitter {
       });
     }
   }
-  // 将执行终态进行emit
-  private async doEmit() {
-    const stepCount = String(this.context.steps.length - 1);
+  // 执行终态
+  private async doFinal() {
+    const findObj = find(this.context.steps, (obj) => obj.isCompleted);
+    const stepCount = get(findObj, 'stepCount');
     const filePath = `step_${stepCount}.log`;
     this.logger = this.getLogger(filePath);
-    const { status } = this.record;
     const { events } = this.options;
-    this.emit(status, this.context, this.logger);
-    if (status === STEP_STATUS.SUCCESS) {
-      try {
-        await events?.onSuccess?.(this.context, this.logger);
-      } catch (error) {
-        this.logger.error(`onSuccess error`);
-        this.logger.error(error);
-      }
-    }
-    if (status === STEP_STATUS.FAILURE) {
-      try {
-        await events?.onFailure?.(this.context, this.logger);
-      } catch (error) {
-        this.logger.error(`onFailure error`);
-        this.logger.error(error);
-      }
-    }
-    if (status === STEP_STATUS.CANCEL) {
-      try {
-        await events?.onCancelled?.(this.context, this.logger);
-      } catch (error) {
-        this.logger.error(`onCancel error`);
-        this.logger.error(error);
-      }
-    }
-    this.emit('completed', this.context, this.logger);
     if (isFunction(events?.onCompleted)) {
       const startTime = Date.now();
       try {
@@ -343,8 +306,8 @@ class Engine extends EventEmitter {
           outputs: response,
           process_time,
         });
-        const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
-        await events?.onPostRun?.(data as ISteps, this.context, this.logger);
+        this.context.completed = true;
+        this.doPostRun({ stepCount } as IStepOptions);
       } catch (error) {
         this.logger.error(`onCompleted error`);
         this.logger.error(error);
@@ -354,8 +317,8 @@ class Engine extends EventEmitter {
           process_time,
           error,
         });
-        const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
-        await events?.onPostRun?.(data as ISteps, this.context, this.logger);
+        this.context.completed = true;
+        this.doPostRun({ stepCount } as IStepOptions);
       }
     }
     await this.doOss(filePath);
@@ -381,8 +344,10 @@ class Engine extends EventEmitter {
           },
         };
       }
-      this.recordContext(item, { status: STEP_STATUS.SUCCESS, outputs: response });
-      await this.doFinal(item);
+      const process_time = getProcessTime(this.record.startTime);
+      this.recordContext(item, { status: STEP_STATUS.SUCCESS, outputs: response, process_time });
+      await this.doPostRun(item);
+      await this.doOss(`step_${item.stepCount}.log`);
     } catch (error: any) {
       const status =
         item['continue-on-error'] === true ? STEP_STATUS.ERROR_WITH_CONTINUE : STEP_STATUS.FAILURE;
@@ -402,12 +367,15 @@ class Engine extends EventEmitter {
           },
         };
       }
+      const process_time = getProcessTime(this.record.startTime);
       if (item['continue-on-error']) {
-        this.recordContext(item, { status });
-        await this.doFinal(item);
+        this.recordContext(item, { status, process_time });
+        await this.doOss(`step_${item.stepCount}.log`);
       } else {
-        this.recordContext(item, { status, error });
-        await this.doFinal(item);
+        this.recordContext(item, { status, error, process_time });
+        this.logger.error(`error at step: ${JSON.stringify(item)}`);
+        this.logger.error(error);
+        await this.doOss(`step_${item.stepCount}.log`);
         throw error;
       }
     }
@@ -481,8 +449,8 @@ class Engine extends EventEmitter {
       };
     }
     this.logName(item);
-    this.recordContext(item, { status: STEP_STATUS.SKIP });
-    await this.doFinal(item);
+    this.recordContext(item, { status: STEP_STATUS.SKIP, process_time: 0 });
+    await this.doOss(`step_${item.stepCount}.log`);
     return Promise.resolve();
   }
   private async doCancel(item: IStepOptions) {
@@ -496,8 +464,8 @@ class Engine extends EventEmitter {
       };
     }
     this.logName(item);
-    this.recordContext(item, { status: STEP_STATUS.CANCEL });
-    await this.doFinal(item);
+    this.recordContext(item, { status: STEP_STATUS.CANCEL, process_time: 0 });
+    await this.doOss(`step_${item.stepCount}.log`);
     return Promise.resolve();
   }
   private doWarn() {
