@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "prepub": "npm run build",
+    "prepub": "npm i && npm run build",
     "pub": "npm publish"
   },
   "author": "",
