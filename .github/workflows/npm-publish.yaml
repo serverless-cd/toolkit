@@ -15,7 +15,7 @@ jobs:
           node-version: 14
           registry-url: https://registry.npmjs.org/
       - name: engine publish
-        run: npm publish
+        run: npm run pub
         if: ${{ contains(github.ref, 'engine')}}
         working-directory: ./packages/engine
         env:
