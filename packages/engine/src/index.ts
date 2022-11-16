@@ -60,7 +60,7 @@ class Engine {
       await this.doOss(filePath);
       return res;
     } catch (error) {
-      this.logger.error(error);
+      this.logger.debug(error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
       const process_time = getProcessTime(startTime);
       this.record.initData = {
@@ -214,7 +214,7 @@ class Engine {
       await events?.onPostRun?.(data as ISteps, this.context, this.logger);
     } catch (error) {
       this.logger.error(`onPostRun error at step: ${JSON.stringify(item)}`);
-      this.logger.error(error);
+      this.logger.debug(error);
     }
   }
 
@@ -292,7 +292,7 @@ class Engine {
         await events?.onCompleted?.(this.context, this.logger);
       } catch (error) {
         this.logger.error(`onCompleted error`);
-        this.logger.error(error);
+        this.logger.debug(error);
       }
     }
     await this.doOss(filePath);
@@ -349,7 +349,7 @@ class Engine {
       } else {
         this.recordContext(item, { status, error, process_time });
         this.logger.error(`error at step: ${JSON.stringify(item)}`);
-        this.logger.error(error);
+        this.logger.debug(error);
         await this.doOss(logPath);
         throw error;
       }
