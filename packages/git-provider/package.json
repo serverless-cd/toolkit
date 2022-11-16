@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/git-provider",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "git",
   "keywords": [
     "serverless-cd",
