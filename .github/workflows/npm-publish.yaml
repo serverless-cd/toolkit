@@ -15,37 +15,37 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
       - name: engine publish
-        run: npm publish
+        run: npm i --registry=https://registry.npmmirror.com && npm run build && npm publish
         if: ${{ contains(github.ref, 'engine')}}
         working-directory: ./packages/engine
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: core publish
-        run: npm publish
+        run: npm i --registry=https://registry.npmmirror.com && npm run build && npm publish
         if: ${{ contains(github.ref, 'core')}}
         working-directory: ./packages/core
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: git publish
-        run: npm publish
+        run: npm i --registry=https://registry.npmmirror.com && npm run build && npm publish
         if: ${{ contains(github.ref, 'git')}}
         working-directory: ./packages/git
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: git-provider publish
-        run: npm publish
+        run: npm i --registry=https://registry.npmmirror.com && npm run build && npm publish
         if: ${{ contains(github.ref, 'git-provider')}}
         working-directory: ./packages/git-provider
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: ots-orm publish
-        run: npm publish
+        run: npm i --registry=https://registry.npmmirror.com && npm run build && npm publish
         if: ${{ contains(github.ref, 'ots-orm')}}
         working-directory: ./packages/ots-orm
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}} 
       - name: trigger publish
-        run: npm publish
+        run: npm i --registry=https://registry.npmmirror.com && npm run build && npm publish
         if: ${{ contains(github.ref, 'trigger')}}
         working-directory: ./packages/trigger
         env:
