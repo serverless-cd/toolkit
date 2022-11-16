@@ -1,11 +1,13 @@
 {
   "name": "@serverless-cd/engine",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
     "build": "tsc",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "prepub": "npm i && npm run build",
+    "pub": "npm publish"
   },
   "author": "",
   "license": "ISC",
