@@ -11,6 +11,21 @@ test('no trigger data', async () => {
   expect(res?.success).toEqual(false);
 });
 
+test.only('github webhook push with branch prefix is empty(请填写分支前缀，不填默认监听所有分支)', async () => {
+  const eventConfig = {
+    github: {
+      secret: '9u6g2w8v7x944qh8',
+      push: {
+        branches: {
+          prefix: [],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, pushWithBranch);
+  expect(res?.success).toEqual(true);
+});
+
 test('github webhook push with branch case', async () => {
   const eventConfig = {
     github: {
