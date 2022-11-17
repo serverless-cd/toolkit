@@ -1,10 +1,8 @@
 node_modules/
 packages/*/node_modules/
-# packages/*/lib/
 packages/*/__tests__/_temp/
 .DS_Store
 logs/
 coverage/
 *.log
 .env
-!packages/engine/lib/

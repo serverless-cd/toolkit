@@ -81,9 +81,13 @@ export default abstract class BaseEvent {
     }
     const prefix = get(value, 'prefix');
     if (isArray(prefix)) {
-      each(prefix, (item: string) => {
-        conditionList.push(`${item}*`, `${item}/**`);
-      });
+      if (isEmpty(prefix)) {
+        conditionList.push(`*`, '**');
+      } else {
+        each(prefix, (item: string) => {
+          conditionList.push(`${item}*`, `${item}/**`);
+        });
+      }
     }
     const precise = get(value, 'precise');
     if (isArray(precise)) {
