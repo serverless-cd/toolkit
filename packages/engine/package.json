@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/engine",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
@@ -20,6 +20,8 @@
     "xstate": "^4.33.0"
   },
   "devDependencies": {
+    "@types/ali-oss": "^6.16.6",
+    "@types/fs-extra": "^9.0.13",
     "@types/lodash": "^4.14.182"
   },
   "publishConfig": {

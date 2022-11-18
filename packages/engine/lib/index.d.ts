@@ -1,0 +1,30 @@
+import { IEngineOptions, IContext } from './types';
+export { IStepOptions, IContext } from './types';
+declare class Engine {
+    private options;
+    private childProcess;
+    context: IContext;
+    private record;
+    private logger;
+    constructor(options: IEngineOptions);
+    private doInit;
+    start(): Promise<IContext>;
+    private getLogger;
+    private doOss;
+    private doPreRun;
+    private doPostRun;
+    private doReplace$;
+    private recordContext;
+    cancel(): void;
+    private getFilterContext;
+    private doCompleted;
+    private handleSrc;
+    private doSrc;
+    private doScript;
+    private doSkip;
+    private doCancel;
+    private doWarn;
+    private logName;
+    private onFinish;
+}
+export default Engine;
