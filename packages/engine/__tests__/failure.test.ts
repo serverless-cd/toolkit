@@ -1,7 +1,19 @@
 import Engine, { IStepOptions, IContext } from '../src';
-import { get, map } from 'lodash';
+import { map } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
+
+test.only('某一步执行失败，错误信息记录在context.error', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { run: 'npm run error', id: 'xerror' },
+    { run: 'echo "world"', id: 'xworld' },
+  ] as IStepOptions[];
+
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res: IContext | undefined = await engine.start();
+  expect(res.error).toBeInstanceOf(Error);
+});
 
 test('某一步执行失败，后续步骤执行状态为skip', async () => {
   const steps = [

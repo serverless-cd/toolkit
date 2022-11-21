@@ -90,6 +90,7 @@ class Engine {
         stepCount: INIT_STEP_COUNT,
         error,
       };
+      this.context.error = error as Error;
       await this.doOss(filePath);
     }
   }
@@ -265,6 +266,7 @@ class Engine {
         }
         if (error) {
           obj.error = error;
+          this.context.error = error;
         }
         if (outputs) {
           obj.outputs = outputs;
