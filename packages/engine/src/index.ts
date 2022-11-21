@@ -14,7 +14,21 @@ import {
   ISteps,
   STEP_IF,
 } from './types';
-import { isEmpty, get, each, replace, map, find, isFunction, values, has, concat } from 'lodash';
+import {
+  isEmpty,
+  get,
+  each,
+  replace,
+  map,
+  find,
+  isFunction,
+  values,
+  has,
+  concat,
+  includes,
+  startsWith,
+  endsWith,
+} from 'lodash';
 import { command } from 'execa';
 import * as path from 'path';
 import * as os from 'os';
@@ -38,6 +52,12 @@ class Engine {
     const { inputs } = options;
     this.context.inputs = inputs as {};
     this.context.secrets = inputs?.secrets;
+    this.doArtTemplateVariable();
+  }
+  private doArtTemplateVariable() {
+    artTemplate.defaults.imports.contains = includes;
+    artTemplate.defaults.imports.startsWith = startsWith;
+    artTemplate.defaults.imports.endsWith = endsWith;
   }
   private async doInit() {
     const { events } = this.options;
