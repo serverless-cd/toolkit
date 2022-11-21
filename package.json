@@ -23,7 +23,12 @@
     "test:checkout-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/checkout"
   },
   "workspaces": [
-    "packages/engine"
+    "packages/core",
+    "packages/engine",
+    "packages/git",
+    "packages/git-provider",
+    "packages/ots-orm",
+    "packages/trigger"
   ],
   "devDependencies": {
     "@types/jest": "^28.1.6",

@@ -5,13 +5,13 @@ import providers from './providers';
 
 
 export = function (provider: IProvider, config: IGitConfig | IAliConfig) {
-  const ProviderGit = _.get(providers, provider);
+  const ProviderGit = _.get(providers, provider) as unknown as new (x: IGitConfig | IAliConfig) => any;
 
   if (provider === PROVIDER.codeup) {
     return new ProviderGit(config);
   }
 
-  const isExtendsBase = _.get(ProviderGit, 'prototype') instanceof Base;
+  const isExtendsBase = (_.get(ProviderGit, 'prototype') as any) instanceof Base;
   if (!isExtendsBase) {
     throw new Error(`Provider ${provider} does not support`);
   }

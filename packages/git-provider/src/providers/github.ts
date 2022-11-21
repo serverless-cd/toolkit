@@ -97,8 +97,8 @@ export default class Github extends Base {
     const source = _.get(result, 'data', {});
 
     return {
-      sha: _.get(source, 'sha'),
-      message: _.get(source, 'commit.message'),
+      sha: _.get(source, 'sha', ''),
+      message: _.get(source, 'commit.message', ''),
       source,
     };
   }
@@ -132,7 +132,7 @@ export default class Github extends Base {
     const result = await this.octokit.request('POST /repos/{owner}/{repo}/hooks', p);
     const source = _.get(result, 'data', {});
     
-    return { id: _.get(source, 'id'), source };
+    return { id: _.get(source, 'id') as unknown as number, source };
   }
 
   async updateWebhook(params: IGithubUpdateWebhook): Promise<void> {
@@ -164,7 +164,7 @@ export default class Github extends Base {
 
     return {
       id: params.hook_id,
-      url: _.get(source, 'url'),
+      url: _.get(source, 'url', ''),
       source,
     };
   }
