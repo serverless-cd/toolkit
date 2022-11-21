@@ -107,4 +107,5 @@ export interface IContext {
   status: IStatus; // 记录task的状态
   completed: boolean; // 记录task是否执行完成
   inputs: Record<string, any>; // 记录inputs的输入(魔法变量)
+  error: Error; // 记录step的错误信息
 }

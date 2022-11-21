@@ -52,6 +52,12 @@ class Engine {
         const { inputs } = options;
         this.context.inputs = inputs;
         this.context.secrets = inputs === null || inputs === void 0 ? void 0 : inputs.secrets;
+        this.doArtTemplateVariable();
+    }
+    doArtTemplateVariable() {
+        core_1.artTemplate.defaults.imports.contains = lodash_1.includes;
+        core_1.artTemplate.defaults.imports.startsWith = lodash_1.startsWith;
+        core_1.artTemplate.defaults.imports.endsWith = lodash_1.endsWith;
     }
     doInit() {
         var _a;
@@ -88,6 +94,7 @@ class Engine {
                     stepCount: constants_1.INIT_STEP_COUNT,
                     error,
                 };
+                this.context.error = error;
                 yield this.doOss(filePath);
             }
         });
@@ -255,6 +262,7 @@ class Engine {
                 }
                 if (error) {
                     obj.error = error;
+                    this.context.error = error;
                 }
                 if (outputs) {
                     obj.outputs = outputs;
