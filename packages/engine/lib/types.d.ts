@@ -102,5 +102,6 @@ export interface IContext {
     status: IStatus;
     completed: boolean;
     inputs: Record<string, any>;
+    error: Error;
 }
 export {};

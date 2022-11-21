@@ -7,6 +7,7 @@ declare class Engine {
     private record;
     private logger;
     constructor(options: IEngineOptions);
+    private doArtTemplateVariable;
     private doInit;
     start(): Promise<IContext>;
     private getLogger;
