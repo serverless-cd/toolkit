@@ -30,7 +30,7 @@ export default class Gitlab extends Base {
   }
 
   async listBranches(params: IListBranchs | { id: string }): Promise<IBranchOutput[]> {
-    let id = _.get(params, 'id');
+    let id: string | undefined = _.get(params, 'id');
     if (_.isNil(id)) {
       super.validateListBranchsParams(params);
       const { owner, repo } = params as IListBranchs;
