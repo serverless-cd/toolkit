@@ -51,7 +51,7 @@ export interface IUsesOptions {
     with?: Record<string, any>;
     type?: 'run' | 'postRun' | 'completed';
 }
-export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
+export declare type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
 export declare enum STEP_IF {
     SUCCESS = "success()",
     FAILURE = "failure()",
@@ -66,7 +66,7 @@ export declare enum STEP_STATUS_BASE {
     PENING = "pending",
     ERROR_WITH_CONTINUE = "error-with-continue"
 }
-export type IStatus = `${STEP_STATUS_BASE}`;
+export declare type IStatus = `${STEP_STATUS_BASE}`;
 declare enum STEP_STATUS_SKIP {
     SKIP = "skipped"
 }
@@ -79,7 +79,7 @@ export declare const STEP_STATUS: {
     PENING: STEP_STATUS_BASE.PENING;
     ERROR_WITH_CONTINUE: STEP_STATUS_BASE.ERROR_WITH_CONTINUE;
 };
-export type ISteps = IStepOptions & {
+export declare type ISteps = IStepOptions & {
     status?: string;
     error?: Error;
     outputs?: Record<string, any>;

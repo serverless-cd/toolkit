@@ -34,7 +34,14 @@ import * as path from 'path';
 import * as os from 'os';
 // @ts-ignore
 import * as zx from '@serverless-cd/zx';
-import { getScript, getSteps, getProcessTime, getDefaultInitLog, getLogPath } from './utils';
+import {
+  getScript,
+  getSteps,
+  getProcessTime,
+  getDefaultInitLog,
+  getLogPath,
+  runScript,
+} from './utils';
 import {
   INIT_STEP_COUNT,
   INIT_STEP_NAME,
@@ -390,7 +397,7 @@ class Engine {
       this.logName(_item);
       const ifCondition = artTemplate.compile(runItem.run);
       runItem.run = ifCondition(this.getFilterContext());
-      const cp = command(runItem.run, { cwd: execPath });
+      const cp = runScript(runItem.run, { cwd: execPath });
       this.childProcess.push(cp);
       const res = await this.onFinish(cp);
       return res;

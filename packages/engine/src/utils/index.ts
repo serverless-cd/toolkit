@@ -2,6 +2,7 @@ import { map, uniqueId } from 'lodash';
 import { IStepOptions, IUsesOptions } from '../types';
 import { fs } from '@serverless-cd/core';
 import { command } from 'execa';
+import _ from 'lodash';
 const pkg = require('../../package.json');
 
 export function getLogPath(filePath: string) {
@@ -56,4 +57,19 @@ export function getSteps(steps: IStepOptions[], childProcess: any[]) {
 
 export function getProcessTime(time: number) {
   return (Math.round((Date.now() - time) / 10) * 10) / 1000;
+}
+
+/**
+ * @desc 执行shell指令，主要处理 >,>>,||,|,&&等case,直接加shell:true的参数
+ * @param runStr 执行指令的字符串
+ * @param options 
+ */
+export function runScript(runStr: string, options: any) {
+  const shellTokens = ['>', '>>', '|', '||', '&&'];
+  const runnerTokens = _.filter(shellTokens, (item) => _.includes(runStr, item));
+  if (Array.isArray(runnerTokens) && runnerTokens.length > 0) {
+    return command(runStr, { ...options, shell: true });
+  } else {
+    return command(runStr, options);
+  }
 }

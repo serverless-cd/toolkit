@@ -384,7 +384,7 @@ class Engine {
                 this.logName(_item);
                 const ifCondition = core_1.artTemplate.compile(runItem.run);
                 runItem.run = ifCondition(this.getFilterContext());
-                const cp = (0, execa_1.command)(runItem.run, { cwd: execPath });
+                const cp = (0, utils_1.runScript)(runItem.run, { cwd: execPath });
                 this.childProcess.push(cp);
                 const res = yield this.onFinish(cp);
                 return res;

@@ -31,3 +31,9 @@ export declare function getSteps(steps: IStepOptions[], childProcess: any[]): ({
     'continue-on-error'?: boolean | undefined;
 })[];
 export declare function getProcessTime(time: number): number;
+/**
+ * @desc 执行shell指令，主要处理 >,>>,||,|,&&等case,直接加shell:true的参数
+ * @param runStr 执行指令的字符串
+ * @param options
+ */
+export declare function runScript(runStr: string, options: any): import("execa").ExecaChildProcess<string>;
