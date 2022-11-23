@@ -21,6 +21,12 @@ export type ITriggers =
     }
   | {
       gitee: ITrigger;
+    }
+  | {
+      codeup: ITrigger;
+    }
+  | {
+      gitlab: ITrigger;
     };
 
 export type IPayload = {
@@ -33,12 +39,16 @@ export type IPayload = {
 export enum IUserAgent {
   GITHUB = 'github',
   GITEE = 'gitee',
+  CODEUP = 'codeup',
+  GITLAB = 'gitlab',
 }
 
 export type IProvider = `${IUserAgent}`;
 
 export type IGithubEvent = 'push' | 'pull_request';
 export type IGiteeEvent = 'Push Hook' | 'Tag Push Hook' | 'Merge Request Hook';
+export type ICodeupEvent = IGiteeEvent;
+export type IGitlabEvent = 'Job Hook' | 'Merge Request Hook';
 
 export interface IPushInfo {
   branch?: string;
