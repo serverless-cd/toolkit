@@ -28,3 +28,11 @@ export const getPrInfo = (body: any) => {
   }
   return branch;
 };
+
+export const getPrInfoWithCodeup = (body: any) => {
+  const branch = get(body, 'object_attributes.target_branch');
+  if (isEmpty(branch)) {
+    throw new Error('body.object_attributes.target_branch is empty');
+  }
+  return branch;
+};

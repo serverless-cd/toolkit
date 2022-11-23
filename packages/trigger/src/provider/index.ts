@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import Github from './github';
 import Gitee from './gitee';
+import Codeup from './codeup';
 import { IUserAgent, IProvider } from '../type';
 
 const getTriggerEvent = (payload: any): IProvider => {
@@ -31,11 +32,16 @@ const getTriggerEvent = (payload: any): IProvider => {
     return IUserAgent.GITEE;
   }
 
+  if (_.startsWith(ua, 'okhttp')) {
+    return IUserAgent.CODEUP;
+  }
+
   throw new Error('Unrecognized trigger type');
 };
 
 export default {
   github: Github,
   gitee: Gitee,
+  codeup: Codeup,
   getTriggerEvent,
 };

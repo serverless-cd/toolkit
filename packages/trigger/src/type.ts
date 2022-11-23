@@ -21,6 +21,9 @@ export type ITriggers =
     }
   | {
       gitee: ITrigger;
+    }
+  | {
+      codeup: ITrigger;
     };
 
 export type IPayload = {
@@ -33,6 +36,7 @@ export type IPayload = {
 export enum IUserAgent {
   GITHUB = 'github',
   GITEE = 'gitee',
+  CODEUP = 'codeup',
 }
 
 export type IProvider = `${IUserAgent}`;
