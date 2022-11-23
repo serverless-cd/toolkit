@@ -21,6 +21,12 @@ export const getPushInfo = (ref: string) => {
   throw new Error(`Unsupported ref: ${ref}, push event only support branch or tag`);
 };
 
+export const getPushInfoWithGitlab = (body: any) => {
+  const ref = get(body, 'ref', '');
+  const tag = get(body, 'tag', false);
+  return { [tag ? 'tag' : 'branch']: ref };
+};
+
 export const getPrInfo = (body: any) => {
   const branch = get(body, 'pull_request.base.ref');
   if (isEmpty(branch)) {
