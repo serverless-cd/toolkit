@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/core",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "sevrerless-cd核心包",
   "main": "./lib/index.js",
   "scripts": {
@@ -18,9 +18,7 @@
     "fs-extra": "^10.1.0",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
-    "walk-sync": "^3.0.0"
-  },
-  "devDependencies": {
+    "walk-sync": "^3.0.0",
     "@types/ali-oss": "^6.16.4",
     "@types/fs-extra": "^9.0.13",
     "@types/js-yaml": "^4.0.5",
