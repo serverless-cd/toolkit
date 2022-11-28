@@ -8,10 +8,23 @@ const config = {
   accessKeySecret: process.env.ACCESS_KEY_SECRET || '',
 };
 
-test.only('list branch', async () => {
+test('list branch', async () => {
   const prioverd = git('codeup', config);
   await prioverd.listBranches({
     project_id: 2834398,
     organization_id: '60b045b52c5969c370c5a63e',
   });
+});
+
+test.only('get commit by id', async () => {
+  const sha = '4af51eea4906c3b8895261f35ba27cca38ad89da';
+  const prioverd = git('codeup', config);
+  const res = await prioverd.getCommitById({
+    project_id: 2834398,
+    organization_id: '60b045b52c5969c370c5a63e',
+    sha,
+  });
+  expect(res.sha).toBe(sha);
+  expect(_.isString(res.message)).toBeTruthy();
+  expect(_.has(res, 'source')).toBeTruthy();
 });

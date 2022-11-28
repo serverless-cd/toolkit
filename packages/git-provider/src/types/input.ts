@@ -33,6 +33,12 @@ export interface IGetRefCommit {
   ref: string;
 }
 
+export interface IGetCommitById {
+  owner: string;
+  repo: string;
+  sha: string;
+}
+
 export interface IListWebhook {
   owner: string;
   repo: string;

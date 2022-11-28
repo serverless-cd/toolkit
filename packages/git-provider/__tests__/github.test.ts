@@ -7,7 +7,7 @@ const access_token: string = process.env.GITHUB_ACCESS_TOKEN || '';
 const OWNER = 'wss-git';
 const REPO = 'git-action-test';
 
-test.only('list org and list repo', async () => {
+test('list org and list repo', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -24,7 +24,7 @@ test.only('list org and list repo', async () => {
 }, 3 * 60 * 1000);
 
 
-test.only('list repo', async () => {
+test('list repo', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -66,6 +66,17 @@ test('list branchs', async () => {
     expect(_.isString(row.commit_sha)).toBeTruthy();
     expect(_.has(row, 'source')).toBeTruthy();
   }
+});
+
+test.only('get commit by id', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const config = await prioverd.getCommitById({ owner: OWNER, repo: REPO, sha: '68b3becf8f6c47d00711b45e923b891e14bb131e' });
+
+  expect(_.isString(config.sha)).toBeTruthy();
+  expect(_.isString(config.message)).toBeTruthy();
+  expect(_.has(config, 'source')).toBeTruthy();
 });
 
 test('get branch commit', async () => {
