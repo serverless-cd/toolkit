@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile } from '../types/input';
+import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 
@@ -65,6 +65,22 @@ export default class Gitee extends Base {
     return _.map(rows, (row) => ({
       name: row.name, commit_sha: _.get(row, 'commit.sha'), source: row,
     }));
+  }
+
+
+  // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoCommitsSha
+  async getCommitById(params: IGetCommitById): Promise<ICommitOutput> {
+    super.validatGetCommitByIdParams(params);
+
+    const { owner, repo, sha } = params;
+    const result = await this.requestV5(`/repos/${owner}/${repo}/commits/${sha}`, 'GET', {});
+    const source = _.get(result, 'data', {});
+
+    return {
+      sha: _.get(source, 'sha'),
+      message: _.get(source, 'commit.message'),
+      source,
+    };
   }
 
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranchesBranch

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { IListBranch } from '../types/codeup';
+import { IGetCommitById, IListBranch } from '../types/codeup';
 import { IAliConfig } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 
@@ -57,6 +57,35 @@ export default class Codeup {
     return _.map(rows, (row) => ({
       name: row.BranchName, commit_sha: _.get(row, 'CommitInfo.Id'), source: row,
     }));;
+  }
+
+  // https://help.aliyun.com/document_detail/300470.html
+  async getCommitById(params: IGetCommitById): Promise<ICommitOutput> {
+    const projectId = _.get(params, 'project_id');
+    const organizationId = _.get(params, 'organization_id');
+    const sha = _.get(params, 'sha');
+    if (!projectId) {
+      throw new Error('You must specify project_id');
+    }
+    if (!organizationId) {
+      throw new Error('You must specify organization_id');
+    }
+    if (!sha) {
+      throw new Error('You must specify sha');
+    }
+  
+    const url = `/api/v4/projects/${projectId}/repository/commits/${sha}`;
+    const p = {
+      OrganizationId: organizationId,
+    }
+    const result = await this.request({ url, params: p });
+    const source = _.get(result, 'Result', {});
+
+    return {
+      sha: _.get(source, 'Id'),
+      message: _.get(source, 'Message'),
+      source,
+    };
   }
 
   private async requestList(url: string, params: { [key: string]: any }): Promise<any[]> {
@@ -127,5 +156,13 @@ export default class Codeup {
   }
   putFile(params: any): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  private _test_debug_log(data: any, log: string = 'test') {
+    try {
+      require('fs').writeFileSync(`packages/git-provider/__tests__/logs_codeup_${log}.log`, JSON.stringify(data, null, 2));
+    } catch (e: any) {
+      console.log(`${log}.log error: ${e.message}`);
+    }
   }
 }

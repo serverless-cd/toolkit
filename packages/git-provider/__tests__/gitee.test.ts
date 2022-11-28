@@ -20,7 +20,7 @@ test('list repo', async () => {
   }
 });
 
-test.only('list branchs', async () => {
+test('list branchs', async () => {
   const prioverd = git('gitee', { access_token });
   const rows = await prioverd.listBranches({ owner: OWNER, repo: REPO });
 
@@ -31,6 +31,20 @@ test.only('list branchs', async () => {
     expect(_.isString(row.commit_sha)).toBeTruthy();
     expect(_.has(row, 'source')).toBeTruthy();
   }
+});
+
+test.only('get commit by id', async () => {
+  const prioverd = git('gitee', { access_token });
+  const sha = '1816c284614dede42d0e0c7eaace00166adc79f0';
+  const config = await prioverd.getCommitById({
+    owner: OWNER,
+    repo: REPO,
+    sha,
+  });
+
+  expect(config.sha).toBe(sha);
+  expect(_.isString(config.message)).toBeTruthy();
+  expect(_.has(config, 'source')).toBeTruthy();
 });
 
 test('get branch commit', async () => {

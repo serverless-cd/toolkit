@@ -1,6 +1,6 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig } from '../types/input';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 import Base from './base';
 
@@ -29,6 +29,7 @@ export default class Gitlab extends Base {
     this.endpoint = endpoint as string;
   }
 
+  // https://www.bookstack.cn/read/gitlab-doc-zh/docs-296.md#7tkudr
   async listBranches(params: IListBranchs | { id: string }): Promise<IBranchOutput[]> {
     let id: string | undefined = _.get(params, 'id');
     if (_.isNil(id)) {
@@ -42,6 +43,25 @@ export default class Gitlab extends Base {
       name: row.name, commit_sha: _.get(row, 'commit.id'), source: row,
     }));
   }
+
+  async getCommitById(params: IGetCommitById | { id: string; sha: string }): Promise<ICommitOutput> {
+    let id: string | undefined = _.get(params, 'id');
+    if (_.isNil(id)) {
+      super.validatGetCommitByIdParams(params);
+      const { owner, repo } = params as IGetCommitById;
+      id = encodeURIComponent(`${owner}/${repo}`);
+    }
+  
+    const result = await this.request(`/api/v4/projects/${id}/repository/commits/${params.sha}`, 'GET', {});
+    const source = _.get(result, 'data', {});
+
+    return {
+      sha: _.get(source, 'id'),
+      message: _.get(source, 'message'),
+      source,
+    };
+  }
+
 
   private async requestList(path: string, params: any): Promise<any[]> {
     let rows: any[] = [];

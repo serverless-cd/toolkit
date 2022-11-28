@@ -2,9 +2,9 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile } from '../types/github';
+import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById } from '../types/github';
 import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput } from '../types/output';
-import { IGitConfig, IListWebhook } from '../types/input';
+import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 
 export default class Github extends Base {
   private getDefaultParame = (): RequestParameters => ({
@@ -82,11 +82,25 @@ export default class Github extends Base {
   async listBranches(params: IGithubListBranchs): Promise<IBranchOutput[]> {
     super.validateListBranchsParams(params);
 
-    const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.getDefaultParame()))
+    const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.getDefaultParame()));
 
     return _.map(rows, (row) => ({
       name: row.name, commit_sha: _.get(row, 'commit.sha'), source: row,
     }));
+  }
+
+  // https://docs.github.com/en/rest/commits/comments#get-a-commit-comment
+  // GET /repos/{owner}/{repo}/comments/{sha}  => GET /repos/{owner}/{repo}/commits/{sha}
+  async getCommitById(params: IGithubGetCommitById): Promise<ICommitOutput> {
+    super.validatGetCommitByIdParams(params);
+    const result = await this.octokit.request('GET /repos/{owner}/{repo}/commits/{sha}', params);
+    const source = _.get(result, 'data', {});
+
+    return {
+      sha: _.get(source, 'sha', ''),
+      message: _.get(source, 'commit.message', ''),
+      source,
+    };
   }
 
   // https://docs.github.com/en/rest/commits/commits#get-a-commit
@@ -160,7 +174,6 @@ export default class Github extends Base {
 
     const result = await this.octokit.request('GET /repos/{owner}/{repo}/hooks/{hook_id}/config', params)
     const source = _.get(result, 'data', {});
-    this._test_debug_log(source, 'getWebhook')
 
     return {
       id: params.hook_id,
