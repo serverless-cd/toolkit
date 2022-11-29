@@ -1,5 +1,4 @@
-import verifyLegitimacy from '../src';
-import { IPrTypes } from '../src/type';
+import verifyLegitimacy, { IPrTypes } from '../src';
 import {
   pushWithBranch,
   pushWithTag,

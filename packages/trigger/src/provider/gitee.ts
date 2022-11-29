@@ -1,6 +1,6 @@
 import BaseEvent from './base';
-import { getPushInfo, getPrInfo } from '../utils';
-import { ITrigger, IGiteeEvent } from '../type';
+import { getPushInfo, getPrInfo, generateErrorResult } from '../utils';
+import { ITrigger, IGiteeEvent, IPrTypes, IPrTypesVal } from '../type';
 import { get, isEmpty, includes } from 'lodash';
 
 export default class Gitee extends BaseEvent {
@@ -35,10 +35,47 @@ export default class Gitee extends BaseEvent {
     }
     // pr 检测 tag
     if (eventType === 'Merge Request Hook') {
-      const branch = getPrInfo(this.body);
-      console.log(`get pr branch: ${branch}`);
-      return this.doPr(gitee, branch);
+      // 检查type ['opened', 'reopened', 'closed', 'merged']
+      const result = this.checkType(gitee);
+      if (!result.success) return generateErrorResult(result.message);
+      const branchInfo = getPrInfo(this.body);
+      console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
+      return this.doPr(gitee, branchInfo);
     }
+  }
+  private checkType(github: ITrigger) {
+    const action = get(this.body, 'action', '') as IPrTypesVal;
+    const merged = get(this.body, 'pull_request.merged', false);
+    console.log(`get pull_request type: ${action}`);
+    console.log(`get pull_request merged: ${merged}`);
+    const types = get(github, 'pull_request.types', []) as IPrTypesVal[];
+    let valid = false;
+    let message = '';
+    const actionMap = {
+      open: IPrTypes.OPENED,
+      close: IPrTypes.CLOSED,
+      reopen: IPrTypes.REOPENED,
+      merge: IPrTypes.MERGED,
+    };
+    const newAction = get(actionMap, action, action);
+    if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], newAction)) {
+      valid = includes(types, newAction);
+      message = `pr type is ${action}, but only ${types} is allowed`;
+    }
+    if (newAction === IPrTypes.CLOSED) {
+      valid = includes(types, IPrTypes.CLOSED) && !merged;
+      message = `pr type is ${action} and merged is ${merged}, but only ${types} is allowed`;
+    }
+    if (newAction === IPrTypes.MERGED) {
+      valid = includes(types, IPrTypes.MERGED) && merged;
+      message = `pr type is ${action} and merged is ${merged}, but only ${types} is allowed`;
+    }
+    if (valid) {
+      console.log('check type success');
+      return { success: true };
+    }
+    console.log('check type error');
+    return { success: false, message };
   }
   private verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-gitee-token', '');
