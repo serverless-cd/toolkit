@@ -50,8 +50,10 @@ export default abstract class BaseEvent {
             item.source ? [item.source] : ['*', '**'],
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
-          console.log('webhook match pr exclude rules');
-          if (bol) return generateErrorResult('webhook match pr exclude rules');
+          if (bol) {
+            console.log('webhook match pr exclude rules');
+            return generateErrorResult('webhook match pr exclude rules');
+          }
         }
       }
       const precise = get(branches, 'precise', []) as IPrefix[];
@@ -64,8 +66,10 @@ export default abstract class BaseEvent {
             item.source ? [item.source] : ['*', '**'],
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
-          console.log('webhook match pr precise rules');
-          if (bol) return generateSuccessResult({ ...trigger, provider: this.provider });
+          if (bol) {
+            console.log('webhook match pr precise rules');
+            return generateSuccessResult({ ...trigger, provider: this.provider });
+          }
         }
       }
       const prefix = get(branches, 'prefix', []) as IPrefix[];
@@ -81,8 +85,10 @@ export default abstract class BaseEvent {
             item.source ? [`${item.source}*`, `${item.source}/**`] : ['*', '**'],
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
-          console.log('webhook match pr prefix rules');
-          if (bol) return generateSuccessResult({ ...trigger, provider: this.provider });
+          if (bol) {
+            console.log('webhook match pr prefix rules');
+            return generateSuccessResult({ ...trigger, provider: this.provider });
+          }
         }
       }
       const include = get(branches, 'include', []) as IPrefix[];
@@ -95,8 +101,10 @@ export default abstract class BaseEvent {
             item.source ? [item.source] : ['*', '**'],
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
-          console.log('webhook match pr include rules');
-          if (bol) return generateSuccessResult({ ...trigger, provider: this.provider });
+          if (bol) {
+            console.log('webhook match pr include rules');
+            return generateSuccessResult({ ...trigger, provider: this.provider });
+          }
         }
       }
     }

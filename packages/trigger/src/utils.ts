@@ -40,9 +40,13 @@ export const getPrInfo = (body: any) => {
 };
 
 export const getPrInfoWithCodeup = (body: any) => {
-  const branch = get(body, 'object_attributes.target_branch');
-  if (isEmpty(branch)) {
+  const target = get(body, 'object_attributes.target_branch');
+  if (isEmpty(target)) {
     throw new Error('body.object_attributes.target_branch is empty');
   }
-  return branch;
+  const source = get(body, 'object_attributes.source_branch');
+  if (isEmpty(source)) {
+    throw new Error('body.object_attributes.source_branch is empty');
+  }
+  return { target, source };
 };

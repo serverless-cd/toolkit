@@ -60,15 +60,15 @@ export default class Gitee extends BaseEvent {
     const newAction = get(actionMap, action, action);
     if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], newAction)) {
       valid = includes(types, newAction);
-      message = `pr type is ${action}, but only ${types} is allowed`;
+      message = `pr type is ${newAction}, but only ${types} is allowed`;
     }
     if (newAction === IPrTypes.CLOSED) {
       valid = includes(types, IPrTypes.CLOSED) && !merged;
-      message = `pr type is ${action} and merged is ${merged}, but only ${types} is allowed`;
+      message = `pr type is ${newAction} and merged is ${merged}, but only ${types} is allowed`;
     }
     if (newAction === IPrTypes.MERGED) {
       valid = includes(types, IPrTypes.MERGED) && merged;
-      message = `pr type is ${action} and merged is ${merged}, but only ${types} is allowed`;
+      message = `pr type is ${newAction} and merged is ${merged}, but only ${types} is allowed`;
     }
     if (valid) {
       console.log('check type success');
