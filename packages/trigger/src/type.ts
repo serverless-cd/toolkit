@@ -96,6 +96,7 @@ export interface IVerify {
     pusher: {
       name: string;
       email: string;
+      avatar_url: string;
     };
     push?: {
       branch?: string;

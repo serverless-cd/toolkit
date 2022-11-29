@@ -17,10 +17,6 @@ export const generateSuccessResult = (inputs: any, body: any) => {
     [key]: {},
     commit: {},
   };
-  if (get(body, 'pusher')) {
-    data.pusher['name'] = get(body, 'pusher.name');
-    data.pusher['email'] = get(body, 'pusher.email');
-  }
   if (key === 'push') {
     data[key]['branch'] = get(inputs, 'branch');
     data[key]['tag'] = get(inputs, 'tag');
@@ -34,6 +30,9 @@ export const generateSuccessResult = (inputs: any, body: any) => {
     data.commit['id'] = get(body, 'pull_request.merge_commit_sha');
     data.commit['message'] = get(body, 'pull_request.title');
   }
+  data.pusher['avatar_url'] = get(body, 'sender.avatar_url');
+  data.pusher['name'] = get(body, 'sender.login');
+  data.pusher['email'] = get(body, 'sender.email');
   if (provider === IUserAgent.GITLAB) {
     if (key === 'push') {
       data.url = get(body, 'repository.git_http_url');
@@ -42,9 +41,12 @@ export const generateSuccessResult = (inputs: any, body: any) => {
     }
     if (key === 'pull_request') {
       data.url = get(body, 'project.http_url');
-      data.commit['id'] = get(body, 'object_attributes.merge_commit_sha');
+      data.commit['id'] =
+        get(body, 'object_attributes.merge_commit_sha') ||
+        get(body, 'object_attributes.last_commit.id');
       data.commit['message'] = get(body, 'object_attributes.title');
     }
+    data.pusher['avatar_url'] = get(body, 'user.avatar_url');
     data.pusher['name'] = get(body, 'user.name');
     data.pusher['email'] = get(body, 'user.email');
   }
@@ -66,6 +68,7 @@ export const generateSuccessResult = (inputs: any, body: any) => {
     data.url = get(body, 'repository.git_http_url') || get(body, 'project.http_url');
     data.pusher['name'] = data.pusher['name'] || get(body, 'user_name') || get(body, 'user.name');
     data.pusher['email'] = data.pusher['email'] || get(body, 'user_email');
+    data.pusher['avatar_url'] = get(body, 'user.avatar_url');
   }
   return {
     success: true,
