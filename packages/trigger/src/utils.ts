@@ -1,4 +1,4 @@
-import { startsWith, replace, get, isEmpty, includes } from 'lodash';
+import { startsWith, replace, get, isEmpty, includes, find } from 'lodash';
 import { ITrigger, IPrTypes, IPrTypesVal, IGiteeAction, IProvider, IUserAgent } from './type';
 // 最终返回失败结果
 export const generateErrorResult = (message: any) => ({
@@ -47,6 +47,25 @@ export const generateSuccessResult = (inputs: any, body: any) => {
     }
     data.pusher['name'] = get(body, 'user.name');
     data.pusher['email'] = get(body, 'user.email');
+  }
+  if (provider === IUserAgent.CODEUP) {
+    if (key === 'push') {
+      const commitObj = find(get(body, 'commits'), (obj) => obj.id === get(body, 'after'));
+      if (commitObj) {
+        data.commit['id'] = commitObj.id;
+        data.commit['message'] = commitObj.message;
+      }
+    }
+    if (key === 'pull_request') {
+      data.commit['id'] = get(body, 'object_attributes.last_commit.id');
+      data.commit['message'] =
+        get(body, 'object_attributes.last_commit.message') || get(body, 'object_attributes.title');
+      data.pusher['name'] = get(body, 'object_attributes.last_commit.author.name');
+      data.pusher['email'] = get(body, 'object_attributes.last_commit.author.email');
+    }
+    data.url = get(body, 'repository.git_http_url') || get(body, 'project.http_url');
+    data.pusher['name'] = data.pusher['name'] || get(body, 'user_name') || get(body, 'user.name');
+    data.pusher['email'] = data.pusher['email'] || get(body, 'user_email');
   }
   return {
     success: true,
