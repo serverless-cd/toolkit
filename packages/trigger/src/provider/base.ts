@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { IPayload, ITriggers, IProvider } from '../type';
+import { IPayload, ITriggers, IProvider, IPrefix, IPrefixFromWebhook } from '../type';
 import { generateSuccessResult, generateErrorResult } from '../utils';
 import { ITrigger, IPushInfo, IBranches } from '../type';
 import { get, isEmpty, isPlainObject, isArray, each } from 'lodash';
@@ -32,19 +32,79 @@ export default abstract class BaseEvent {
 
   abstract verify(): Promise<any>;
 
-  doPr(trigger: ITrigger, branch: string) {
-    const conditionList = this.getCondition(trigger, 'pr', 'branch');
-    console.log(`get condition list: ${JSON.stringify(conditionList)}`);
-    if (isEmpty(conditionList)) return generateErrorResult('No branch rules configured');
-    const valid = micromatch([branch], conditionList as []);
-    console.log(`get branch micromatch: ${JSON.stringify(valid)}`);
-    if (isEmpty(valid)) return generateErrorResult('Branch rules do not match');
-    return generateSuccessResult({ ...trigger, provider: this.provider });
+  doPr(trigger: ITrigger, branchInfo: IPrefixFromWebhook) {
+    console.log(`get trigger value: ${JSON.stringify(trigger)}`);
+    const eventVal = get(trigger, 'pull_request');
+    if (isPlainObject(eventVal)) {
+      const branches = get(eventVal, 'branches') as IBranches;
+      if (isEmpty(branches)) return;
+      console.log(`get pull_request branches: ${JSON.stringify(branches)}`);
+      // 权重规则：exclude > precise > prefix > include
+      const exclude = get(branches, 'exclude', []) as IPrefix[];
+      if (exclude.length > 0) {
+        for (const item of exclude) {
+          // webhook是否命中 精确排除 规则，值存在说明命中，返回错误
+          const validTarget = micromatch([branchInfo.target], [item.target]);
+          const validSource = micromatch(
+            [branchInfo.source],
+            item.source ? [item.source] : ['*', '**'],
+          );
+          const bol = validTarget.length > 0 && validSource.length > 0;
+          console.log('webhook match pr exclude rules');
+          if (bol) return generateErrorResult('webhook match pr exclude rules');
+        }
+      }
+      const precise = get(branches, 'precise', []) as IPrefix[];
+      if (precise.length > 0) {
+        for (const item of precise) {
+          // webhook是否命中 精确匹配 规则，值存在说明命中，返回成功
+          const validTarget = micromatch([branchInfo.target], [item.target]);
+          const validSource = micromatch(
+            [branchInfo.source],
+            item.source ? [item.source] : ['*', '**'],
+          );
+          const bol = validTarget.length > 0 && validSource.length > 0;
+          console.log('webhook match pr precise rules');
+          if (bol) return generateSuccessResult({ ...trigger, provider: this.provider });
+        }
+      }
+      const prefix = get(branches, 'prefix', []) as IPrefix[];
+      if (prefix.length > 0) {
+        for (const item of prefix) {
+          // webhook是否命中 前缀匹配 规则，值存在说明命中，返回成功
+          const validTarget = micromatch(
+            [branchInfo.target],
+            [`${item.target}*`, `${item.target}/**`],
+          );
+          const validSource = micromatch(
+            [branchInfo.source],
+            item.source ? [`${item.source}*`, `${item.source}/**`] : ['*', '**'],
+          );
+          const bol = validTarget.length > 0 && validSource.length > 0;
+          console.log('webhook match pr prefix rules');
+          if (bol) return generateSuccessResult({ ...trigger, provider: this.provider });
+        }
+      }
+      const include = get(branches, 'include', []) as IPrefix[];
+      if (include.length > 0) {
+        for (const item of include) {
+          // webhook是否命中 前缀匹配 规则，值存在说明命中，返回成功
+          const validTarget = micromatch([branchInfo.target], [item.target]);
+          const validSource = micromatch(
+            [branchInfo.source],
+            item.source ? [item.source] : ['*', '**'],
+          );
+          const bol = validTarget.length > 0 && validSource.length > 0;
+          console.log('webhook match pr include rules');
+          if (bol) return generateSuccessResult({ ...trigger, provider: this.provider });
+        }
+      }
+    }
+    return generateErrorResult('webhook not match pr rules');
   }
-
   doPush(trigger: ITrigger, info: IPushInfo) {
     if (get(info, 'branch')) {
-      const conditionList = this.getCondition(trigger, 'push', 'branch');
+      const conditionList = this.getPushCondition(trigger, 'branch');
       console.log(`get condition list: ${JSON.stringify(conditionList)}`);
       if (isEmpty(conditionList)) return generateErrorResult('No branch rules configured');
       const valid = micromatch([info.branch as string], conditionList as []);
@@ -54,7 +114,7 @@ export default abstract class BaseEvent {
     }
 
     if (get(info, 'tag')) {
-      const conditionList = this.getCondition(trigger, 'push', 'tag');
+      const conditionList = this.getPushCondition(trigger, 'tag');
       console.log(`get condition list: ${JSON.stringify(conditionList)}`);
       if (isEmpty(conditionList)) return generateErrorResult('No tag rules configured');
       const valid = micromatch([info.tag as string], conditionList as []);
@@ -64,15 +124,9 @@ export default abstract class BaseEvent {
     }
     throw new Error('No branch or tag found in push event');
   }
-  doCondition(value: IBranches | undefined) {
+  doPushCondition(value: IBranches | undefined) {
     const conditionList: string[] = [];
-    //权重规则： exclude, include, prefix, precise
-    const exclude = get(value, 'exclude');
-    if (isArray(exclude)) {
-      each(exclude, (item: string) => {
-        conditionList.push(`!${item}`);
-      });
-    }
+    // 权重规则：exclude > precise > prefix > include
     const include = get(value, 'include');
     if (isArray(include)) {
       each(include, (item: string) => {
@@ -95,27 +149,29 @@ export default abstract class BaseEvent {
         conditionList.push(item);
       });
     }
+    const exclude = get(value, 'exclude');
+    if (isArray(exclude)) {
+      each(exclude, (item: string) => {
+        conditionList.push(`!${item}`);
+      });
+    }
     return conditionList;
   }
-  getCondition(
-    trigger: ITrigger,
-    event: 'push' | 'pr',
-    type: 'branch' | 'tag',
-  ): string[] | undefined {
+  getPushCondition(trigger: ITrigger, type: 'branch' | 'tag'): string[] | undefined {
     console.log(`get trigger value: ${JSON.stringify(trigger)}`);
-    const eventVal = get(trigger, event);
+    const eventVal = get(trigger, 'push');
     if (isPlainObject(eventVal)) {
       if (type === 'branch') {
         const branches = get(eventVal, 'branches') as IBranches;
         if (isEmpty(branches)) return;
-        console.log(`get ${event} branches: ${JSON.stringify(branches)}`);
-        return this.doCondition(branches);
+        console.log(`get push branches: ${JSON.stringify(branches)}`);
+        return this.doPushCondition(branches);
       }
       if (type === 'tag') {
         const tags = get(eventVal, 'tags');
         if (isEmpty(tags)) return;
-        console.log(`get ${event} tags: ${JSON.stringify(tags)}`);
-        return this.doCondition(tags);
+        console.log(`get push tags: ${JSON.stringify(tags)}`);
+        return this.doPushCondition(tags);
       }
     }
   }

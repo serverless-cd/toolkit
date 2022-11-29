@@ -4,14 +4,40 @@ export interface IBranches {
   exclude?: string[];
   include?: string[];
 }
+
+export interface IPrefix {
+  target: string;
+  source?: string;
+}
+export interface IPrefixFromWebhook {
+  target: string;
+  source: string;
+}
+
+export interface IPrBranches {
+  prefix?: IPrefix[];
+  precise?: IPrefix[];
+  exclude?: IPrefix[];
+  include?: IPrefix[];
+}
+
+export enum IPrTypes {
+  OPENED = 'opened',
+  CLOSED = 'closed',
+  REOPENED = 'reopened',
+  MERGED = 'merged',
+}
+
+export type IPrTypesVal = `${IPrTypes}`;
 export interface ITrigger {
   secret?: string;
   push?: {
     branches?: IBranches;
     tags?: IBranches;
   };
-  pr?: {
-    branches?: IBranches;
+  pull_request?: {
+    types: IPrTypesVal[];
+    branches?: IPrBranches;
   };
 }
 

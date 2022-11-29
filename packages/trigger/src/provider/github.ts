@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import BaseEvent from './base';
 import { getPushInfo, getPrInfo } from '../utils';
-import { ITrigger, IGithubEvent } from '../type';
-import { get, isEmpty } from 'lodash';
+import { ITrigger, IGithubEvent, IPrTypes, IPrTypesVal } from '../type';
+import { get, includes, isEmpty } from 'lodash';
 
 export default class Github extends BaseEvent {
   async verify(): Promise<any> {
@@ -11,6 +11,7 @@ export default class Github extends BaseEvent {
       throw new Error(`No ${this.provider} configuration found`);
     }
     const github = _github as ITrigger;
+    console.log(`github: ${JSON.stringify(github)}`);
 
     console.log('verify secret status...');
     const secret = get(github, 'secret', '');
@@ -34,14 +35,37 @@ export default class Github extends BaseEvent {
       console.log(`get push info: ${JSON.stringify(info)}`);
       return this.doPush(github, info);
     }
-    // pr 检测 tag
+    // pr 检测 分支
     if (eventType === 'pull_request') {
-      const branch = getPrInfo(this.body);
-      console.log(`get pr branch: ${branch}`);
-      return this.doPr(github, branch);
+      // 检查type ['opened', 'reopened', 'closed', 'merged']
+      const bol = this.checkType(github);
+      if (!bol) return false;
+      const branchInfo = getPrInfo(this.body);
+      console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
+      return this.doPr(github, branchInfo);
     }
   }
-
+  private checkType(github: ITrigger): boolean {
+    const action = get(this.body, 'action', '') as IPrTypesVal;
+    const merged = get(this.body, 'pull_request.merged', false);
+    console.log(`get pull_request type: ${action}`);
+    console.log(`get pull_request merged: ${merged}`);
+    const types = get(github, 'pull_request.types', []) as IPrTypesVal[];
+    let valid = false;
+    if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], action)) {
+      valid = includes(types, action);
+    }
+    if (action === IPrTypes.CLOSED) {
+      const bol = includes(types, action);
+      valid = bol && includes(types, merged ? IPrTypes.MERGED : IPrTypes.CLOSED);
+    }
+    if (valid) {
+      console.log('check type success');
+      return true;
+    }
+    console.log('check type error');
+    return false;
+  }
   private verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-hub-signature', '');
     if (isEmpty(secret) && isEmpty(signature)) {

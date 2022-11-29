@@ -28,11 +28,15 @@ export const getPushInfoWithGitlab = (body: any) => {
 };
 
 export const getPrInfo = (body: any) => {
-  const branch = get(body, 'pull_request.base.ref');
-  if (isEmpty(branch)) {
+  const target = get(body, 'pull_request.base.ref');
+  if (isEmpty(target)) {
     throw new Error('body.pull_request.base.ref is empty');
   }
-  return branch;
+  const source = get(body, 'pull_request.head.ref');
+  if (isEmpty(source)) {
+    throw new Error('body.pull_request.head.ref is empty');
+  }
+  return { target, source };
 };
 
 export const getPrInfoWithCodeup = (body: any) => {
