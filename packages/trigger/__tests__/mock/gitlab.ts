@@ -131,9 +131,9 @@ export const pushWithTag = {
     environment: null,
   },
 };
-export const prInputs = {
+export const prWithOpened = {
   headers: {
-    'content-length': '4810',
+    'content-length': '4803',
     'content-type': 'application/json',
     host: 'test-serverls-cd-shl-fzgonuvwzt.cn-hongkong.fcapp.run',
     'user-agent': 'GitLab/14.1.0',
@@ -179,11 +179,11 @@ export const prInputs = {
     object_attributes: {
       assignee_id: null,
       author_id: 1,
-      created_at: '2022-11-23 15:45:51 +0800',
+      created_at: '2022-11-29 15:56:37 +0800',
       description: '',
       head_pipeline_id: null,
-      id: 1,
-      iid: 1,
+      id: 2,
+      iid: 2,
       last_edited_at: null,
       last_edited_by_id: null,
       merge_commit_sha: null,
@@ -201,10 +201,10 @@ export const prInputs = {
       target_branch: 'master',
       target_project_id: 2,
       time_estimate: 0,
-      title: 'Update README.md',
-      updated_at: '2022-11-23 15:45:51 +0800',
+      title: 'Draft: Dev',
+      updated_at: '2022-11-29 15:56:37 +0800',
       updated_by_id: null,
-      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express/-/merge_requests/1',
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express/-/merge_requests/2',
       source: {
         id: 2,
         name: 'node-express',
@@ -264,7 +264,7 @@ export const prInputs = {
           email: 'serverles-cd@163.com',
         },
       },
-      work_in_progress: false,
+      work_in_progress: true,
       total_time_spent: 0,
       time_change: 0,
       human_total_time_spent: null,
@@ -279,6 +279,498 @@ export const prInputs = {
       merge_status: {
         previous: 'unchecked',
         current: 'preparing',
+      },
+    },
+    repository: {
+      name: 'node-express',
+      url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      description: null,
+      homepage:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+    },
+  },
+};
+
+export const prWithClosed = {
+  headers: {
+    'content-length': '4879',
+    'content-type': 'application/json',
+    host: 'test-serverls-cd-shl-fzgonuvwzt.cn-hongkong.fcapp.run',
+    'user-agent': 'GitLab/14.1.0',
+    'x-forwarded-proto': 'https',
+    'x-gitlab-event': 'Merge Request Hook',
+    'x-gitlab-token': 'shl123',
+  },
+  body: {
+    object_kind: 'merge_request',
+    event_type: 'merge_request',
+    user: {
+      id: 1,
+      name: 'Administrator',
+      username: 'root',
+      avatar_url:
+        'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+      email: 'serverles-cd@163.com',
+    },
+    project: {
+      id: 2,
+      name: 'node-express',
+      description: null,
+      web_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+      avatar_url: null,
+      git_ssh_url:
+        'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      git_http_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      namespace: 'Administrator',
+      visibility_level: 10,
+      path_with_namespace: 'root/node-express',
+      default_branch: 'master',
+      ci_config_path: null,
+      homepage:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+      url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      ssh_url:
+        'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      http_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+    },
+    object_attributes: {
+      assignee_id: null,
+      author_id: 1,
+      created_at: '2022-11-29 15:56:37 +0800',
+      description: '',
+      head_pipeline_id: null,
+      id: 2,
+      iid: 2,
+      last_edited_at: null,
+      last_edited_by_id: null,
+      merge_commit_sha: null,
+      merge_error: null,
+      merge_params: {
+        force_remove_source_branch: '0',
+      },
+      merge_status: 'cannot_be_merged',
+      merge_user_id: null,
+      merge_when_pipeline_succeeds: false,
+      milestone_id: null,
+      source_branch: 'dev',
+      source_project_id: 2,
+      state_id: 2,
+      target_branch: 'master',
+      target_project_id: 2,
+      time_estimate: 0,
+      title: 'Draft: Dev',
+      updated_at: '2022-11-29 16:05:46 +0800',
+      updated_by_id: null,
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express/-/merge_requests/2',
+      source: {
+        id: 2,
+        name: 'node-express',
+        description: null,
+        web_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        avatar_url: null,
+        git_ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        git_http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+        namespace: 'Administrator',
+        visibility_level: 10,
+        path_with_namespace: 'root/node-express',
+        default_branch: 'master',
+        ci_config_path: null,
+        homepage:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      },
+      target: {
+        id: 2,
+        name: 'node-express',
+        description: null,
+        web_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        avatar_url: null,
+        git_ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        git_http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+        namespace: 'Administrator',
+        visibility_level: 10,
+        path_with_namespace: 'root/node-express',
+        default_branch: 'master',
+        ci_config_path: null,
+        homepage:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      },
+      last_commit: {
+        id: '5cf5b0919f0337ee695c608212d3e3c2dc794b64',
+        message: 'Update README.md',
+        title: 'Update README.md',
+        timestamp: '2022-11-23T15:45:13+08:00',
+        url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express/-/commit/5cf5b0919f0337ee695c608212d3e3c2dc794b64',
+        author: {
+          name: 'Administrator',
+          email: 'serverles-cd@163.com',
+        },
+      },
+      work_in_progress: true,
+      total_time_spent: 0,
+      time_change: 0,
+      human_total_time_spent: null,
+      human_time_change: null,
+      human_time_estimate: null,
+      assignee_ids: [],
+      state: 'closed',
+      action: 'close',
+    },
+    labels: [],
+    changes: {
+      state_id: {
+        previous: 1,
+        current: 2,
+      },
+      updated_at: {
+        previous: '2022-11-29 15:56:37 +0800',
+        current: '2022-11-29 16:05:46 +0800',
+      },
+    },
+    repository: {
+      name: 'node-express',
+      url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      description: null,
+      homepage:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+    },
+  },
+};
+
+export const prWithReopened = {
+  headers: {
+    'content-length': '4880',
+    'content-type': 'application/json',
+    host: 'test-serverls-cd-shl-fzgonuvwzt.cn-hongkong.fcapp.run',
+    'user-agent': 'GitLab/14.1.0',
+    'x-forwarded-proto': 'https',
+    'x-gitlab-event': 'Merge Request Hook',
+    'x-gitlab-token': 'shl123',
+  },
+  body: {
+    object_kind: 'merge_request',
+    event_type: 'merge_request',
+    user: {
+      id: 1,
+      name: 'Administrator',
+      username: 'root',
+      avatar_url:
+        'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+      email: 'serverles-cd@163.com',
+    },
+    project: {
+      id: 2,
+      name: 'node-express',
+      description: null,
+      web_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+      avatar_url: null,
+      git_ssh_url:
+        'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      git_http_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      namespace: 'Administrator',
+      visibility_level: 10,
+      path_with_namespace: 'root/node-express',
+      default_branch: 'master',
+      ci_config_path: null,
+      homepage:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+      url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      ssh_url:
+        'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      http_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+    },
+    object_attributes: {
+      assignee_id: null,
+      author_id: 1,
+      created_at: '2022-11-29 15:56:37 +0800',
+      description: '',
+      head_pipeline_id: null,
+      id: 2,
+      iid: 2,
+      last_edited_at: null,
+      last_edited_by_id: null,
+      merge_commit_sha: null,
+      merge_error: null,
+      merge_params: {
+        force_remove_source_branch: '0',
+      },
+      merge_status: 'cannot_be_merged',
+      merge_user_id: null,
+      merge_when_pipeline_succeeds: false,
+      milestone_id: null,
+      source_branch: 'dev',
+      source_project_id: 2,
+      state_id: 1,
+      target_branch: 'master',
+      target_project_id: 2,
+      time_estimate: 0,
+      title: 'Draft: Dev',
+      updated_at: '2022-11-29 16:07:02 +0800',
+      updated_by_id: null,
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express/-/merge_requests/2',
+      source: {
+        id: 2,
+        name: 'node-express',
+        description: null,
+        web_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        avatar_url: null,
+        git_ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        git_http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+        namespace: 'Administrator',
+        visibility_level: 10,
+        path_with_namespace: 'root/node-express',
+        default_branch: 'master',
+        ci_config_path: null,
+        homepage:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      },
+      target: {
+        id: 2,
+        name: 'node-express',
+        description: null,
+        web_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        avatar_url: null,
+        git_ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        git_http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+        namespace: 'Administrator',
+        visibility_level: 10,
+        path_with_namespace: 'root/node-express',
+        default_branch: 'master',
+        ci_config_path: null,
+        homepage:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      },
+      last_commit: {
+        id: '5cf5b0919f0337ee695c608212d3e3c2dc794b64',
+        message: 'Update README.md',
+        title: 'Update README.md',
+        timestamp: '2022-11-23T15:45:13+08:00',
+        url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express/-/commit/5cf5b0919f0337ee695c608212d3e3c2dc794b64',
+        author: {
+          name: 'Administrator',
+          email: 'serverles-cd@163.com',
+        },
+      },
+      work_in_progress: true,
+      total_time_spent: 0,
+      time_change: 0,
+      human_total_time_spent: null,
+      human_time_change: null,
+      human_time_estimate: null,
+      assignee_ids: [],
+      state: 'opened',
+      action: 'reopen',
+    },
+    labels: [],
+    changes: {
+      state_id: {
+        previous: 2,
+        current: 1,
+      },
+      updated_at: {
+        previous: '2022-11-29 16:05:46 +0800',
+        current: '2022-11-29 16:07:02 +0800',
+      },
+    },
+    repository: {
+      name: 'node-express',
+      url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      description: null,
+      homepage:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+    },
+  },
+};
+
+export const prWithMerged = {
+  headers: {
+    'content-length': '4917',
+    'content-type': 'application/json',
+    host: 'test-serverls-cd-shl-fzgonuvwzt.cn-hongkong.fcapp.run',
+    'user-agent': 'GitLab/14.1.0',
+    'x-forwarded-proto': 'https',
+    'x-gitlab-event': 'Merge Request Hook',
+    'x-gitlab-token': 'shl123',
+  },
+  body: {
+    object_kind: 'merge_request',
+    event_type: 'merge_request',
+    user: {
+      id: 1,
+      name: 'Administrator',
+      username: 'root',
+      avatar_url:
+        'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+      email: 'serverles-cd@163.com',
+    },
+    project: {
+      id: 2,
+      name: 'node-express',
+      description: null,
+      web_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+      avatar_url: null,
+      git_ssh_url:
+        'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      git_http_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      namespace: 'Administrator',
+      visibility_level: 10,
+      path_with_namespace: 'root/node-express',
+      default_branch: 'master',
+      ci_config_path: null,
+      homepage:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+      url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      ssh_url:
+        'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+      http_url:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+    },
+    object_attributes: {
+      assignee_id: null,
+      author_id: 1,
+      created_at: '2022-11-29 15:56:37 +0800',
+      description: '',
+      head_pipeline_id: null,
+      id: 2,
+      iid: 2,
+      last_edited_at: '2022-11-29 16:08:21 +0800',
+      last_edited_by_id: 1,
+      merge_commit_sha: 'f3fa5f2fa1b4ae580e694224fcc02f322a5deebf',
+      merge_error: null,
+      merge_params: {
+        force_remove_source_branch: '0',
+      },
+      merge_status: 'can_be_merged',
+      merge_user_id: null,
+      merge_when_pipeline_succeeds: false,
+      milestone_id: null,
+      source_branch: 'dev',
+      source_project_id: 2,
+      state_id: 3,
+      target_branch: 'master',
+      target_project_id: 2,
+      time_estimate: 0,
+      title: 'Dev',
+      updated_at: '2022-11-29 16:10:57 +0800',
+      updated_by_id: 1,
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express/-/merge_requests/2',
+      source: {
+        id: 2,
+        name: 'node-express',
+        description: null,
+        web_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        avatar_url: null,
+        git_ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        git_http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+        namespace: 'Administrator',
+        visibility_level: 10,
+        path_with_namespace: 'root/node-express',
+        default_branch: 'master',
+        ci_config_path: null,
+        homepage:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      },
+      target: {
+        id: 2,
+        name: 'node-express',
+        description: null,
+        web_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        avatar_url: null,
+        git_ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        git_http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+        namespace: 'Administrator',
+        visibility_level: 10,
+        path_with_namespace: 'root/node-express',
+        default_branch: 'master',
+        ci_config_path: null,
+        homepage:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express',
+        url: 'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        ssh_url:
+          'git@code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com:root/node-express.git',
+        http_url:
+          'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      },
+      last_commit: {
+        id: 'f6c0ed3322718e95e151c9f187e02e8e60cd2834',
+        message: 'Add new file',
+        title: 'Add new file',
+        timestamp: '2022-11-29T16:09:58+08:00',
+        url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express/-/commit/f6c0ed3322718e95e151c9f187e02e8e60cd2834',
+        author: {
+          name: 'Administrator',
+          email: 'serverles-cd@163.com',
+        },
+      },
+      work_in_progress: false,
+      total_time_spent: 0,
+      time_change: 0,
+      human_total_time_spent: null,
+      human_time_change: null,
+      human_time_estimate: null,
+      assignee_ids: [],
+      state: 'merged',
+      action: 'merge',
+    },
+    labels: [],
+    changes: {
+      state_id: {
+        previous: 4,
+        current: 3,
+      },
+      updated_at: {
+        previous: '2022-11-29 16:10:57 +0800',
+        current: '2022-11-29 16:10:57 +0800',
       },
     },
     repository: {

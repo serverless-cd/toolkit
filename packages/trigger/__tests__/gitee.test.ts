@@ -1,5 +1,12 @@
-import verifyLegitimacy from '../src';
-import { pushWithBranch, pushWithTag, prInputs } from './mock/gitee';
+import verifyLegitimacy, { IPrTypes } from '../src';
+import {
+  pushWithBranch,
+  pushWithTag,
+  prWithOpened,
+  prWithClosed,
+  prWithReopened,
+  prWithMerged,
+} from './mock/gitee';
 
 test('gitee webhook push with branch case', async () => {
   const eventConfig = {
@@ -9,7 +16,6 @@ test('gitee webhook push with branch case', async () => {
         branches: {
           prefix: ['feature'],
           precise: ['master'],
-          exclude: ['master'],
           include: ['master'],
         },
       },
@@ -36,19 +42,146 @@ test('gitee webhook push with tag case', async () => {
   expect(res?.success).toEqual(true);
 });
 
-test('gitee webhook pr case', async () => {
+test('gitee webhook success with pr opened', async () => {
   const eventConfig = {
     gitee: {
-      pr: {
+      pull_request: {
+        types: [IPrTypes.OPENED],
         branches: {
-          prefix: ['feature'],
-          precise: ['master'],
-          exclude: ['master'],
-          include: ['master'],
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
         },
       },
     },
   };
-  const res = await verifyLegitimacy(eventConfig, prInputs);
+  const res = await verifyLegitimacy(eventConfig, prWithOpened);
+  console.log(res);
   expect(res?.success).toEqual(true);
+});
+test('gitee webhook error with pr opened', async () => {
+  const eventConfig = {
+    gitee: {
+      pull_request: {
+        types: [IPrTypes.OPENED],
+        branches: {
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          exclude: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithOpened);
+  console.log(res);
+  expect(res?.success).toEqual(false);
+});
+
+test('gitee webhook success with pr closed', async () => {
+  const eventConfig = {
+    gitee: {
+      pull_request: {
+        types: [IPrTypes.CLOSED],
+        branches: {
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithClosed);
+  console.log(res);
+  expect(res?.success).toEqual(true);
+});
+test('gitee webhook error with pr closed', async () => {
+  const eventConfig = {
+    gitee: {
+      pull_request: {
+        types: [IPrTypes.CLOSED],
+        branches: {
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          exclude: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithClosed);
+  console.log(res);
+  expect(res?.success).toEqual(false);
+});
+
+test('gitee webhook success with pr reopened', async () => {
+  const eventConfig = {
+    gitee: {
+      pull_request: {
+        types: [IPrTypes.REOPENED],
+        branches: {
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithReopened);
+  console.log(res);
+  expect(res?.success).toEqual(true);
+});
+test('gitee webhook error with pr reopened', async () => {
+  const eventConfig = {
+    gitee: {
+      pull_request: {
+        types: [IPrTypes.REOPENED],
+        branches: {
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          exclude: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithReopened);
+  console.log(res);
+  expect(res?.success).toEqual(false);
+});
+
+test('gitee webhook success with pr merged', async () => {
+  const eventConfig = {
+    gitee: {
+      pull_request: {
+        types: [IPrTypes.MERGED],
+        branches: {
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithMerged);
+  console.log(res);
+  expect(res?.success).toEqual(true);
+});
+test('gitee webhook error with pr merged', async () => {
+  const eventConfig = {
+    gitee: {
+      pull_request: {
+        types: [IPrTypes.REOPENED],
+        branches: {
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          exclude: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithMerged);
+  console.log(res);
+  expect(res?.success).toEqual(false);
 });

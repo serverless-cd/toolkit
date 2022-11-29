@@ -1,7 +1,7 @@
 {
   "name": "@serverless-cd/trigger",
-  "version": "0.0.4",
-  "description": "> TODO: description",
+  "version": "0.0.5",
+  "description": "校验webhook与触发条件是否匹配",
   "author": "wss-git <wssgryx@163.com>",
   "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit#readme",
   "license": "ISC",

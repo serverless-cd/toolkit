@@ -1,8 +1,9 @@
 import { IPayload, ITriggers } from './type';
 import webhook from './provider';
 import { isPlainObject, get } from 'lodash';
+export { IPrTypes } from './type';
 
-async function verifyLegitimacy(triggers: ITriggers, payload: IPayload) {
+export async function verifyLegitimacy(triggers: ITriggers, payload: IPayload) {
   if (!isPlainObject(triggers)) {
     throw new TypeError('The parameter format should be object');
   }
@@ -15,5 +16,4 @@ async function verifyLegitimacy(triggers: ITriggers, payload: IPayload) {
   const eventClient = new EventClient(triggers, payload, provider);
   return await eventClient.verify();
 }
-
-export = verifyLegitimacy;
+export default verifyLegitimacy;

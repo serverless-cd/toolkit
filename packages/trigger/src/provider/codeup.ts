@@ -1,5 +1,10 @@
 import BaseEvent from './base';
-import { getPushInfo, getPrInfoWithCodeup } from '../utils';
+import {
+  getPushInfo,
+  getPrInfoWithCodeup,
+  generateErrorResult,
+  checkTypeWithCodeup,
+} from '../utils';
 import { ITrigger, ICodeupEvent } from '../type';
 import { get, isEmpty, includes } from 'lodash';
 
@@ -33,11 +38,14 @@ export default class Codeup extends BaseEvent {
       console.log(`get push info: ${JSON.stringify(info)}`);
       return this.doPush(codeup, info);
     }
-    // pr 检测 tag
+    // pr 检测 分支
     if (eventType === 'Merge Request Hook') {
-      const branch = getPrInfoWithCodeup(this.body);
-      console.log(`get pr branch: ${branch}`);
-      return this.doPr(codeup, branch);
+      // 检查type ['opened', 'reopened', 'closed', 'merged']
+      const result = checkTypeWithCodeup(codeup, this.body);
+      if (!result.success) return generateErrorResult(result.message);
+      const branchInfo = getPrInfoWithCodeup(this.body);
+      console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
+      return this.doPr(codeup, branchInfo);
     }
   }
   private verifySecret(secret: string | undefined): boolean {
