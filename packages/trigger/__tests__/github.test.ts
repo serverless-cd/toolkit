@@ -6,6 +6,7 @@ import {
   prWithOpened,
   prWithClosed,
   prWithReopened,
+  prWithMerged,
 } from './mock/github';
 
 test('no trigger data', async () => {
@@ -178,6 +179,44 @@ test('github webhook error with pr reopened', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithReopened);
+  console.log(res);
+  expect(res?.success).toEqual(false);
+});
+
+test('github webhook success with pr merged', async () => {
+  const eventConfig = {
+    github: {
+      secret: 'shl123',
+      pull_request: {
+        types: [IPrTypes.MERGED],
+        branches: {
+          prefix: [{ target: 'main', source: 'dev' }],
+          precise: [{ target: 'main', source: 'dev' }],
+          include: [{ target: 'main', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithMerged);
+  console.log(res);
+  expect(res?.success).toEqual(true);
+});
+test.only('github webhook error with pr merged', async () => {
+  const eventConfig = {
+    github: {
+      secret: 'shl123',
+      pull_request: {
+        types: [IPrTypes.REOPENED],
+        branches: {
+          prefix: [{ target: 'main', source: 'dev' }],
+          precise: [{ target: 'main', source: 'dev' }],
+          exclude: [{ target: 'main', source: 'dev' }],
+          include: [{ target: 'main', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithMerged);
   console.log(res);
   expect(res?.success).toEqual(false);
 });

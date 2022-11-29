@@ -52,19 +52,21 @@ export default class Github extends BaseEvent {
     console.log(`get pull_request merged: ${merged}`);
     const types = get(github, 'pull_request.types', []) as IPrTypesVal[];
     let valid = false;
+    let message = '';
     if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], action)) {
       valid = includes(types, action);
+      message = `pr type is ${action}, but only ${types} is allowed`;
     }
     if (action === IPrTypes.CLOSED) {
-      const bol = includes(types, action);
-      valid = bol && includes(types, merged ? IPrTypes.MERGED : IPrTypes.CLOSED);
+      valid = includes(types, merged ? IPrTypes.MERGED : IPrTypes.CLOSED);
+      message = `pr type is ${action} and merged is ${merged}, but only ${types} is allowed`;
     }
     if (valid) {
       console.log('check type success');
       return { success: true };
     }
     console.log('check type error');
-    return { success: false, message: `webhook action '${action}' not match '${types}'` };
+    return { success: false, message };
   }
   private verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-hub-signature', '');
