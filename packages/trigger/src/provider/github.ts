@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import BaseEvent from './base';
-import { getPushInfo, getPrInfo } from '../utils';
+import { getPushInfo, getPrInfo, generateErrorResult } from '../utils';
 import { ITrigger, IGithubEvent, IPrTypes, IPrTypesVal } from '../type';
 import { get, includes, isEmpty } from 'lodash';
 
@@ -38,14 +38,14 @@ export default class Github extends BaseEvent {
     // pr 检测 分支
     if (eventType === 'pull_request') {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
-      const bol = this.checkType(github);
-      if (!bol) return false;
+      const result = this.checkType(github);
+      if (!result.success) return generateErrorResult(result.message);
       const branchInfo = getPrInfo(this.body);
       console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
       return this.doPr(github, branchInfo);
     }
   }
-  private checkType(github: ITrigger): boolean {
+  private checkType(github: ITrigger) {
     const action = get(this.body, 'action', '') as IPrTypesVal;
     const merged = get(this.body, 'pull_request.merged', false);
     console.log(`get pull_request type: ${action}`);
@@ -61,10 +61,10 @@ export default class Github extends BaseEvent {
     }
     if (valid) {
       console.log('check type success');
-      return true;
+      return { success: true };
     }
     console.log('check type error');
-    return false;
+    return { success: false, message: `webhook action '${action}' not match '${types}'` };
   }
   private verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-hub-signature', '');

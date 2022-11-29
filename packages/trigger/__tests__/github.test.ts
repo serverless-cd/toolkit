@@ -1,6 +1,6 @@
 import verifyLegitimacy from '../src';
 import { IPrTypes } from '../src/type';
-import { pushWithBranch, pushWithTag, prWithOpened } from './mock/github';
+import { pushWithBranch, pushWithTag, prWithOpened, prWithClosed } from './mock/github';
 
 test('no trigger data', async () => {
   const eventConfig = {
@@ -96,6 +96,44 @@ test('github webhook error with pr opened', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithOpened);
+  console.log(res);
+  expect(res?.success).toEqual(false);
+});
+
+test('github webhook success with pr closed', async () => {
+  const eventConfig = {
+    github: {
+      secret: 'shl123',
+      pull_request: {
+        types: [IPrTypes.CLOSED],
+        branches: {
+          prefix: [{ target: 'main', source: 'dev' }],
+          precise: [{ target: 'main', source: 'dev' }],
+          include: [{ target: 'main', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithClosed);
+  console.log(res);
+  expect(res?.success).toEqual(true);
+});
+test.only('github webhook error with pr closed', async () => {
+  const eventConfig = {
+    github: {
+      secret: 'shl123',
+      pull_request: {
+        types: [IPrTypes.CLOSED],
+        branches: {
+          prefix: [{ target: 'main', source: 'dev' }],
+          precise: [{ target: 'main', source: 'dev' }],
+          exclude: [{ target: 'main', source: 'dev' }],
+          include: [{ target: 'main', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithClosed);
   console.log(res);
   expect(res?.success).toEqual(false);
 });
