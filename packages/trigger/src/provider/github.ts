@@ -40,9 +40,9 @@ export default class Github extends BaseEvent {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
       const result = this.checkType(github);
       if (!result.success) return generateErrorResult(result.message);
-      const branchInfo = getPrInfo(this.body);
-      console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
-      return this.doPr(github, branchInfo);
+      const prInfo = getPrInfo(this.body);
+      console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
+      return this.doPr(github, { ...prInfo, type: result.type as IPrTypesVal });
     }
   }
   private checkType(github: ITrigger) {
@@ -53,20 +53,23 @@ export default class Github extends BaseEvent {
     const types = get(github, 'pull_request.types', []) as IPrTypesVal[];
     let valid = false;
     let message = '';
+    let type = '';
     if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], action)) {
+      type = action;
       valid = includes(types, action);
       message = `pr type is ${action}, but only ${types} is allowed`;
     }
     if (action === IPrTypes.CLOSED) {
-      valid = includes(types, merged ? IPrTypes.MERGED : IPrTypes.CLOSED);
+      type = merged ? IPrTypes.MERGED : IPrTypes.CLOSED;
+      valid = includes(types, type);
       message = `pr type is ${action} and merged is ${merged}, but only ${types} is allowed`;
     }
     if (valid) {
       console.log('check type success');
-      return { success: true };
+      return { success: true, message, type };
     }
     console.log('check type error');
-    return { success: false, message };
+    return { success: false, message, type };
   }
   private verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-hub-signature', '');

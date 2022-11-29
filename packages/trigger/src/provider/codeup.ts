@@ -5,7 +5,7 @@ import {
   generateErrorResult,
   checkTypeWithCodeup,
 } from '../utils';
-import { ITrigger, ICodeupEvent } from '../type';
+import { ITrigger, ICodeupEvent, IPrTypesVal } from '../type';
 import { get, isEmpty, includes } from 'lodash';
 
 export default class Codeup extends BaseEvent {
@@ -43,9 +43,9 @@ export default class Codeup extends BaseEvent {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
       const result = checkTypeWithCodeup(codeup, this.body);
       if (!result.success) return generateErrorResult(result.message);
-      const branchInfo = getPrInfoWithCodeup(this.body);
-      console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
-      return this.doPr(codeup, branchInfo);
+      const prInfo = getPrInfoWithCodeup(this.body);
+      console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
+      return this.doPr(codeup, { ...prInfo, type: result.type as IPrTypesVal });
     }
   }
   private verifySecret(secret: string | undefined): boolean {

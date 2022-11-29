@@ -9,9 +9,10 @@ export interface IPrefix {
   target: string;
   source?: string;
 }
-export interface IPrefixFromWebhook {
+export interface IPrInfo {
   target: string;
   source: string;
+  type: IPrTypesVal;
 }
 
 export interface IPrBranches {
@@ -86,4 +87,28 @@ export type IGitlabEvent = 'Job Hook' | 'Merge Request Hook';
 export interface IPushInfo {
   branch?: string;
   tag?: string;
+}
+export interface IVerify {
+  success: boolean;
+  data: {
+    url: string;
+    provider: IProvider;
+    pusher: {
+      name: string;
+      email: string;
+    };
+    push?: {
+      branch?: string;
+      tag?: string;
+    };
+    pull_request?: {
+      target_branch: string;
+      source_branch: string;
+      type: IPrTypesVal;
+    };
+    commit: {
+      id: string;
+      message: string;
+    };
+  };
 }

@@ -30,7 +30,25 @@ test('github webhook push with branch prefix is empty(请填写分支前缀，�
     },
   };
   const res = await verifyLegitimacy(eventConfig, pushWithBranch);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://github.com/xsahxl/test-cd.git',
+      provider: 'github',
+      pusher: {
+        name: 'xsahxl',
+        email: 'xsahxl@126.com',
+      },
+      push: {
+        branch: 'main',
+        tag: undefined,
+      },
+      commit: {
+        id: '6b956d234e19ebf2ab68a5df906d8c7f2afc51d2',
+        message: 'Update readme.md',
+      },
+    },
+  });
 });
 
 test('github webhook push with branch case', async () => {
@@ -48,7 +66,25 @@ test('github webhook push with branch case', async () => {
   };
 
   const res = await verifyLegitimacy(eventConfig, pushWithBranch);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://github.com/xsahxl/test-cd.git',
+      provider: 'github',
+      pusher: {
+        name: 'xsahxl',
+        email: 'xsahxl@126.com',
+      },
+      push: {
+        branch: 'main',
+        tag: undefined,
+      },
+      commit: {
+        id: '6b956d234e19ebf2ab68a5df906d8c7f2afc51d2',
+        message: 'Update readme.md',
+      },
+    },
+  });
 });
 
 test('github webhook push with tag case', async () => {
@@ -65,7 +101,26 @@ test('github webhook push with tag case', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, pushWithTag);
-  expect(res?.success).toEqual(true);
+  console.log(JSON.stringify(res, null, 2));
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://github.com/xsahxl/test-cd.git',
+      provider: 'github',
+      pusher: {
+        name: 'xsahxl',
+        email: 'xsahxl@126.com',
+      },
+      push: {
+        branch: undefined,
+        tag: 'v0.0.1',
+      },
+      commit: {
+        id: '6b956d234e19ebf2ab68a5df906d8c7f2afc51d2',
+        message: 'Update readme.md',
+      },
+    },
+  });
 });
 
 test('github webhook success with pr opened', async () => {
@@ -83,8 +138,16 @@ test('github webhook success with pr opened', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithOpened);
-  console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://github.com/xsahxl/test-cd.git',
+      provider: 'github',
+      pusher: undefined,
+      pull_request: { type: 'opened', target_branch: 'main', source_branch: 'dev' },
+      commit: { id: null, message: 'test pr' },
+    },
+  });
 });
 test('github webhook error with pr opened', async () => {
   const eventConfig = {
@@ -121,8 +184,19 @@ test('github webhook success with pr closed', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithClosed);
-  console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://github.com/xsahxl/test-cd.git',
+      provider: 'github',
+      pusher: undefined,
+      pull_request: { type: 'closed', target_branch: 'main', source_branch: 'dev' },
+      commit: {
+        id: '6d7a152981ac6877dee45635066de112e08d87c5',
+        message: 'test pr',
+      },
+    },
+  });
 });
 test('github webhook error with pr closed', async () => {
   const eventConfig = {
@@ -159,8 +233,19 @@ test('github webhook success with pr reopened', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithReopened);
-  console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://github.com/xsahxl/test-cd.git',
+      provider: 'github',
+      pusher: undefined,
+      pull_request: { type: 'reopened', target_branch: 'main', source_branch: 'dev' },
+      commit: {
+        id: '6d7a152981ac6877dee45635066de112e08d87c5',
+        message: 'test pr',
+      },
+    },
+  });
 });
 test('github webhook error with pr reopened', async () => {
   const eventConfig = {
@@ -197,8 +282,19 @@ test('github webhook success with pr merged', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithMerged);
-  console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://github.com/xsahxl/test-cd.git',
+      provider: 'github',
+      pusher: undefined,
+      pull_request: { type: 'merged', target_branch: 'main', source_branch: 'dev' },
+      commit: {
+        id: '347277670e8bcb38452a10f6f6dc98f0555bee1c',
+        message: 'test pr',
+      },
+    },
+  });
 });
 test('github webhook error with pr merged', async () => {
   const eventConfig = {

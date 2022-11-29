@@ -38,9 +38,9 @@ export default class Gitee extends BaseEvent {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
       const result = this.checkType(gitee);
       if (!result.success) return generateErrorResult(result.message);
-      const branchInfo = getPrInfo(this.body);
-      console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
-      return this.doPr(gitee, branchInfo);
+      const prInfo = getPrInfo(this.body);
+      console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
+      return this.doPr(gitee, { ...prInfo, type: result.type as IPrTypesVal });
     }
   }
   private checkType(github: ITrigger) {
@@ -69,7 +69,7 @@ export default class Gitee extends BaseEvent {
       return { success: true };
     }
     console.log('check type error');
-    return { success: false, message };
+    return { success: false, message, type: newAction };
   }
   private verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-gitee-token', '');

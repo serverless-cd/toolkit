@@ -7,10 +7,33 @@ export const generateErrorResult = (message: any) => ({
 });
 
 // 最终返回成功结果
-export const generateSuccessResult = (trigger: any) => ({
-  success: true,
-  trigger,
-});
+export const generateSuccessResult = (inputs: any, body: any) => {
+  const key = get(inputs, 'key') as string;
+  const data: any = {
+    url: get(body, 'repository.clone_url'),
+    provider: get(inputs, 'provider'),
+    pusher: get(body, 'pusher'),
+    [key]: {},
+    commit: {},
+  };
+  if (key === 'push') {
+    data[key]['branch'] = get(inputs, 'branch');
+    data[key]['tag'] = get(inputs, 'tag');
+    data.commit['id'] = get(body, 'head_commit.id');
+    data.commit['message'] = get(body, 'head_commit.message');
+  }
+  if (key === 'pull_request') {
+    data[key]['type'] = get(inputs, 'type');
+    data[key]['target_branch'] = get(inputs, 'target_branch');
+    data[key]['source_branch'] = get(inputs, 'source_branch');
+    data.commit['id'] = get(body, 'pull_request.merge_commit_sha');
+    data.commit['message'] = get(body, 'pull_request.title');
+  }
+  return {
+    success: true,
+    data,
+  };
+};
 
 export const getPushInfo = (ref: string) => {
   if (startsWith(ref, 'refs/heads/')) {
@@ -76,5 +99,5 @@ export const checkTypeWithCodeup = (codeup: ITrigger, body: any) => {
     return { success: true };
   }
   console.log('check type error');
-  return { success: false, message };
+  return { success: false, message, type: newAction };
 };
