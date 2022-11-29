@@ -1,5 +1,5 @@
 import { startsWith, replace, get, isEmpty, includes } from 'lodash';
-import { ITrigger, IPrTypes, IPrTypesVal, IGiteeAction } from './type';
+import { ITrigger, IPrTypes, IPrTypesVal, IGiteeAction, IProvider, IUserAgent } from './type';
 // 最终返回失败结果
 export const generateErrorResult = (message: any) => ({
   success: false,
@@ -9,6 +9,7 @@ export const generateErrorResult = (message: any) => ({
 // 最终返回成功结果
 export const generateSuccessResult = (inputs: any, body: any) => {
   const key = get(inputs, 'key') as string;
+  const provider = get(inputs, 'provider') as IProvider;
   const data: any = {
     url: get(body, 'repository.clone_url'),
     provider: get(inputs, 'provider'),
@@ -32,6 +33,20 @@ export const generateSuccessResult = (inputs: any, body: any) => {
     data[key]['source_branch'] = get(inputs, 'source_branch');
     data.commit['id'] = get(body, 'pull_request.merge_commit_sha');
     data.commit['message'] = get(body, 'pull_request.title');
+  }
+  if (provider === IUserAgent.GITLAB) {
+    if (key === 'push') {
+      data.url = get(body, 'repository.git_http_url');
+      data.commit['id'] = get(body, 'commit.sha');
+      data.commit['message'] = get(body, 'commit.message');
+    }
+    if (key === 'pull_request') {
+      data.url = get(body, 'project.http_url');
+      data.commit['id'] = get(body, 'object_attributes.merge_commit_sha');
+      data.commit['message'] = get(body, 'object_attributes.title');
+    }
+    data.pusher['name'] = get(body, 'user.name');
+    data.pusher['email'] = get(body, 'user.email');
   }
   return {
     success: true,

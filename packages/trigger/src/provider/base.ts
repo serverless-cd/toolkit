@@ -128,7 +128,6 @@ export default abstract class BaseEvent {
       const valid = micromatch([info.branch as string], conditionList as []);
       console.log(`get branch micromatch: ${JSON.stringify(valid)}`);
       if (isEmpty(valid)) return generateErrorResult('Branch rules do not match');
-      console.log(this.body);
       return generateSuccessResult(params, this.body);
     }
 
