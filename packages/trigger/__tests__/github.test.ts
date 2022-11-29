@@ -143,7 +143,7 @@ test('github webhook success with pr opened', async () => {
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
-      pusher: undefined,
+      pusher: {},
       pull_request: { type: 'opened', target_branch: 'main', source_branch: 'dev' },
       commit: { id: null, message: 'test pr' },
     },
@@ -189,7 +189,7 @@ test('github webhook success with pr closed', async () => {
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
-      pusher: undefined,
+      pusher: {},
       pull_request: { type: 'closed', target_branch: 'main', source_branch: 'dev' },
       commit: {
         id: '6d7a152981ac6877dee45635066de112e08d87c5',
@@ -238,7 +238,7 @@ test('github webhook success with pr reopened', async () => {
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
-      pusher: undefined,
+      pusher: {},
       pull_request: { type: 'reopened', target_branch: 'main', source_branch: 'dev' },
       commit: {
         id: '6d7a152981ac6877dee45635066de112e08d87c5',
@@ -287,7 +287,7 @@ test('github webhook success with pr merged', async () => {
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
-      pusher: undefined,
+      pusher: {},
       pull_request: { type: 'merged', target_branch: 'main', source_branch: 'dev' },
       commit: {
         id: '347277670e8bcb38452a10f6f6dc98f0555bee1c',

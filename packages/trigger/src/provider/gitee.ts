@@ -66,7 +66,7 @@ export default class Gitee extends BaseEvent {
     }
     if (valid) {
       console.log('check type success');
-      return { success: true };
+      return { success: true, message, type: newAction };
     }
     console.log('check type error');
     return { success: false, message, type: newAction };

@@ -12,10 +12,14 @@ export const generateSuccessResult = (inputs: any, body: any) => {
   const data: any = {
     url: get(body, 'repository.clone_url'),
     provider: get(inputs, 'provider'),
-    pusher: get(body, 'pusher'),
+    pusher: {},
     [key]: {},
     commit: {},
   };
+  if (get(body, 'pusher')) {
+    data.pusher['name'] = get(body, 'pusher.name');
+    data.pusher['email'] = get(body, 'pusher.email');
+  }
   if (key === 'push') {
     data[key]['branch'] = get(inputs, 'branch');
     data[key]['tag'] = get(inputs, 'tag');
@@ -96,7 +100,7 @@ export const checkTypeWithCodeup = (codeup: ITrigger, body: any) => {
   }
   if (valid) {
     console.log('check type success');
-    return { success: true };
+    return { success: true, message, type: newAction };
   }
   console.log('check type error');
   return { success: false, message, type: newAction };
