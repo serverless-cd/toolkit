@@ -31,8 +31,8 @@ export const generateSuccessResult = (inputs: any, body: any) => {
     data.commit['message'] = get(body, 'pull_request.title');
   }
   data.pusher['avatar_url'] = get(body, 'sender.avatar_url');
-  data.pusher['name'] = get(body, 'sender.login');
-  data.pusher['email'] = get(body, 'sender.email');
+  data.pusher['name'] = get(body, 'pusher.name') || get(body, 'sender.login');
+  data.pusher['email'] = get(body, 'pusher.email') || get(body, 'sender.email');
   if (provider === IUserAgent.GITLAB) {
     if (key === 'push') {
       data.url = get(body, 'repository.git_http_url');

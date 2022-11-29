@@ -239,7 +239,7 @@ test('codeup webhook error with pr reopened', async () => {
   expect(res?.success).toEqual(false);
 });
 
-test.only('codeup webhook success with pr merged', async () => {
+test('codeup webhook success with pr merged', async () => {
   const eventConfig = {
     codeup: {
       secret: 'shl123',
