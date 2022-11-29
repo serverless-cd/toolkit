@@ -1,5 +1,5 @@
 # 校验webhook与触发条件是否匹配，支持以下provider
-- githb
+- github
 - gitee
 - gitlab
 - codeup
