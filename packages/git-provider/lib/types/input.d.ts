@@ -4,8 +4,8 @@ export declare enum PROVIDER {
     codeup = "codeup",
     gitlab = "gitlab"
 }
-export declare type IProvider = `${PROVIDER}`;
-export declare type IWebhookEvent = 'push' | 'release' | 'pull_request' | 'issues';
+export type IProvider = `${PROVIDER}`;
+export type IWebhookEvent = 'push' | 'release' | 'pull_request' | 'issues';
 export interface IGitConfig {
     access_token: string;
     endpoint?: string;
@@ -25,6 +25,11 @@ export interface IGetRefCommit {
     owner: string;
     repo: string;
     ref: string;
+}
+export interface IGetCommitById {
+    owner: string;
+    repo: string;
+    sha: string;
 }
 export interface IListWebhook {
     owner: string;

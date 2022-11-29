@@ -1,10 +1,11 @@
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile } from '../types/input';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile, IGetCommitById } from '../types/input';
 import { IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 export default abstract class Base {
     constructor(_config: any);
     abstract listRepos(): Promise<IRepoOutput[]>;
     abstract listBranches(params: IListBranchs): Promise<IBranchOutput[]>;
     abstract getRefCommit(params: IGetRefCommit): Promise<ICommitOutput>;
+    abstract getCommitById(params: IGetCommitById): Promise<ICommitOutput>;
     abstract listWebhook(params: IListWebhook): Promise<IGetWebhookOutput[]>;
     abstract createWebhook(params: ICreateWebhook): Promise<ICreateWebhookOutput>;
     abstract updateWebhook(params: IUpdateWebhook): Promise<void>;
@@ -15,6 +16,7 @@ export default abstract class Base {
     validatePutFileParams(params: unknown): void;
     validateListBranchsParams(params: unknown): void;
     validateGetRefCommitParams(params: unknown): void;
+    validatGetCommitByIdParams(params: unknown): void;
     validateListWebhookParams(params: unknown): void;
     validateCreateWebhookParams(params: unknown): void;
     validateUpdateWebhookParams(params: unknown): void;

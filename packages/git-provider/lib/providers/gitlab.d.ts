@@ -1,4 +1,4 @@
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig } from '../types/input';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 import Base from './base';
 export default class Gitlab extends Base {
@@ -8,6 +8,10 @@ export default class Gitlab extends Base {
     listBranches(params: IListBranchs | {
         id: string;
     }): Promise<IBranchOutput[]>;
+    getCommitById(params: IGetCommitById | {
+        id: string;
+        sha: string;
+    }): Promise<ICommitOutput>;
     private requestList;
     request(path: string, method: string, params: Object): Promise<any>;
     listRepos(): Promise<IRepoOutput[]>;

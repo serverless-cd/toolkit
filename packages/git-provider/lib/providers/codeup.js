@@ -60,6 +60,34 @@ class Codeup {
             ;
         });
     }
+    // https://help.aliyun.com/document_detail/300470.html
+    getCommitById(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const projectId = lodash_1.default.get(params, 'project_id');
+            const organizationId = lodash_1.default.get(params, 'organization_id');
+            const sha = lodash_1.default.get(params, 'sha');
+            if (!projectId) {
+                throw new Error('You must specify project_id');
+            }
+            if (!organizationId) {
+                throw new Error('You must specify organization_id');
+            }
+            if (!sha) {
+                throw new Error('You must specify sha');
+            }
+            const url = `/api/v4/projects/${projectId}/repository/commits/${sha}`;
+            const p = {
+                OrganizationId: organizationId,
+            };
+            const result = yield this.request({ url, params: p });
+            const source = lodash_1.default.get(result, 'Result', {});
+            return {
+                sha: lodash_1.default.get(source, 'Id'),
+                message: lodash_1.default.get(source, 'Message'),
+                source,
+            };
+        });
+    }
     requestList(url, params) {
         return __awaiter(this, void 0, void 0, function* () {
             let rows = [];
@@ -114,6 +142,14 @@ class Codeup {
     }
     putFile(params) {
         throw new Error('Method not implemented.');
+    }
+    _test_debug_log(data, log = 'test') {
+        try {
+            require('fs').writeFileSync(`packages/git-provider/__tests__/logs_codeup_${log}.log`, JSON.stringify(data, null, 2));
+        }
+        catch (e) {
+            console.log(`${log}.log error: ${e.message}`);
+        }
     }
 }
 exports.default = Codeup;

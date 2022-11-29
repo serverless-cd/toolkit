@@ -17,6 +17,9 @@ const lodash_1 = __importDefault(require("lodash"));
 const base_1 = __importDefault(require("./base"));
 const V5 = 'https://gitee.com/api/v5';
 class Gitee extends base_1.default {
+    putFile(params) {
+        throw new Error('Method not implemented.');
+    }
     constructor(config) {
         super(config);
         this.getDefaultParame = () => ({
@@ -29,9 +32,6 @@ class Gitee extends base_1.default {
             throw new Error('Access token is required');
         }
         this.access_token = access_token;
-    }
-    putFile(params) {
-        throw new Error('Method not implemented.');
     }
     listOrgs() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -72,6 +72,23 @@ class Gitee extends base_1.default {
             return lodash_1.default.map(rows, (row) => ({
                 name: row.name, commit_sha: lodash_1.default.get(row, 'commit.sha'), source: row,
             }));
+        });
+    }
+    // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoCommitsSha
+    getCommitById(params) {
+        const _super = Object.create(null, {
+            validatGetCommitByIdParams: { get: () => super.validatGetCommitByIdParams }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            _super.validatGetCommitByIdParams.call(this, params);
+            const { owner, repo, sha } = params;
+            const result = yield this.requestV5(`/repos/${owner}/${repo}/commits/${sha}`, 'GET', {});
+            const source = lodash_1.default.get(result, 'data', {});
+            return {
+                sha: lodash_1.default.get(source, 'sha'),
+                message: lodash_1.default.get(source, 'commit.message'),
+                source,
+            };
         });
     }
     // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranchesBranch

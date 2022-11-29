@@ -5,3 +5,8 @@ export interface IListBranch {
     page_size?: number;
     order?: string;
 }
+export interface IGetCommitById {
+    project_id: number;
+    organization_id: string;
+    sha: string;
+}
