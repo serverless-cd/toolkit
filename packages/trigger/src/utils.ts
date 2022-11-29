@@ -1,4 +1,5 @@
-import { startsWith, replace, get, isEmpty } from 'lodash';
+import { startsWith, replace, get, isEmpty, includes } from 'lodash';
+import { ITrigger, IPrTypes, IPrTypesVal, IGiteeAction } from './type';
 // 最终返回失败结果
 export const generateErrorResult = (message: any) => ({
   success: false,
@@ -49,4 +50,31 @@ export const getPrInfoWithCodeup = (body: any) => {
     throw new Error('body.object_attributes.source_branch is empty');
   }
   return { target, source };
+};
+
+export const checkTypeWithCodeup = (codeup: ITrigger, body: any) => {
+  const action = get(body, 'object_attributes.action', '') as IPrTypesVal;
+  console.log(`get pull_request type: ${action}`);
+  const types = get(codeup, 'pull_request.types', []) as IPrTypesVal[];
+  let valid = false;
+  let message = '';
+  const newAction = get(IGiteeAction, action, action);
+  if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], newAction)) {
+    valid = includes(types, newAction);
+    message = `pr type is ${action}, but only ${types} is allowed`;
+  }
+  if (newAction === IPrTypes.CLOSED) {
+    valid = includes(types, IPrTypes.CLOSED);
+    message = `pr type is ${newAction}, but only ${types} is allowed`;
+  }
+  if (newAction === IPrTypes.MERGED) {
+    valid = includes(types, IPrTypes.MERGED);
+    message = `pr type is ${newAction}, but only ${types} is allowed`;
+  }
+  if (valid) {
+    console.log('check type success');
+    return { success: true };
+  }
+  console.log('check type error');
+  return { success: false, message };
 };

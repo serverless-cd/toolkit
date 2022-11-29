@@ -28,6 +28,13 @@ export enum IPrTypes {
   MERGED = 'merged',
 }
 
+export enum IGiteeAction {
+  open = IPrTypes.OPENED,
+  close = IPrTypes.CLOSED,
+  reopen = IPrTypes.REOPENED,
+  merge = IPrTypes.MERGED,
+}
+
 export type IPrTypesVal = `${IPrTypes}`;
 export interface ITrigger {
   secret?: string;

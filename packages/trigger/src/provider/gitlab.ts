@@ -1,5 +1,10 @@
 import BaseEvent from './base';
-import { getPushInfoWithGitlab, getPrInfoWithCodeup } from '../utils';
+import {
+  getPushInfoWithGitlab,
+  getPrInfoWithCodeup,
+  generateErrorResult,
+  checkTypeWithCodeup,
+} from '../utils';
 import { ITrigger, IGitlabEvent } from '../type';
 import { get, isEmpty } from 'lodash';
 
@@ -33,11 +38,14 @@ export default class Gitlab extends BaseEvent {
       console.log(`get push info: ${JSON.stringify(info)}`);
       return this.doPush(gitlab, info);
     }
-    // pr 检测 tag
+    // pr 检测 分支
     if (eventType === 'Merge Request Hook') {
-      const branch = getPrInfoWithCodeup(this.body);
-      console.log(`get pr branch: ${branch}`);
-      return this.doPr(gitlab, branch);
+      // 检查type ['opened', 'reopened', 'closed', 'merged']
+      const result = checkTypeWithCodeup(gitlab, this.body);
+      if (!result.success) return generateErrorResult(result.message);
+      const branchInfo = getPrInfoWithCodeup(this.body);
+      console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
+      return this.doPr(gitlab, branchInfo);
     }
   }
   private verifySecret(secret: string | undefined): boolean {

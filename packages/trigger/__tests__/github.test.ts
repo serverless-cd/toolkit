@@ -200,7 +200,7 @@ test('github webhook success with pr merged', async () => {
   console.log(res);
   expect(res?.success).toEqual(true);
 });
-test.only('github webhook error with pr merged', async () => {
+test('github webhook error with pr merged', async () => {
   const eventConfig = {
     github: {
       secret: 'shl123',

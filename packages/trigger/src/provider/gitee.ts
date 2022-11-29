@@ -1,6 +1,6 @@
 import BaseEvent from './base';
 import { getPushInfo, getPrInfo, generateErrorResult } from '../utils';
-import { ITrigger, IGiteeEvent, IPrTypes, IPrTypesVal } from '../type';
+import { ITrigger, IGiteeEvent, IPrTypes, IPrTypesVal, IGiteeAction } from '../type';
 import { get, isEmpty, includes } from 'lodash';
 
 export default class Gitee extends BaseEvent {
@@ -33,7 +33,7 @@ export default class Gitee extends BaseEvent {
       console.log(`get push info: ${JSON.stringify(info)}`);
       return this.doPush(gitee, info);
     }
-    // pr 检测 tag
+    // pr 检测 分支
     if (eventType === 'Merge Request Hook') {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
       const result = this.checkType(gitee);
@@ -51,13 +51,7 @@ export default class Gitee extends BaseEvent {
     const types = get(github, 'pull_request.types', []) as IPrTypesVal[];
     let valid = false;
     let message = '';
-    const actionMap = {
-      open: IPrTypes.OPENED,
-      close: IPrTypes.CLOSED,
-      reopen: IPrTypes.REOPENED,
-      merge: IPrTypes.MERGED,
-    };
-    const newAction = get(actionMap, action, action);
+    const newAction = get(IGiteeAction, action, action);
     if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], newAction)) {
       valid = includes(types, newAction);
       message = `pr type is ${newAction}, but only ${types} is allowed`;
