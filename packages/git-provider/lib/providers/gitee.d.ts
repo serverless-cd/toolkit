@@ -1,5 +1,5 @@
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile } from '../types/input';
+import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput } from '../types/output';
 export default class Gitee extends Base {
     putFile(params: IPutFile): Promise<void>;
@@ -9,6 +9,7 @@ export default class Gitee extends Base {
     listOrgs(): Promise<IOrgsOutput[]>;
     listRepos(): Promise<IRepoOutput[]>;
     listBranches(params: IListBranchs): Promise<IBranchOutput[]>;
+    getCommitById(params: IGetCommitById): Promise<ICommitOutput>;
     getRefCommit(params: IGetRefCommit): Promise<ICommitOutput>;
     listWebhook(params: IListWebhook): Promise<IGetWebhookOutput[]>;
     createWebhook(params: ICreateWebhook): Promise<ICreateWebhookOutput>;

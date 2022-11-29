@@ -33,6 +33,7 @@ class Gitlab extends base_1.default {
         this.access_token = access_token;
         this.endpoint = endpoint;
     }
+    // https://www.bookstack.cn/read/gitlab-doc-zh/docs-296.md#7tkudr
     listBranches(params) {
         const _super = Object.create(null, {
             validateListBranchsParams: { get: () => super.validateListBranchsParams }
@@ -48,6 +49,26 @@ class Gitlab extends base_1.default {
             return lodash_1.default.map(rows, (row) => ({
                 name: row.name, commit_sha: lodash_1.default.get(row, 'commit.id'), source: row,
             }));
+        });
+    }
+    getCommitById(params) {
+        const _super = Object.create(null, {
+            validatGetCommitByIdParams: { get: () => super.validatGetCommitByIdParams }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            let id = lodash_1.default.get(params, 'id');
+            if (lodash_1.default.isNil(id)) {
+                _super.validatGetCommitByIdParams.call(this, params);
+                const { owner, repo } = params;
+                id = encodeURIComponent(`${owner}/${repo}`);
+            }
+            const result = yield this.request(`/api/v4/projects/${id}/repository/commits/${params.sha}`, 'GET', {});
+            const source = lodash_1.default.get(result, 'data', {});
+            return {
+                sha: lodash_1.default.get(source, 'id'),
+                message: lodash_1.default.get(source, 'message'),
+                source,
+            };
         });
     }
     requestList(path, params) {

@@ -104,6 +104,23 @@ class Github extends base_1.default {
             }));
         });
     }
+    // https://docs.github.com/en/rest/commits/comments#get-a-commit-comment
+    // GET /repos/{owner}/{repo}/comments/{sha}  => GET /repos/{owner}/{repo}/commits/{sha}
+    getCommitById(params) {
+        const _super = Object.create(null, {
+            validatGetCommitByIdParams: { get: () => super.validatGetCommitByIdParams }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            _super.validatGetCommitByIdParams.call(this, params);
+            const result = yield this.octokit.request('GET /repos/{owner}/{repo}/commits/{sha}', params);
+            const source = lodash_1.default.get(result, 'data', {});
+            return {
+                sha: lodash_1.default.get(source, 'sha', ''),
+                message: lodash_1.default.get(source, 'commit.message', ''),
+                source,
+            };
+        });
+    }
     // https://docs.github.com/en/rest/commits/commits#get-a-commit
     getRefCommit(params) {
         const _super = Object.create(null, {
@@ -114,8 +131,8 @@ class Github extends base_1.default {
             const result = yield this.octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', params);
             const source = lodash_1.default.get(result, 'data', {});
             return {
-                sha: lodash_1.default.get(source, 'sha'),
-                message: lodash_1.default.get(source, 'commit.message'),
+                sha: lodash_1.default.get(source, 'sha', ''),
+                message: lodash_1.default.get(source, 'commit.message', ''),
                 source,
             };
         });
@@ -187,10 +204,9 @@ class Github extends base_1.default {
             _super.validateGetWebhookParams.call(this, params);
             const result = yield this.octokit.request('GET /repos/{owner}/{repo}/hooks/{hook_id}/config', params);
             const source = lodash_1.default.get(result, 'data', {});
-            this._test_debug_log(source, 'getWebhook');
             return {
                 id: params.hook_id,
-                url: lodash_1.default.get(source, 'url'),
+                url: lodash_1.default.get(source, 'url', ''),
                 source,
             };
         });

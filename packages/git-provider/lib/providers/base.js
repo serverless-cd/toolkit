@@ -42,7 +42,18 @@ class Base {
             throw new Error('You must specify repo');
         }
         if (!lodash_1.default.has(params, 'ref')) {
+            throw new Error('You must specify ref');
+        }
+    }
+    validatGetCommitByIdParams(params) {
+        if (!lodash_1.default.has(params, 'owner')) {
+            throw new Error('You must specify owner');
+        }
+        if (!lodash_1.default.has(params, 'repo')) {
             throw new Error('You must specify repo');
+        }
+        if (!lodash_1.default.has(params, 'sha')) {
+            throw new Error('You must specify sha');
         }
     }
     validateListWebhookParams(params) {
@@ -105,7 +116,7 @@ class Base {
     }
     _test_debug_log(data, log = 'test') {
         try {
-            require('fs').writeFileSync(`${log}.log`, JSON.stringify(data, null, 2));
+            require('fs').writeFileSync(`packages/git-provider/__tests__/logs_${log}.log`, JSON.stringify(data, null, 2));
         }
         catch (e) {
             console.log(`${log}.log error: ${e.message}`);
