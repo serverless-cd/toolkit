@@ -3,7 +3,7 @@ import { map } from 'lodash';
 import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
-test.only('某一步执行失败，错误信息记录在context.error', async () => {
+test('某一步执行失败，错误信息记录在context.error', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror' },

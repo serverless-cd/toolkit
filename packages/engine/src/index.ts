@@ -4,7 +4,7 @@ import {
   IStepOptions,
   IRunOptions,
   IScriptOptions,
-  IUsesOptions,
+  IPluginOptions,
   IRecord,
   IStatus,
   IEngineOptions,
@@ -388,7 +388,7 @@ class Engine {
     const { cwd = process.cwd() } = this.options;
     const item = { ..._item };
     const runItem = item as IRunOptions;
-    const usesItem = item as IUsesOptions;
+    const pluginItem = item as IPluginOptions;
     const scriptItem = item as IScriptOptions;
     // run
     if (runItem.run) {
@@ -402,20 +402,15 @@ class Engine {
       const res = await this.onFinish(cp);
       return res;
     }
-    // uses
-    if (usesItem.uses) {
+    // plugin
+    if (pluginItem.plugin) {
       this.logName(item);
-      // 本地路径调试时，不在安装依赖
-      if (!fs.existsSync(usesItem.uses)) {
-        const cp = command(`npm i ${usesItem.uses} --no-save`);
-        this.childProcess.push(cp);
-        await this.onFinish(cp);
-      }
-      const app = require(usesItem.uses);
+      // onInit时，会安装plugin依赖
+      const app = require(pluginItem.plugin);
       const newContext = { ...this.context, $variables: this.getFilterContext() };
-      return usesItem.type === 'run'
-        ? await app.run(get(usesItem, 'inputs', {}), newContext, this.logger)
-        : await app.postRun(get(usesItem, 'inputs', {}), newContext, this.logger);
+      return pluginItem.type === 'run'
+        ? await app.run(get(pluginItem, 'inputs', {}), newContext, this.logger)
+        : await app.postRun(get(pluginItem, 'inputs', {}), newContext, this.logger);
     }
     // script
     if (scriptItem.script) {
@@ -483,14 +478,15 @@ class Engine {
   private logName(item: IStepOptions) {
     // 打印 step 名称
     const runItem = item as IRunOptions;
-    const usesItem = item as IUsesOptions;
+    const pluginItem = item as IPluginOptions;
     const scriptItem = item as IScriptOptions;
     let msg = '';
     if (runItem.run) {
       msg = runItem.name || `Run ${runItem.run}`;
     }
-    if (usesItem.uses) {
-      msg = usesItem.name || `${usesItem.type === 'run' ? 'Run' : 'Post Run'} ${usesItem.uses}`;
+    if (pluginItem.plugin) {
+      msg =
+        pluginItem.name || `${pluginItem.type === 'run' ? 'Run' : 'Post Run'} ${pluginItem.plugin}`;
     }
     if (scriptItem.script) {
       msg = runItem.name || `Run ${scriptItem.script}`;

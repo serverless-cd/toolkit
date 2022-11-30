@@ -4,11 +4,11 @@ import * as path from 'path';
 const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 
 describe('${{secret.name}} => 日志需要为 ***', () => {
-  test('uses case', async () => {
+  test('plugin case', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
       {
-        uses: path.join(__dirname, 'fixtures', 'success'),
+        plugin: path.join(__dirname, 'fixtures', 'success'),
         id: 'xuse',
         inputs: {
           name: '${{secrets.name}}',

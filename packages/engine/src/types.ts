@@ -44,8 +44,8 @@ export interface IScriptOptions {
   'continue-on-error'?: boolean;
 }
 
-export interface IUsesOptions {
-  uses: string;
+export interface IPluginOptions {
+  plugin: string;
   stepCount?: string;
   id?: string;
   name?: string;
@@ -56,7 +56,7 @@ export interface IUsesOptions {
   type?: 'run' | 'postRun' | 'completed'; //内部处理 用于区分是run还是postRun
 }
 
-export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
+export type IStepOptions = IRunOptions | IPluginOptions | IScriptOptions;
 
 export enum STEP_IF {
   SUCCESS = 'success()',

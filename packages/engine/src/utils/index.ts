@@ -1,5 +1,5 @@
 import { map, uniqueId } from 'lodash';
-import { IStepOptions, IUsesOptions } from '../types';
+import { IStepOptions, IPluginOptions } from '../types';
 import { fs } from '@serverless-cd/core';
 import { command } from 'execa';
 import _ from 'lodash';
@@ -35,19 +35,19 @@ export function getScript(val: string) {
 }
 
 export function getSteps(steps: IStepOptions[], childProcess: any[]) {
-  const postArray = [] as IUsesOptions[];
+  const postArray = [] as IPluginOptions[];
   const runArray = map(steps, (item: IStepOptions) => {
-    const usesItem = item as IUsesOptions;
-    if (usesItem.uses) {
+    const pluginItem = item as IPluginOptions;
+    if (pluginItem.plugin) {
       // 本地路径调试时，不在安装依赖
-      if (!fs.existsSync(usesItem.uses)) {
-        const cp = command(`npm i ${usesItem.uses} --no-save`);
+      if (!fs.existsSync(pluginItem.plugin)) {
+        const cp = command(`npm i ${pluginItem.plugin} --no-save`);
         childProcess.push(cp);
       }
-      const app = require(usesItem.uses);
-      usesItem.type = 'run';
+      const app = require(pluginItem.plugin);
+      pluginItem.type = 'run';
       if (app.postRun) {
-        postArray.push({ ...item, type: 'postRun' } as IUsesOptions);
+        postArray.push({ ...item, type: 'postRun' } as IPluginOptions);
       }
     }
     return item;
@@ -62,7 +62,7 @@ export function getProcessTime(time: number) {
 /**
  * @desc 执行shell指令，主要处理 >,>>,||,|,&&等case,直接加shell:true的参数
  * @param runStr 执行指令的字符串
- * @param options 
+ * @param options
  */
 export function runScript(runStr: string, options: any) {
   const shellTokens = ['>', '>>', '|', '||', '&&'];
