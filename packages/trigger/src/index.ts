@@ -1,4 +1,4 @@
-import { IPayload, ITriggers } from './type';
+import { IPayload, ITriggers, IVerify } from './type';
 import webhook from './provider';
 import { isPlainObject, get } from 'lodash';
 export { IPrTypes } from './type';
@@ -14,6 +14,7 @@ export async function verifyLegitimacy(triggers: ITriggers, payload: IPayload) {
 
   const EventClient = get(webhook, provider) as any;
   const eventClient = new EventClient(triggers, payload, provider);
-  return await eventClient.verify();
+  const res: IVerify = await eventClient.verify();
+  return res;
 }
 export default verifyLegitimacy;

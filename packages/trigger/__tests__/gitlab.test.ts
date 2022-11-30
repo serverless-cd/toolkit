@@ -22,7 +22,25 @@ test('gitlab webhook push with branch case', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, pushWithBranch);
-  expect(res?.success).toEqual(true);
+  console.log(res);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      provider: 'gitlab',
+      pusher: {
+        name: 'Administrator',
+        email: 'serverles-cd@163.com',
+        avatar_url:
+          'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+      },
+      push: { branch: 'master', tag: undefined },
+      commit: {
+        id: '11f3b6b360d8ae4e5f71ec36422a5b776df02896',
+        message: 'Update README.md',
+      },
+    },
+  });
 });
 
 test('gitlab webhook push with tag case', async () => {
@@ -40,7 +58,25 @@ test('gitlab webhook push with tag case', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, pushWithTag);
-  expect(res?.success).toEqual(true);
+  console.log(res);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      provider: 'gitlab',
+      pusher: {
+        name: 'Administrator',
+        email: 'serverles-cd@163.com',
+        avatar_url:
+          'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+      },
+      push: { branch: undefined, tag: 'v0.0.1' },
+      commit: {
+        id: '11f3b6b360d8ae4e5f71ec36422a5b776df02896',
+        message: 'Update README.md',
+      },
+    },
+  });
 });
 
 test('gitlab webhook success with pr opened', async () => {
@@ -59,7 +95,21 @@ test('gitlab webhook success with pr opened', async () => {
   };
   const res = await verifyLegitimacy(eventConfig, prWithOpened);
   console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      provider: 'gitlab',
+      pusher: {
+        name: 'Administrator',
+        email: 'serverles-cd@163.com',
+        avatar_url:
+          'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+      },
+      pull_request: { type: 'opened', target_branch: 'master', source_branch: 'dev' },
+      commit: { id: '5cf5b0919f0337ee695c608212d3e3c2dc794b64', message: 'Draft: Dev' },
+    },
+  });
 });
 test('gitlab webhook error with pr opened', async () => {
   const eventConfig = {
@@ -97,7 +147,21 @@ test('gitlab webhook success with pr closed', async () => {
   };
   const res = await verifyLegitimacy(eventConfig, prWithClosed);
   console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      provider: 'gitlab',
+      pusher: {
+        name: 'Administrator',
+        email: 'serverles-cd@163.com',
+        avatar_url:
+          'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+      },
+      pull_request: { type: 'closed', target_branch: 'master', source_branch: 'dev' },
+      commit: { id: '5cf5b0919f0337ee695c608212d3e3c2dc794b64', message: 'Draft: Dev' },
+    },
+  });
 });
 test('gitlab webhook error with pr closed', async () => {
   const eventConfig = {
@@ -135,7 +199,24 @@ test('gitlab webhook success with pr reopened', async () => {
   };
   const res = await verifyLegitimacy(eventConfig, prWithReopened);
   console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      provider: 'gitlab',
+      pusher: {
+        avatar_url:
+          'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+        name: 'Administrator',
+        email: 'serverles-cd@163.com',
+      },
+      pull_request: { type: 'reopened', target_branch: 'master', source_branch: 'dev' },
+      commit: {
+        id: '5cf5b0919f0337ee695c608212d3e3c2dc794b64',
+        message: 'Draft: Dev',
+      },
+    },
+  });
 });
 test('gitlab webhook error with pr reopened', async () => {
   const eventConfig = {
@@ -173,7 +254,21 @@ test('gitlab webhook success with pr merged', async () => {
   };
   const res = await verifyLegitimacy(eventConfig, prWithMerged);
   console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/node-express.git',
+      provider: 'gitlab',
+      pusher: {
+        avatar_url:
+          'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+        name: 'Administrator',
+        email: 'serverles-cd@163.com',
+      },
+      pull_request: { type: 'merged', target_branch: 'master', source_branch: 'dev' },
+      commit: { id: 'f3fa5f2fa1b4ae580e694224fcc02f322a5deebf', message: 'Dev' },
+    },
+  });
 });
 test('gitlab webhook error with pr merged', async () => {
   const eventConfig = {

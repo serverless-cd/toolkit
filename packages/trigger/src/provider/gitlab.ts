@@ -5,7 +5,7 @@ import {
   generateErrorResult,
   checkTypeWithCodeup,
 } from '../utils';
-import { ITrigger, IGitlabEvent } from '../type';
+import { ITrigger, IGitlabEvent, IPrTypesVal } from '../type';
 import { get, isEmpty } from 'lodash';
 
 export default class Gitlab extends BaseEvent {
@@ -43,9 +43,9 @@ export default class Gitlab extends BaseEvent {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
       const result = checkTypeWithCodeup(gitlab, this.body);
       if (!result.success) return generateErrorResult(result.message);
-      const branchInfo = getPrInfoWithCodeup(this.body);
-      console.log(`get pr branch: ${JSON.stringify(branchInfo)}`);
-      return this.doPr(gitlab, branchInfo);
+      const prInfo = getPrInfoWithCodeup(this.body);
+      console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
+      return this.doPr(gitlab, { ...prInfo, type: result.type as IPrTypesVal });
     }
   }
   private verifySecret(secret: string | undefined): boolean {

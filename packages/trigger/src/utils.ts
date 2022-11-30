@@ -1,5 +1,5 @@
-import { startsWith, replace, get, isEmpty, includes } from 'lodash';
-import { ITrigger, IPrTypes, IPrTypesVal, IGiteeAction } from './type';
+import { startsWith, replace, get, isEmpty, includes, find } from 'lodash';
+import { ITrigger, IPrTypes, IPrTypesVal, IGiteeAction, IProvider, IUserAgent } from './type';
 // 最终返回失败结果
 export const generateErrorResult = (message: any) => ({
   success: false,
@@ -7,10 +7,74 @@ export const generateErrorResult = (message: any) => ({
 });
 
 // 最终返回成功结果
-export const generateSuccessResult = (trigger: any) => ({
-  success: true,
-  trigger,
-});
+export const generateSuccessResult = (inputs: any, body: any) => {
+  const key = get(inputs, 'key') as string;
+  const provider = get(inputs, 'provider') as IProvider;
+  const data: any = {
+    url: get(body, 'repository.clone_url'),
+    provider: get(inputs, 'provider'),
+    pusher: {},
+    [key]: {},
+    commit: {},
+  };
+  if (key === 'push') {
+    data[key]['branch'] = get(inputs, 'branch');
+    data[key]['tag'] = get(inputs, 'tag');
+    data.commit['id'] = get(body, 'head_commit.id');
+    data.commit['message'] = get(body, 'head_commit.message');
+  }
+  if (key === 'pull_request') {
+    data[key]['type'] = get(inputs, 'type');
+    data[key]['target_branch'] = get(inputs, 'target_branch');
+    data[key]['source_branch'] = get(inputs, 'source_branch');
+    data.commit['id'] = get(body, 'pull_request.merge_commit_sha');
+    data.commit['message'] = get(body, 'pull_request.title');
+  }
+  data.pusher['avatar_url'] = get(body, 'sender.avatar_url');
+  data.pusher['name'] = get(body, 'pusher.name') || get(body, 'sender.login');
+  data.pusher['email'] = get(body, 'pusher.email') || get(body, 'sender.email');
+  if (provider === IUserAgent.GITLAB) {
+    if (key === 'push') {
+      data.url = get(body, 'repository.git_http_url');
+      data.commit['id'] = get(body, 'commit.sha');
+      data.commit['message'] = get(body, 'commit.message');
+    }
+    if (key === 'pull_request') {
+      data.url = get(body, 'project.http_url');
+      data.commit['id'] =
+        get(body, 'object_attributes.merge_commit_sha') ||
+        get(body, 'object_attributes.last_commit.id');
+      data.commit['message'] = get(body, 'object_attributes.title');
+    }
+    data.pusher['avatar_url'] = get(body, 'user.avatar_url');
+    data.pusher['name'] = get(body, 'user.name');
+    data.pusher['email'] = get(body, 'user.email');
+  }
+  if (provider === IUserAgent.CODEUP) {
+    if (key === 'push') {
+      const commitObj = find(get(body, 'commits'), (obj) => obj.id === get(body, 'after'));
+      if (commitObj) {
+        data.commit['id'] = commitObj.id;
+        data.commit['message'] = commitObj.message;
+      }
+    }
+    if (key === 'pull_request') {
+      data.commit['id'] = get(body, 'object_attributes.last_commit.id');
+      data.commit['message'] =
+        get(body, 'object_attributes.last_commit.message') || get(body, 'object_attributes.title');
+      data.pusher['name'] = get(body, 'object_attributes.last_commit.author.name');
+      data.pusher['email'] = get(body, 'object_attributes.last_commit.author.email');
+    }
+    data.url = get(body, 'repository.git_http_url') || get(body, 'project.http_url');
+    data.pusher['name'] = data.pusher['name'] || get(body, 'user_name') || get(body, 'user.name');
+    data.pusher['email'] = data.pusher['email'] || get(body, 'user_email');
+    data.pusher['avatar_url'] = get(body, 'user.avatar_url');
+  }
+  return {
+    success: true,
+    data,
+  };
+};
 
 export const getPushInfo = (ref: string) => {
   if (startsWith(ref, 'refs/heads/')) {
@@ -73,8 +137,8 @@ export const checkTypeWithCodeup = (codeup: ITrigger, body: any) => {
   }
   if (valid) {
     console.log('check type success');
-    return { success: true };
+    return { success: true, message, type: newAction };
   }
   console.log('check type error');
-  return { success: false, message };
+  return { success: false, message, type: newAction };
 };

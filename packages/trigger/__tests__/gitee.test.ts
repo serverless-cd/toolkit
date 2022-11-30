@@ -22,7 +22,26 @@ test('gitee webhook push with branch case', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, pushWithBranch);
-  expect(res?.success).toEqual(true);
+  console.log(res);
+
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://gitee.com/shihuali/start-express-ff.git',
+      provider: 'gitee',
+      pusher: {
+        name: 'shihuali',
+        email: 'shihuali5257@126.com',
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
+      },
+      push: { branch: 'master', tag: undefined },
+      commit: {
+        id: 'e5ae1e4776fcdffc8098b420be940cf5565b1404',
+        message:
+          'update s_en.yaml.\n' + '\n' + 'Signed-off-by: shihuali &lt;shihuali5257@126.com&gt;',
+      },
+    },
+  });
 });
 
 test('gitee webhook push with tag case', async () => {
@@ -39,7 +58,25 @@ test('gitee webhook push with tag case', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, pushWithTag);
-  expect(res?.success).toEqual(true);
+  console.log(res);
+
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://gitee.com/shihuali/start-express-ff.git',
+      provider: 'gitee',
+      pusher: {
+        name: 'shihuali',
+        email: 'shihuali5257@126.com',
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
+      },
+      push: { branch: undefined, tag: 'v0.0.1' },
+      commit: {
+        id: 'f808ff5622d7fa38fb4800c543b49fccb7ad969b',
+        message: 'update s_en.yaml. 33\n\nSigned-off-by: shihuali <shihuali5257@126.com>',
+      },
+    },
+  });
 });
 
 test('gitee webhook success with pr opened', async () => {
@@ -57,7 +94,23 @@ test('gitee webhook success with pr opened', async () => {
   };
   const res = await verifyLegitimacy(eventConfig, prWithOpened);
   console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://gitee.com/shihuali/start-express-ff.git',
+      provider: 'gitee',
+      pusher: {
+        name: 'shihuali',
+        email: 'shihuali5257@126.com',
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
+      },
+      pull_request: { type: 'opened', target_branch: 'master', source_branch: 'dev' },
+      commit: {
+        id: '886a5e8dfdfe5d3699406ceda62c096a38312fe7',
+        message: 'test pr',
+      },
+    },
+  });
 });
 test('gitee webhook error with pr opened', async () => {
   const eventConfig = {
@@ -93,7 +146,23 @@ test('gitee webhook success with pr closed', async () => {
   };
   const res = await verifyLegitimacy(eventConfig, prWithClosed);
   console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://gitee.com/shihuali/start-express-ff.git',
+      provider: 'gitee',
+      pusher: {
+        name: 'shihuali',
+        email: 'shihuali5257@126.com',
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
+      },
+      pull_request: { type: 'closed', target_branch: 'master', source_branch: 'dev' },
+      commit: {
+        id: '886a5e8dfdfe5d3699406ceda62c096a38312fe7',
+        message: 'test pr',
+      },
+    },
+  });
 });
 test('gitee webhook error with pr closed', async () => {
   const eventConfig = {
@@ -129,7 +198,23 @@ test('gitee webhook success with pr reopened', async () => {
   };
   const res = await verifyLegitimacy(eventConfig, prWithReopened);
   console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://gitee.com/shihuali/start-express-ff.git',
+      provider: 'gitee',
+      pusher: {
+        name: 'shihuali',
+        email: 'shihuali5257@126.com',
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
+      },
+      pull_request: { type: 'reopened', target_branch: 'master', source_branch: 'dev' },
+      commit: {
+        id: '886a5e8dfdfe5d3699406ceda62c096a38312fe7',
+        message: 'test pr',
+      },
+    },
+  });
 });
 test('gitee webhook error with pr reopened', async () => {
   const eventConfig = {
@@ -165,7 +250,23 @@ test('gitee webhook success with pr merged', async () => {
   };
   const res = await verifyLegitimacy(eventConfig, prWithMerged);
   console.log(res);
-  expect(res?.success).toEqual(true);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://gitee.com/shihuali/start-express-ff.git',
+      provider: 'gitee',
+      pusher: {
+        name: 'shihuali',
+        email: 'shihuali5257@126.com',
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
+      },
+      pull_request: { type: 'merged', target_branch: 'master', source_branch: 'dev' },
+      commit: {
+        id: '5066770d86b75b7b3dd2e6775d0bcab4fc5db2f8',
+        message: 'test pr',
+      },
+    },
+  });
 });
 test('gitee webhook error with pr merged', async () => {
   const eventConfig = {

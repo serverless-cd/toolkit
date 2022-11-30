@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { IPayload, ITriggers, IProvider, IPrefix, IPrefixFromWebhook } from '../type';
+import { IPayload, ITriggers, IProvider, IPrefix, IPrInfo } from '../type';
 import { generateSuccessResult, generateErrorResult } from '../utils';
 import { ITrigger, IPushInfo, IBranches } from '../type';
 import { get, isEmpty, isPlainObject, isArray, each } from 'lodash';
@@ -32,7 +32,7 @@ export default abstract class BaseEvent {
 
   abstract verify(): Promise<any>;
 
-  doPr(trigger: ITrigger, branchInfo: IPrefixFromWebhook) {
+  doPr(trigger: ITrigger, prInfo: IPrInfo) {
     console.log(`get trigger value: ${JSON.stringify(trigger)}`);
     const eventVal = get(trigger, 'pull_request');
     if (isPlainObject(eventVal)) {
@@ -44,9 +44,9 @@ export default abstract class BaseEvent {
       if (exclude.length > 0) {
         for (const item of exclude) {
           // webhook是否命中 精确排除 规则，值存在说明命中，返回错误
-          const validTarget = micromatch([branchInfo.target], [item.target]);
+          const validTarget = micromatch([prInfo.target], [item.target]);
           const validSource = micromatch(
-            [branchInfo.source],
+            [prInfo.source],
             item.source ? [item.source] : ['*', '**'],
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
@@ -57,18 +57,25 @@ export default abstract class BaseEvent {
         }
       }
       const precise = get(branches, 'precise', []) as IPrefix[];
+      const params = {
+        provider: this.provider,
+        key: 'pull_request',
+        target_branch: prInfo.target,
+        source_branch: prInfo.source,
+        type: prInfo.type,
+      };
       if (precise.length > 0) {
         for (const item of precise) {
           // webhook是否命中 精确匹配 规则，值存在说明命中，返回成功
-          const validTarget = micromatch([branchInfo.target], [item.target]);
+          const validTarget = micromatch([prInfo.target], [item.target]);
           const validSource = micromatch(
-            [branchInfo.source],
+            [prInfo.source],
             item.source ? [item.source] : ['*', '**'],
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
           if (bol) {
             console.log('webhook match pr precise rules');
-            return generateSuccessResult({ ...trigger, provider: this.provider });
+            return generateSuccessResult(params, this.body);
           }
         }
       }
@@ -76,18 +83,15 @@ export default abstract class BaseEvent {
       if (prefix.length > 0) {
         for (const item of prefix) {
           // webhook是否命中 前缀匹配 规则，值存在说明命中，返回成功
-          const validTarget = micromatch(
-            [branchInfo.target],
-            [`${item.target}*`, `${item.target}/**`],
-          );
+          const validTarget = micromatch([prInfo.target], [`${item.target}*`, `${item.target}/**`]);
           const validSource = micromatch(
-            [branchInfo.source],
+            [prInfo.source],
             item.source ? [`${item.source}*`, `${item.source}/**`] : ['*', '**'],
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
           if (bol) {
             console.log('webhook match pr prefix rules');
-            return generateSuccessResult({ ...trigger, provider: this.provider });
+            return generateSuccessResult(params, this.body);
           }
         }
       }
@@ -95,15 +99,15 @@ export default abstract class BaseEvent {
       if (include.length > 0) {
         for (const item of include) {
           // webhook是否命中 前缀匹配 规则，值存在说明命中，返回成功
-          const validTarget = micromatch([branchInfo.target], [item.target]);
+          const validTarget = micromatch([prInfo.target], [item.target]);
           const validSource = micromatch(
-            [branchInfo.source],
+            [prInfo.source],
             item.source ? [item.source] : ['*', '**'],
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
           if (bol) {
             console.log('webhook match pr include rules');
-            return generateSuccessResult({ ...trigger, provider: this.provider });
+            return generateSuccessResult(params, this.body);
           }
         }
       }
@@ -111,6 +115,12 @@ export default abstract class BaseEvent {
     return generateErrorResult('webhook not match pr rules');
   }
   doPush(trigger: ITrigger, info: IPushInfo) {
+    const params = {
+      provider: this.provider,
+      key: 'push',
+      branch: get(info, 'branch'),
+      tag: get(info, 'tag'),
+    };
     if (get(info, 'branch')) {
       const conditionList = this.getPushCondition(trigger, 'branch');
       console.log(`get condition list: ${JSON.stringify(conditionList)}`);
@@ -118,7 +128,7 @@ export default abstract class BaseEvent {
       const valid = micromatch([info.branch as string], conditionList as []);
       console.log(`get branch micromatch: ${JSON.stringify(valid)}`);
       if (isEmpty(valid)) return generateErrorResult('Branch rules do not match');
-      return generateSuccessResult({ ...trigger, provider: this.provider });
+      return generateSuccessResult(params, this.body);
     }
 
     if (get(info, 'tag')) {
@@ -128,7 +138,7 @@ export default abstract class BaseEvent {
       const valid = micromatch([info.tag as string], conditionList as []);
       console.log(`get tag micromatch: ${JSON.stringify(valid)}`);
       if (isEmpty(valid)) return generateErrorResult('tag rules do not match');
-      return generateSuccessResult({ ...trigger, provider: this.provider });
+      return generateSuccessResult(params, this.body);
     }
     throw new Error('No branch or tag found in push event');
   }
