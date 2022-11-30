@@ -26,5 +26,11 @@
   },
   "bugs": {
     "url": "https://github.com/serverless-cd/serverless-cd-toolkit/issues"
+  },
+  "dependencies": {
+    "@alicloud/fc-open20210406": "^2.0.0",
+    "@alicloud/fc2": "^2.6.3",
+    "ali-oss": "^6.17.1",
+    "tablestore": "^5.3.1"
   }
 }
