@@ -24,10 +24,6 @@ export default class Github extends BaseEvent {
 
     const eventType = get(this.headers, 'x-github-event') as IGithubEvent;
     console.log(`get x-github-event value: ${eventType}`);
-
-    if (isEmpty(eventType)) {
-      throw new Error("No 'x-github-event' found on request");
-    }
     // 检测 push, pr
     // push 检测 分支 和 tag
     if (eventType === 'push') {
@@ -44,6 +40,7 @@ export default class Github extends BaseEvent {
       console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
       return this.doPr(github, { ...prInfo, type: result.type as IPrTypesVal });
     }
+    return generateErrorResult(`Unsupported event type: ${eventType}`);
   }
   private checkType(github: ITrigger) {
     const action = get(this.body, 'action', '') as IPrTypesVal;

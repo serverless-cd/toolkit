@@ -27,10 +27,6 @@ export default class Gitlab extends BaseEvent {
 
     const eventType = get(this.headers, 'x-gitlab-event') as IGitlabEvent;
     console.log(`get x-gitlab-event value: ${eventType}`);
-
-    if (isEmpty(eventType)) {
-      throw new Error("No 'x-gitlab-event' found on request");
-    }
     // 检测 push, pr
     // push 检测 分支 和 tag
     if (eventType === 'Job Hook') {
@@ -47,6 +43,7 @@ export default class Gitlab extends BaseEvent {
       console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
       return this.doPr(gitlab, { ...prInfo, type: result.type as IPrTypesVal });
     }
+    return generateErrorResult(`Unsupported event type: ${eventType}`);
   }
   private verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-gitlab-token', '');

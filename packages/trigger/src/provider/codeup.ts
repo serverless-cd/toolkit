@@ -27,10 +27,6 @@ export default class Codeup extends BaseEvent {
 
     const eventType = get(this.headers, 'x-codeup-event') as ICodeupEvent;
     console.log(`get x-codeup-event value: ${eventType}`);
-
-    if (isEmpty(eventType)) {
-      throw new Error("No 'x-codeup-event' found on request");
-    }
     // 检测 push, pr
     // push 检测 分支 和 tag
     if (includes(['Push Hook', 'Tag Push Hook'], eventType)) {
@@ -47,6 +43,7 @@ export default class Codeup extends BaseEvent {
       console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
       return this.doPr(codeup, { ...prInfo, type: result.type as IPrTypesVal });
     }
+    return generateErrorResult(`Unsupported event type: ${eventType}`);
   }
   private verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-codeup-token', '');

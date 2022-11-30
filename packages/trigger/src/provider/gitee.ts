@@ -22,10 +22,6 @@ export default class Gitee extends BaseEvent {
 
     const eventType = get(this.headers, 'x-gitee-event') as IGiteeEvent;
     console.log(`get x-gitee-event value: ${eventType}`);
-
-    if (isEmpty(eventType)) {
-      throw new Error("No 'x-gitee-event' found on request");
-    }
     // 检测 push, pr
     // push 检测 分支 和 tag
     if (includes(['Push Hook', 'Tag Push Hook'], eventType)) {
@@ -42,6 +38,7 @@ export default class Gitee extends BaseEvent {
       console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
       return this.doPr(gitee, { ...prInfo, type: result.type as IPrTypesVal });
     }
+    return generateErrorResult(`Unsupported event type: ${eventType}`);
   }
   private checkType(github: ITrigger) {
     const action = get(this.body, 'action', '') as IPrTypesVal;

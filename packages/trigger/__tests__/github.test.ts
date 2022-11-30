@@ -6,6 +6,7 @@ import {
   prWithClosed,
   prWithReopened,
   prWithMerged,
+  releaseWithPublished,
 } from './mock/github';
 
 test('no trigger data', async () => {
@@ -330,4 +331,24 @@ test('github webhook error with pr merged', async () => {
   const res = await verifyLegitimacy(eventConfig, prWithMerged);
   console.log(res);
   expect(res?.success).toEqual(false);
+});
+
+test.only('github webhook release 测试返回值', async () => {
+  const eventConfig = {
+    github: {
+      secret: 'shl123',
+      pull_request: {
+        types: [IPrTypes.REOPENED],
+        branches: {
+          prefix: [{ target: 'main', source: 'dev' }],
+          precise: [{ target: 'main', source: 'dev' }],
+          exclude: [{ target: 'main', source: 'dev' }],
+          include: [{ target: 'main', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, releaseWithPublished);
+  console.log(res);
+  expect(res).toEqual({ success: false, message: 'Unsupported event type: release' });
 });
