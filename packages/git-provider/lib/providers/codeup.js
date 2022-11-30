@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const lodash_1 = __importDefault(require("lodash"));
 const { ROAClient } = require('@alicloud/pop-core');
-const PARAMS = { Page: 1, PageSize: 100, Order: 'astactivity_at' };
+const PARAMS = { page: 1, pageSize: 100 };
 class Codeup {
     constructor(config) {
         const access_token = lodash_1.default.get(config, 'access_token');
@@ -26,11 +26,34 @@ class Codeup {
             accessKeyId: lodash_1.default.get(config, 'accessKeyId'),
             accessKeySecret: lodash_1.default.get(config, 'accessKeySecret'),
             securityToken: lodash_1.default.get(config, 'securityToken'),
-            endpoint: lodash_1.default.get(config, 'endpoint', 'https://codeup.cn-hangzhou.aliyuncs.com'),
-            apiVersion: '2020-04-14',
+            endpoint: lodash_1.default.get(config, 'endpoint', 'https://devops.cn-hangzhou.aliyuncs.com'),
+            apiVersion: '2021-06-25',
         });
     }
-    // https://help.aliyun.com/document_detail/215660.html
+    // https://help.aliyun.com/document_detail/460465.html
+    listRepos(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const organizationId = lodash_1.default.get(params, 'organization_id');
+            if (!organizationId) {
+                throw new Error('You must specify organization_id');
+            }
+            const url = '/repository/list';
+            const rows = yield this.requestList(url, Object.assign(Object.assign({}, PARAMS), { organizationId }));
+            // this._test_debug_log(rows, 'list_repos');
+            return lodash_1.default.map(rows, row => ({
+                id: lodash_1.default.get(row, 'Id', lodash_1.default.get(row, 'id')),
+                name: lodash_1.default.get(row, 'name', ''),
+                url: lodash_1.default.get(row, 'webUrl', ''),
+                avatar_url: '',
+                owner: organizationId,
+                private: lodash_1.default.get(row, 'visibilityLevel', '0') === '0',
+                description: lodash_1.default.get(row, 'description', ''),
+                default_branch: lodash_1.default.get(row, 'default_branch', 'master'),
+                source: row,
+            }));
+        });
+    }
+    // https://help.aliyun.com/document_detail/461641.html
     listBranches(params) {
         return __awaiter(this, void 0, void 0, function* () {
             const projectId = lodash_1.default.get(params, 'project_id');
@@ -41,26 +64,19 @@ class Codeup {
             if (!organizationId) {
                 throw new Error('You must specify organization_id');
             }
-            let rows = [];
-            const url = `/api/v3/projects/${projectId}/repository/branches`;
-            const p = Object.assign(Object.assign({}, PARAMS), { OrganizationId: organizationId });
-            // 查询指定页
-            if (params.page) {
-                p.Page = params.page;
-                p.Order = params.order;
-                p.PageSize = params.page_size;
-                rows = yield this.request({ url, params: p });
-            }
-            else {
-                rows = yield this.requestList(url, p);
-            }
+            const url = `/repository/${projectId}/branches`;
+            const rows = yield this.requestList(url, Object.assign(Object.assign({}, PARAMS), { organizationId }));
+            // this._test_debug_log(rows, 'list_branches');
             return lodash_1.default.map(rows, (row) => ({
-                name: row.BranchName, commit_sha: lodash_1.default.get(row, 'CommitInfo.Id'), source: row,
+                name: row.name,
+                commit_sha: lodash_1.default.get(row, 'commit.id'),
+                // commit_message: _.get(row, 'commit.message'),
+                source: row,
             }));
             ;
         });
     }
-    // https://help.aliyun.com/document_detail/300470.html
+    // https://help.aliyun.com/document_detail/463000.html
     getCommitById(params) {
         return __awaiter(this, void 0, void 0, function* () {
             const projectId = lodash_1.default.get(params, 'project_id');
@@ -75,15 +91,13 @@ class Codeup {
             if (!sha) {
                 throw new Error('You must specify sha');
             }
-            const url = `/api/v4/projects/${projectId}/repository/commits/${sha}`;
-            const p = {
-                OrganizationId: organizationId,
-            };
-            const result = yield this.request({ url, params: p });
-            const source = lodash_1.default.get(result, 'Result', {});
+            const url = `/repository/${projectId}/commits/${sha}`;
+            const result = yield this.request({ url, params: { organizationId } });
+            const source = lodash_1.default.get(result, 'result', {});
+            // this._test_debug_log(result, 'get_commit_by_id');
             return {
-                sha: lodash_1.default.get(source, 'Id'),
-                message: lodash_1.default.get(source, 'Message'),
+                sha: lodash_1.default.get(source, 'id'),
+                message: lodash_1.default.get(source, 'message'),
                 source,
             };
         });
@@ -94,12 +108,11 @@ class Codeup {
             let rowLength = 0;
             do {
                 const res = yield this.request({ url, params });
-                console.log(res);
-                const { Result: data } = res;
+                const { result: data } = res;
                 rows = lodash_1.default.concat(rows, data);
                 rowLength = lodash_1.default.size(data);
-                params.Page = params.Page + 1;
-            } while (rowLength === params.PageSize);
+                params.page = params.page + 1;
+            } while (rowLength === params.pageSize);
             return rows;
         });
     }
@@ -108,19 +121,16 @@ class Codeup {
             const { method = 'GET', url = '/', params = {}, data = {}, headers = {
                 'Content-Type': 'application/json',
             }, options = {}, } = args;
-            if (params.AccessToken) {
-                params.AccessToken = this.access_token;
+            if (params.accessToken) {
+                params.accessToken = this.access_token;
             }
             try {
                 return yield this.client.request(method, url, params, JSON.stringify(data), headers, options);
             }
             catch (e) {
-                console.log('request error:', e);
+                throw e;
             }
         });
-    }
-    listRepos() {
-        throw new Error('Method not implemented.');
     }
     getRefCommit(params) {
         throw new Error('Method not implemented.');
