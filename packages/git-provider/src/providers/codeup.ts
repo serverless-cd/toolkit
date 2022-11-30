@@ -1,11 +1,11 @@
-import _ from 'lodash';
-import { IGetCommitById, IListBranch } from '../types/codeup';
+import _, { map } from 'lodash';
+import { IGetCommitById, IListBranch, IListRepo } from '../types/codeup';
 import { IAliConfig } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 
 
 const { ROAClient } = require('@alicloud/pop-core');
-const PARAMS = { Page: 1, PageSize: 100, Order: 'astactivity_at' };
+const PARAMS = { page: 1, pageSize: 100 };
 
 export default class Codeup {
   readonly client: any;
@@ -22,12 +22,39 @@ export default class Codeup {
       accessKeyId: _.get(config, 'accessKeyId'),
       accessKeySecret: _.get(config, 'accessKeySecret'),
       securityToken: _.get(config, 'securityToken'),
-      endpoint: _.get(config, 'endpoint', 'https://codeup.cn-hangzhou.aliyuncs.com'),
-      apiVersion: '2020-04-14',
+      endpoint: _.get(config, 'endpoint', 'https://devops.cn-hangzhou.aliyuncs.com'),
+      apiVersion: '2021-06-25',
     });
   }
 
-  // https://help.aliyun.com/document_detail/215660.html
+  // https://help.aliyun.com/document_detail/460465.html
+  async listRepos(params: IListRepo): Promise<IRepoOutput[]> {
+    const organizationId = _.get(params, 'organization_id');
+    if (!organizationId) {
+      throw new Error('You must specify organization_id');
+    }
+
+    const url = '/repository/list';
+    const rows = await this.requestList(url, {
+      ...PARAMS,
+      organizationId,
+    });
+    // this._test_debug_log(rows, 'list_repos');
+
+    return _.map(rows, row => ({
+      id: _.get(row, 'Id', _.get(row, 'id')) as unknown as number,
+      name: _.get(row, 'name', ''),
+      url: _.get(row, 'webUrl', ''),
+      avatar_url: '',
+      owner: organizationId,
+      private: _.get(row, 'visibilityLevel', '0') === '0',
+      description: _.get(row, 'description', ''),
+      default_branch: _.get(row, 'default_branch', 'master'),
+      source: row,
+    }))
+  }
+
+  // https://help.aliyun.com/document_detail/461641.html
   async listBranches(params: IListBranch): Promise<IBranchOutput[]> {
     const projectId = _.get(params, 'project_id');
     const organizationId = _.get(params, 'organization_id');
@@ -38,28 +65,22 @@ export default class Codeup {
       throw new Error('You must specify organization_id');
     }
 
-    let rows = [];
-    const url = `/api/v3/projects/${projectId}/repository/branches`;
-    const p: any = {
+    const url = `/repository/${projectId}/branches`;
+    const rows = await this.requestList(url, {
       ...PARAMS,
-      OrganizationId: organizationId,
-    };
-    // 查询指定页
-    if (params.page) {
-      p.Page = params.page;
-      p.Order = params.order;
-      p.PageSize = params.page_size;
-      rows = await this.request({ url, params: p });
-    } else {
-      rows = await this.requestList(url, p);
-    }
+      organizationId,
+    });
+    // this._test_debug_log(rows, 'list_branches');
 
     return _.map(rows, (row) => ({
-      name: row.BranchName, commit_sha: _.get(row, 'CommitInfo.Id'), source: row,
+      name: row.name,
+      commit_sha: _.get(row, 'commit.id'),
+      // commit_message: _.get(row, 'commit.message'),
+      source: row,
     }));;
   }
 
-  // https://help.aliyun.com/document_detail/300470.html
+  // https://help.aliyun.com/document_detail/463000.html
   async getCommitById(params: IGetCommitById): Promise<ICommitOutput> {
     const projectId = _.get(params, 'project_id');
     const organizationId = _.get(params, 'organization_id');
@@ -74,16 +95,15 @@ export default class Codeup {
       throw new Error('You must specify sha');
     }
   
-    const url = `/api/v4/projects/${projectId}/repository/commits/${sha}`;
-    const p = {
-      OrganizationId: organizationId,
-    }
-    const result = await this.request({ url, params: p });
-    const source = _.get(result, 'Result', {});
+    const url = `/repository/${projectId}/commits/${sha}`;
+    const result = await this.request({ url, params: { organizationId } });
+    const source = _.get(result, 'result', {});
+
+    // this._test_debug_log(result, 'get_commit_by_id');
 
     return {
-      sha: _.get(source, 'Id'),
-      message: _.get(source, 'Message'),
+      sha: _.get(source, 'id'),
+      message: _.get(source, 'message'),
       source,
     };
   }
@@ -93,12 +113,11 @@ export default class Codeup {
     let rowLength = 0;
     do {
       const res = await this.request({ url, params });
-      console.log(res);
-      const { Result: data } = res;
+      const { result: data } = res;
       rows = _.concat(rows, data);
       rowLength = _.size(data);
-      params.Page = params.Page as number + 1;
-    } while (rowLength === params.PageSize);
+      params.page = params.page as number + 1;
+    } while (rowLength === params.pageSize);
 
     return rows;
   }
@@ -122,19 +141,15 @@ export default class Codeup {
       options = {},
     } = args;
 
-    if (params.AccessToken) {
-      params.AccessToken = this.access_token;
+    if (params.accessToken) {
+      params.accessToken = this.access_token;
     }
 
     try {
       return await this.client.request(method, url, params, JSON.stringify(data), headers, options);
     } catch (e) {
-      console.log('request error:', e);
+      throw e;
     }
-  }
-
-  listRepos(): Promise<IRepoOutput[]> {
-    throw new Error('Method not implemented.');
   }
   getRefCommit(params: any): Promise<ICommitOutput> {
     throw new Error('Method not implemented.');

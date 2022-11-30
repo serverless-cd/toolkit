@@ -11,3 +11,7 @@ export interface IGetCommitById {
   organization_id: string;
   sha: string;
 }
+
+export interface IListRepo {
+  organization_id: string;
+}

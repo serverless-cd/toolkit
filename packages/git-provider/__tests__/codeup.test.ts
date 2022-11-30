@@ -8,20 +8,44 @@ const config = {
   accessKeySecret: process.env.ACCESS_KEY_SECRET || '',
 };
 
-test('list branch', async () => {
+const project_id = 1843120;
+const organization_id = '60b045b52c5969c370c5a63e';
+
+test('list repo', async () => {
   const prioverd = git('codeup', config);
-  await prioverd.listBranches({
-    project_id: 2834398,
-    organization_id: '60b045b52c5969c370c5a63e',
+  const rows = await prioverd.listRepos({
+    organization_id,
   });
+  expect(_.isArray(rows)).toBeTruthy();
+  for (const row of rows) {
+    expect(_.has(row, 'id')).toBeTruthy();
+    expect(_.isString(row.name)).toBeTruthy();
+    expect(_.isString(row.url)).toBeTruthy();
+    expect(_.has(row, 'source')).toBeTruthy();
+  }
 });
 
-test.only('get commit by id', async () => {
-  const sha = '4af51eea4906c3b8895261f35ba27cca38ad89da';
+test('list branch', async () => {
+  const prioverd = git('codeup', config);
+  const rows = await prioverd.listBranches({
+    project_id,
+    organization_id,
+  });
+  expect(_.isArray(rows)).toBeTruthy();
+
+  for (const row of rows) {
+    expect(_.isString(row.name)).toBeTruthy();
+    expect(_.isString(row.commit_sha)).toBeTruthy();
+    expect(_.has(row, 'source')).toBeTruthy();
+  }
+});
+
+test('get commit by id', async () => {
+  const sha = '22433a481390b2b1885bebed70177a815800fbfa';
   const prioverd = git('codeup', config);
   const res = await prioverd.getCommitById({
-    project_id: 2834398,
-    organization_id: '60b045b52c5969c370c5a63e',
+    project_id,
+    organization_id,
     sha,
   });
   expect(res.sha).toBe(sha);
