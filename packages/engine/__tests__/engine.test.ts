@@ -6,7 +6,7 @@ const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
 test.skip('logger oss', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
   const engine = new Engine({
@@ -48,7 +48,7 @@ test('自定义logger', async () => {
 test('获取某一步的outputs', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' } });
@@ -94,7 +94,7 @@ test('cancel测试', (done) => {
 test('uses：应用测试返回值', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { uses: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res: IContext | undefined = await engine.start();

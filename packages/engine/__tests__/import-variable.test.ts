@@ -99,7 +99,7 @@ test('startsWith: if fail', async () => {
   expect(get(res, 'steps[1].status')).toEqual('skipped');
 });
 
-test.only('endsWith: if success', async () => {
+test('endsWith: if success', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'echo "world"', if: "${{ endsWith(github.ref, 'engine')}}" },
@@ -123,7 +123,7 @@ test.only('endsWith: if success', async () => {
   expect(get(res, 'steps[1].status')).toEqual('success');
 });
 
-test.only('endsWith: if fail', async () => {
+test('endsWith: if fail', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'echo "world"', if: "${{ endsWith(github.ref, 'engine')}}" },
