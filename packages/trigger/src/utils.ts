@@ -104,7 +104,7 @@ export const getPrInfo = (body: any) => {
   return { target, source };
 };
 
-export const getPrInfoWithCodeup = (body: any) => {
+export const getPrInfoWithCodeupOrGitlab = (body: any) => {
   const target = get(body, 'object_attributes.target_branch');
   if (isEmpty(target)) {
     throw new Error('body.object_attributes.target_branch is empty');
@@ -116,7 +116,7 @@ export const getPrInfoWithCodeup = (body: any) => {
   return { target, source };
 };
 
-export const checkTypeWithCodeup = (codeup: ITrigger, body: any) => {
+export const checkTypeWithCodeupOrGitlab = (codeup: ITrigger, body: any) => {
   const action = get(body, 'object_attributes.action', '') as IPrTypesVal;
   console.log(`get pull_request type: ${action}`);
   const types = get(codeup, 'pull_request.types', []) as IPrTypesVal[];
@@ -125,15 +125,15 @@ export const checkTypeWithCodeup = (codeup: ITrigger, body: any) => {
   const newAction = get(IGiteeAction, action, action);
   if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], newAction)) {
     valid = includes(types, newAction);
-    message = `pr type is ${action}, but only ${types} is allowed`;
+    message = `pull_request type is ${action}, but only ${types} is allowed`;
   }
   if (newAction === IPrTypes.CLOSED) {
     valid = includes(types, IPrTypes.CLOSED);
-    message = `pr type is ${newAction}, but only ${types} is allowed`;
+    message = `pull_request type is ${newAction}, but only ${types} is allowed`;
   }
   if (newAction === IPrTypes.MERGED) {
     valid = includes(types, IPrTypes.MERGED);
-    message = `pr type is ${newAction}, but only ${types} is allowed`;
+    message = `pull_request type is ${newAction}, but only ${types} is allowed`;
   }
   if (valid) {
     console.log('check type success');

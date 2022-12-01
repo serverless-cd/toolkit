@@ -1,9 +1,9 @@
 import BaseEvent from './base';
 import {
   getPushInfoWithGitlab,
-  getPrInfoWithCodeup,
+  getPrInfoWithCodeupOrGitlab,
   generateErrorResult,
-  checkTypeWithCodeup,
+  checkTypeWithCodeupOrGitlab,
 } from '../utils';
 import { ITrigger, IGitlabEvent, IPrTypesVal } from '../type';
 import { get, isEmpty } from 'lodash';
@@ -27,20 +27,20 @@ export default class Gitlab extends BaseEvent {
 
     const eventType = get(this.headers, 'x-gitlab-event') as IGitlabEvent;
     console.log(`get x-gitlab-event value: ${eventType}`);
-    // 检测 push, pr
+    // 检测 push, pull_request
     // push 检测 分支 和 tag
     if (eventType === 'Job Hook') {
       const info = getPushInfoWithGitlab(this.body);
       console.log(`get push info: ${JSON.stringify(info)}`);
       return this.doPush(gitlab, info);
     }
-    // pr 检测 分支
+    // pull_request 检测 分支
     if (eventType === 'Merge Request Hook') {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
-      const result = checkTypeWithCodeup(gitlab, this.body);
+      const result = checkTypeWithCodeupOrGitlab(gitlab, this.body);
       if (!result.success) return generateErrorResult(result.message);
-      const prInfo = getPrInfoWithCodeup(this.body);
-      console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
+      const prInfo = getPrInfoWithCodeupOrGitlab(this.body);
+      console.log(`get pull_request branch: ${JSON.stringify(prInfo)}`);
       return this.doPr(gitlab, { ...prInfo, type: result.type as IPrTypesVal });
     }
     return generateErrorResult(`Unsupported event type: ${eventType}`);
