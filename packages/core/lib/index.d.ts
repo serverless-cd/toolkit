@@ -1,6 +1,7 @@
 export * from './logger';
 export { default as parseSpec } from './parse-spec';
 export * from './get-inputs';
+export * from './ref';
 export * from './switch-node-version';
 export * from './variable';
 export { default as fs } from 'fs-extra';

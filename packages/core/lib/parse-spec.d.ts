@@ -1,4 +1,4 @@
-declare function parseSpec(): {
+declare function parseSpec(filePath: string): {
     triggers: undefined;
     steps: any[];
 };

@@ -40,8 +40,8 @@ export interface IScriptOptions {
     env?: Record<string, any>;
     'continue-on-error'?: boolean;
 }
-export interface IUsesOptions {
-    uses: string;
+export interface IPluginOptions {
+    plugin: string;
     stepCount?: string;
     id?: string;
     name?: string;
@@ -51,7 +51,7 @@ export interface IUsesOptions {
     with?: Record<string, any>;
     type?: 'run' | 'postRun' | 'completed';
 }
-export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
+export type IStepOptions = IRunOptions | IPluginOptions | IScriptOptions;
 export declare enum STEP_IF {
     SUCCESS = "success()",
     FAILURE = "failure()",
@@ -95,6 +95,7 @@ export interface IRecord {
     isInit: boolean;
 }
 export interface IContext {
+    cwd: string;
     stepCount: string;
     steps: ISteps[];
     env: Record<string, any>;

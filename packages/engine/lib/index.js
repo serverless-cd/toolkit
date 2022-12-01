@@ -36,7 +36,6 @@ const core_1 = require("@serverless-cd/core");
 const xstate_1 = require("xstate");
 const types_1 = require("./types");
 const lodash_1 = require("lodash");
-const execa_1 = require("execa");
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 // @ts-ignore
@@ -49,7 +48,8 @@ class Engine {
         this.childProcess = [];
         this.context = { status: types_1.STEP_STATUS.PENING, completed: false };
         this.record = { status: types_1.STEP_STATUS.PENING, editStatusAble: true };
-        const { inputs } = options;
+        const { inputs, cwd = process.cwd() } = options;
+        this.context.cwd = cwd;
         this.context.inputs = inputs;
         this.context.secrets = inputs === null || inputs === void 0 ? void 0 : inputs.secrets;
         this.doArtTemplateVariable();
@@ -64,14 +64,13 @@ class Engine {
         return __awaiter(this, void 0, void 0, function* () {
             const { events } = this.options;
             this.context.status = types_1.STEP_STATUS.RUNNING;
-            if (!(0, lodash_1.isFunction)(events === null || events === void 0 ? void 0 : events.onInit))
-                return;
             const startTime = Date.now();
             const filePath = (0, utils_1.getLogPath)(constants_1.INIT_STEP_COUNT);
             this.logger = this.getLogger(filePath);
             this.logger.info((0, utils_1.getDefaultInitLog)());
             try {
                 const res = yield ((_a = events === null || events === void 0 ? void 0 : events.onInit) === null || _a === void 0 ? void 0 : _a.call(events, this.context, this.logger));
+                // onInit 不存在时，也需要执行以下逻辑
                 const process_time = (0, utils_1.getProcessTime)(startTime);
                 this.record.initData = {
                     name: (0, lodash_1.get)(res, 'name', constants_1.INIT_STEP_NAME),
@@ -80,11 +79,13 @@ class Engine {
                     stepCount: constants_1.INIT_STEP_COUNT,
                     outputs: res,
                 };
+                // 优先读取 doInit 返回的 steps 数据，其次 行参里的 steps 数据
+                const steps = yield (0, utils_1.parsePlugin)((res === null || res === void 0 ? void 0 : res.steps) || this.options.steps, this);
                 yield this.doOss(filePath);
-                return res;
+                return Object.assign(Object.assign({}, res), { steps });
             }
             catch (error) {
-                this.logger.debug(error);
+                (0, utils_1.outputLog)(this.logger, error);
                 this.context.status = this.record.status = types_1.STEP_STATUS.FAILURE;
                 const process_time = (0, utils_1.getProcessTime)(startTime);
                 this.record.initData = {
@@ -96,14 +97,14 @@ class Engine {
                 };
                 this.context.error = error;
                 yield this.doOss(filePath);
+                const steps = yield (0, utils_1.parsePlugin)(this.options.steps, this);
+                return { steps };
             }
         });
     }
     start() {
         return __awaiter(this, void 0, void 0, function* () {
-            const initValue = yield this.doInit();
-            // 优先读取 doInit 返回的 steps 数据，其次 行参里的 steps 数据
-            const steps = (0, utils_1.getSteps)((initValue === null || initValue === void 0 ? void 0 : initValue.steps) || this.options.steps, this.childProcess);
+            const { steps } = yield this.doInit();
             if ((0, lodash_1.isEmpty)(steps)) {
                 throw new Error('steps is empty, please check your config');
             }
@@ -232,8 +233,7 @@ class Engine {
                 yield ((_a = events === null || events === void 0 ? void 0 : events.onPostRun) === null || _a === void 0 ? void 0 : _a.call(events, data, this.context, this.logger));
             }
             catch (error) {
-                this.logger.error(`onPostRun error at step: ${JSON.stringify(item)}`);
-                this.logger.debug(error);
+                (0, utils_1.outputLog)(this.logger, error);
             }
         });
     }
@@ -276,7 +276,7 @@ class Engine {
             }
             return obj;
         });
-        if ((0, lodash_1.isFunction)(events === null || events === void 0 ? void 0 : events.onInit) && !this.record.isInit) {
+        if (!this.record.isInit) {
             this.record.isInit = true;
             this.context.steps = (0, lodash_1.concat)(this.record.initData, this.context.steps);
         }
@@ -307,8 +307,7 @@ class Engine {
                     yield ((_a = events === null || events === void 0 ? void 0 : events.onCompleted) === null || _a === void 0 ? void 0 : _a.call(events, this.context, this.logger));
                 }
                 catch (error) {
-                    this.logger.error(`onCompleted error`);
-                    this.logger.debug(error);
+                    (0, utils_1.outputLog)(this.logger, error);
                 }
             }
             yield this.doOss(filePath);
@@ -362,8 +361,7 @@ class Engine {
                 }
                 else {
                     this.recordContext(item, { status, error, process_time });
-                    this.logger.error(`error at step: ${JSON.stringify(item)}`);
-                    this.logger.debug(error);
+                    (0, utils_1.outputLog)(this.logger, error);
                     yield this.doOss(logPath);
                     throw error;
                 }
@@ -372,15 +370,14 @@ class Engine {
     }
     doSrc(_item) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { cwd = process.cwd() } = this.options;
             const item = Object.assign({}, _item);
             const runItem = item;
-            const usesItem = item;
+            const pluginItem = item;
             const scriptItem = item;
             // run
             if (runItem.run) {
-                let execPath = runItem['working-directory'] || cwd;
-                execPath = path.isAbsolute(execPath) ? execPath : path.join(cwd, execPath);
+                let execPath = runItem['working-directory'] || this.context.cwd;
+                execPath = path.isAbsolute(execPath) ? execPath : path.join(this.context.cwd, execPath);
                 this.logName(_item);
                 const ifCondition = core_1.artTemplate.compile(runItem.run);
                 runItem.run = ifCondition(this.getFilterContext());
@@ -389,20 +386,15 @@ class Engine {
                 const res = yield this.onFinish(cp);
                 return res;
             }
-            // uses
-            if (usesItem.uses) {
+            // plugin
+            if (pluginItem.plugin) {
                 this.logName(item);
-                // 本地路径调试时，不在安装依赖
-                if (!core_1.fs.existsSync(usesItem.uses)) {
-                    const cp = (0, execa_1.command)(`npm i ${usesItem.uses} --no-save`);
-                    this.childProcess.push(cp);
-                    yield this.onFinish(cp);
-                }
-                const app = require(usesItem.uses);
+                // onInit时，会安装plugin依赖
+                const app = require(pluginItem.plugin);
                 const newContext = Object.assign(Object.assign({}, this.context), { $variables: this.getFilterContext() });
-                return usesItem.type === 'run'
-                    ? yield app.run((0, lodash_1.get)(usesItem, 'inputs', {}), newContext, this.logger)
-                    : yield app.postRun((0, lodash_1.get)(usesItem, 'inputs', {}), newContext, this.logger);
+                return pluginItem.type === 'run'
+                    ? yield app.run((0, lodash_1.get)(pluginItem, 'inputs', {}), newContext, this.logger)
+                    : yield app.postRun((0, lodash_1.get)(pluginItem, 'inputs', {}), newContext, this.logger);
             }
             // script
             if (scriptItem.script) {
@@ -472,14 +464,15 @@ class Engine {
     logName(item) {
         // 打印 step 名称
         const runItem = item;
-        const usesItem = item;
+        const pluginItem = item;
         const scriptItem = item;
         let msg = '';
         if (runItem.run) {
             msg = runItem.name || `Run ${runItem.run}`;
         }
-        if (usesItem.uses) {
-            msg = usesItem.name || `${usesItem.type === 'run' ? 'Run' : 'Post Run'} ${usesItem.uses}`;
+        if (pluginItem.plugin) {
+            msg =
+                pluginItem.name || `${pluginItem.type === 'run' ? 'Run' : 'Post Run'} ${pluginItem.plugin}`;
         }
         if (scriptItem.script) {
             msg = runItem.name || `Run ${scriptItem.script}`;

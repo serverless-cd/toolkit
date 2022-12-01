@@ -26,11 +26,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
 const yaml = __importStar(require("js-yaml"));
 const fs = __importStar(require("fs-extra"));
-const variable_1 = require("./variable");
 const lodash_1 = require("lodash");
-const TEMPLATE_YAML = 'serverless-pipeline.yaml';
-function parseSpec() {
-    const filePath = getYamlPath();
+// 解析配置文件
+function parseSpec(filePath) {
     const filename = path.basename(filePath);
     if (!fs.existsSync(filePath)) {
         throw new Error(`${filename} not found`);
@@ -53,10 +51,6 @@ function parseSpec() {
         }
         throw new Error(message);
     }
-}
-function getYamlPath() {
-    const templatePath = (0, variable_1.getServerlessCdVariable)('TEMPLATE_PATH');
-    return templatePath || path.join(process.cwd(), TEMPLATE_YAML);
 }
 exports.default = parseSpec;
 //# sourceMappingURL=parse-spec.js.map

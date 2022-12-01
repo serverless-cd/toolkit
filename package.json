@@ -24,11 +24,7 @@
   },
   "workspaces": [
     "packages/core",
-    "packages/engine",
-    "packages/git",
-    "packages/git-provider",
-    "packages/ots-orm",
-    "packages/trigger"
+    "packages/engine"
   ],
   "devDependencies": {
     "@types/jest": "^28.1.6",

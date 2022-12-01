@@ -22,6 +22,7 @@ __exportStar(require("./logger"), exports);
 var parse_spec_1 = require("./parse-spec");
 Object.defineProperty(exports, "parseSpec", { enumerable: true, get: function () { return __importDefault(parse_spec_1).default; } });
 __exportStar(require("./get-inputs"), exports);
+__exportStar(require("./ref"), exports);
 __exportStar(require("./switch-node-version"), exports);
 __exportStar(require("./variable"), exports);
 var fs_extra_1 = require("fs-extra");
