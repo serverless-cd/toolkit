@@ -1,7 +1,7 @@
 import Engine, { IStepOptions } from '../src';
-import { get, omit, map } from 'lodash';
+import { get } from 'lodash';
 import * as path from 'path';
-const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
+const logPrefix = path.join(__dirname, 'logs');
 
 describe('${{secret.name}} => 日志需要为 ***', () => {
   test('plugin case', async () => {

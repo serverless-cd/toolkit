@@ -1,7 +1,7 @@
 import Engine, { IStepOptions, IContext } from '../src';
 import { get, map } from 'lodash';
 import * as path from 'path';
-const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
+const logPrefix = path.join(__dirname, 'logs');
 
 test.skip('logger oss', async () => {
   const steps = [
@@ -60,6 +60,7 @@ test('获取某一步的outputs', async () => {
 
   expect(res?.status).toBe('success');
   expect(data).toEqual([
+    { status: 'success' },
     { status: 'success', outputs: {} },
     { status: 'success', outputs: { success: true } },
     { status: 'success', outputs: {} },
@@ -104,6 +105,7 @@ test('uses：应用测试返回值', async () => {
     outputs: item.outputs,
   }));
   expect(data).toEqual([
+    { status: 'success' },
     {
       status: 'success',
       id: 'xhello',
@@ -156,6 +158,7 @@ test('inputs测试', async () => {
     id: item.id,
   }));
   expect(data).toEqual([
+    { status: 'success' },
     { status: 'success', id: 'xhello' },
     { status: 'success', id: 'xworld' },
     { status: 'success', id: 'xname' },
@@ -178,9 +181,32 @@ test('inputs测试 env', async () => {
     status: item.status,
     id: item.id,
   }));
+  console.log(res);
   expect(data).toEqual([
+    { status: 'success' },
     { status: 'success', id: 'xhello' },
     { status: 'success', id: 'xname' },
     { status: 'success', id: 'xname' },
+  ]);
+});
+
+test.skip('测试plugin安装逻辑', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { plugin: '@serverless-cd/ding-talk', id: 'ding' },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+  });
+  const res: IContext | undefined = await engine.start();
+  const data = map(res?.steps, (item) => ({
+    status: item.status,
+    name: item.name,
+  }));
+  expect(data).toEqual([
+    { status: 'success', name: 'Set up task' },
+    { status: 'success', name: 'Run echo "hello"' },
+    { status: 'failure', name: 'Run @serverless-cd/ding-talk' },
   ]);
 });

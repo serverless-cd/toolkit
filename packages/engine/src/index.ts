@@ -35,7 +35,7 @@ import * as os from 'os';
 import * as zx from '@serverless-cd/zx';
 import {
   getScript,
-  getSteps,
+  parsePlugin,
   getProcessTime,
   getDefaultInitLog,
   getLogPath,
@@ -70,13 +70,13 @@ class Engine {
   private async doInit() {
     const { events } = this.options;
     this.context.status = STEP_STATUS.RUNNING;
-    if (!isFunction(events?.onInit)) return;
     const startTime = Date.now();
     const filePath = getLogPath(INIT_STEP_COUNT);
     this.logger = this.getLogger(filePath);
     this.logger.info(getDefaultInitLog());
     try {
       const res = await events?.onInit?.(this.context, this.logger);
+      // onInit 不存在时，也需要执行以下逻辑
       const process_time = getProcessTime(startTime);
       this.record.initData = {
         name: get(res, 'name', INIT_STEP_NAME),
@@ -85,8 +85,10 @@ class Engine {
         stepCount: INIT_STEP_COUNT,
         outputs: res,
       };
+      // 优先读取 doInit 返回的 steps 数据，其次 行参里的 steps 数据
+      const steps = await parsePlugin(res?.steps || this.options.steps, this);
       await this.doOss(filePath);
-      return res;
+      return { ...res, steps };
     } catch (error) {
       outputLog(this.logger, error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
@@ -100,12 +102,13 @@ class Engine {
       };
       this.context.error = error as Error;
       await this.doOss(filePath);
+      const steps = await parsePlugin(this.options.steps as IStepOptions[], this);
+      return { steps };
     }
   }
   async start(): Promise<IContext> {
-    const initValue = await this.doInit();
-    // 优先读取 doInit 返回的 steps 数据，其次 行参里的 steps 数据
-    const steps = getSteps(initValue?.steps || this.options.steps, this.childProcess);
+    const { steps } = await this.doInit();
+
     if (isEmpty(steps)) {
       throw new Error('steps is empty, please check your config');
     }
@@ -287,7 +290,7 @@ class Engine {
       }
       return obj;
     });
-    if (isFunction(events?.onInit) && !this.record.isInit) {
+    if (!this.record.isInit) {
       this.record.isInit = true;
       this.context.steps = concat(this.record.initData, this.context.steps);
     }

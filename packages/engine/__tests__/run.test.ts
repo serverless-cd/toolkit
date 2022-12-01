@@ -1,7 +1,7 @@
 import Engine, { IStepOptions, IContext } from '../src';
 import { get, find } from 'lodash';
 import * as path from 'path';
-const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
+const logPrefix = path.join(__dirname, 'logs');
 
 test('模版可以识别 ${{env.name}}', async () => {
   const steps = [

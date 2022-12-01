@@ -1,4 +1,4 @@
-import { map, uniqueId } from 'lodash';
+import { uniqueId } from 'lodash';
 import { IStepOptions, IPluginOptions } from '../types';
 import { fs } from '@serverless-cd/core';
 import { command, Options } from 'execa';
@@ -34,15 +34,22 @@ export function getScript(val: string) {
     }`;
 }
 
-export function getSteps(steps: IStepOptions[], childProcess: any[]) {
+export async function parsePlugin(steps: IStepOptions[], that: any) {
   const postArray = [] as IPluginOptions[];
-  const runArray = map(steps, (item: IStepOptions) => {
+  const runArray = [] as IStepOptions[];
+  for (const item of steps) {
     const pluginItem = item as IPluginOptions;
     if (pluginItem.plugin) {
-      // 本地路径调试时，不在安装依赖
+      // 本地路径时，不需要安装依赖
       if (!fs.existsSync(pluginItem.plugin)) {
-        const cp = command(`npm i ${pluginItem.plugin} --no-save`);
-        childProcess.push(cp);
+        // --no-save
+        that.logger.info(`install plugin ${pluginItem.plugin}...`);
+        const cp = command(
+          `npm install ${pluginItem.plugin} --registry=https://registry.npmmirror.com`,
+        );
+        that.childProcess.push(cp);
+        await that.onFinish(cp);
+        that.logger.info(`install plugin ${pluginItem.plugin} success`);
       }
       const app = require(pluginItem.plugin);
       pluginItem.type = 'run';
@@ -50,8 +57,8 @@ export function getSteps(steps: IStepOptions[], childProcess: any[]) {
         postArray.push({ ...item, type: 'postRun' } as IPluginOptions);
       }
     }
-    return item;
-  });
+    runArray.push(item);
+  }
   return [...runArray, ...postArray].map((item) => ({ ...item, stepCount: uniqueId() }));
 }
 
