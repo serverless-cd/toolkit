@@ -29,7 +29,6 @@ import {
   startsWith,
   endsWith,
 } from 'lodash';
-import { command } from 'execa';
 import * as path from 'path';
 import * as os from 'os';
 // @ts-ignore
@@ -41,6 +40,7 @@ import {
   getDefaultInitLog,
   getLogPath,
   runScript,
+  outputLog,
 } from './utils';
 import {
   INIT_STEP_COUNT,
@@ -87,7 +87,7 @@ class Engine {
       await this.doOss(filePath);
       return res;
     } catch (error) {
-      this.logger.debug(error);
+      outputLog(this.logger, error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
       const process_time = getProcessTime(startTime);
       this.record.initData = {
@@ -241,8 +241,7 @@ class Engine {
     try {
       await events?.onPostRun?.(data as ISteps, this.context, this.logger);
     } catch (error) {
-      this.logger.error(`onPostRun error at step: ${JSON.stringify(item)}`);
-      this.logger.debug(error);
+      outputLog(this.logger, error);
     }
   }
 
@@ -320,8 +319,7 @@ class Engine {
       try {
         await events?.onCompleted?.(this.context, this.logger);
       } catch (error) {
-        this.logger.error(`onCompleted error`);
-        this.logger.debug(error);
+        outputLog(this.logger, error);
       }
     }
     await this.doOss(filePath);
@@ -377,8 +375,7 @@ class Engine {
         await this.doOss(logPath);
       } else {
         this.recordContext(item, { status, error, process_time });
-        this.logger.error(`error at step: ${JSON.stringify(item)}`);
-        this.logger.debug(error);
+        outputLog(this.logger, error);
         await this.doOss(logPath);
         throw error;
       }

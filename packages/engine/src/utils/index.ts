@@ -1,7 +1,7 @@
 import { map, uniqueId } from 'lodash';
 import { IStepOptions, IPluginOptions } from '../types';
 import { fs } from '@serverless-cd/core';
-import { command } from 'execa';
+import { command, Options } from 'execa';
 import _ from 'lodash';
 const pkg = require('../../package.json');
 
@@ -64,7 +64,7 @@ export function getProcessTime(time: number) {
  * @param runStr 执行指令的字符串
  * @param options
  */
-export function runScript(runStr: string, options: any) {
+export function runScript(runStr: string, options: Options<string>) {
   const shellTokens = ['>', '>>', '|', '||', '&&'];
   const runnerTokens = _.filter(shellTokens, (item) => _.includes(runStr, item));
   if (Array.isArray(runnerTokens) && runnerTokens.length > 0) {
@@ -72,4 +72,8 @@ export function runScript(runStr: string, options: any) {
   } else {
     return command(runStr, options);
   }
+}
+
+export function outputLog(logger: any, message: any) {
+  process.env['CLI_VERSION'] ? logger.debug(message) : logger.info(message);
 }
