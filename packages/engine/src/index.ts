@@ -56,7 +56,8 @@ class Engine {
   private record = { status: STEP_STATUS.PENING, editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
-    const { inputs } = options;
+    const { inputs, cwd = process.cwd() } = options;
+    this.context.cwd = cwd;
     this.context.inputs = inputs as {};
     this.context.secrets = inputs?.secrets;
     this.doArtTemplateVariable();
@@ -382,15 +383,14 @@ class Engine {
     }
   }
   private async doSrc(_item: IStepOptions) {
-    const { cwd = process.cwd() } = this.options;
     const item = { ..._item };
     const runItem = item as IRunOptions;
     const pluginItem = item as IPluginOptions;
     const scriptItem = item as IScriptOptions;
     // run
     if (runItem.run) {
-      let execPath = runItem['working-directory'] || cwd;
-      execPath = path.isAbsolute(execPath) ? execPath : path.join(cwd, execPath);
+      let execPath = runItem['working-directory'] || this.context.cwd;
+      execPath = path.isAbsolute(execPath) ? execPath : path.join(this.context.cwd, execPath);
       this.logName(_item);
       const ifCondition = artTemplate.compile(runItem.run);
       runItem.run = ifCondition(this.getFilterContext());

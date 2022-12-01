@@ -100,6 +100,7 @@ export interface IRecord {
 }
 
 export interface IContext {
+  cwd: string; // 当前工作目录
   stepCount: string; // 记录当前执行的step
   steps: ISteps[];
   env: Record<string, any>; // 记录合并后的环境变量
