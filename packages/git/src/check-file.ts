@@ -2,8 +2,9 @@ import simpleGit, { SimpleGit } from 'simple-git';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs-extra';
-import { startsWith, replace } from 'lodash';
+import { replace } from 'lodash';
 import { IProvider } from './types';
+import { parseRef } from '@serverless-cd/core';
 interface IConfig {
   token: string;
   provider: IProvider;
@@ -40,10 +41,10 @@ async function checkFile(config: IConfig) {
 
     console.log('clone success');
   }
-  const branch = startsWith(ref, 'refs/heads/') ? replace(ref, 'refs/heads/', '') : undefined;
+  const refInfo = parseRef(ref);
   let isExist = false;
   try {
-    const cmd = branch ? `origin/${branch}:${file}` : `${ref}:${file}`;
+    const cmd = refInfo.type === 'branch' ? `origin/${refInfo.value}:${file}` : `${ref}:${file}`;
     console.log(`git cat-file -e ${cmd}`);
     await git.raw(['cat-file', '-e', cmd]);
     console.log('cat-file success');
@@ -61,7 +62,8 @@ async function checkFile(config: IConfig) {
         path.extname(file),
         path.extname(file) === '.yaml' ? '.yml' : '.yaml',
       );
-      const cmd = branch ? `origin/${branch}:${newFile}` : `${ref}:${newFile}`;
+      const cmd =
+        refInfo?.type === 'branch' ? `origin/${refInfo.value}:${newFile}` : `${ref}:${newFile}`;
       console.log(`git cat-file -e ${cmd}`);
 
       await git.raw(['cat-file', '-e', cmd]);

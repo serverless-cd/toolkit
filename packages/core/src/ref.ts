@@ -15,7 +15,7 @@ export function getRef(config: IConfig) {
   throw new Error(`Unsupported type: ${type}`);
 }
 
-export function parseRef(ref: string) {
+export function parseRef(ref: string): IConfig {
   if (startsWith(ref, 'refs/heads/')) {
     return {
       type: 'branch',
