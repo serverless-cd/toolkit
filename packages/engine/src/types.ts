@@ -13,7 +13,7 @@ interface IEvent {
   onSuccess?: (context: IContext, logger: any) => Promise<void>;
   onFailure?: (context: IContext, logger: any) => Promise<void>;
   onCancelled?: (context: IContext, logger: any) => Promise<void>;
-  onCompleted?: (context: IContext, logger: any) => Promise<any>;
+  onCompleted?: (context: IContext, logger: any) => Promise<void>;
   onInit?: (context: IContext, logger: any) => Promise<any>;
 }
 
@@ -52,8 +52,8 @@ export interface IPluginOptions {
   if?: string;
   env?: Record<string, any>;
   'continue-on-error'?: boolean;
-  with?: Record<string, any>;
-  type?: 'run' | 'postRun' | 'completed'; //内部处理 用于区分是run还是postRun
+  inputs?: Record<string, any>;
+  type?: 'run' | 'postRun'; //内部处理 用于区分是run还是postRun
 }
 
 export type IStepOptions = IRunOptions | IPluginOptions | IScriptOptions;

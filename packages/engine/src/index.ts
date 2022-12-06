@@ -56,7 +56,8 @@ class Engine {
   private record = { status: STEP_STATUS.PENING, editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
-    const { inputs, cwd = process.cwd() } = options;
+    const { inputs, cwd = process.cwd(), logConfig = {} } = options;
+    this.options.logConfig = logConfig;
     this.context.cwd = cwd;
     this.context.inputs = inputs as {};
     this.context.secrets = inputs?.secrets;
