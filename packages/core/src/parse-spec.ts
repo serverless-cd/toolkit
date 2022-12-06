@@ -14,7 +14,6 @@ function parseSpec(filePath: string) {
   try {
     const res = yaml.load(fs.readFileSync(filePath, 'utf8'));
     return {
-      triggers: get(res, 'triggers'),
       steps: map(get(res, 'steps'), (step: any) => {
         step.env = merge({}, get(res, 'env'), get(step, 'env'));
         return step;
