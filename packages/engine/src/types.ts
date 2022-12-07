@@ -13,7 +13,7 @@ interface IEvent {
   onSuccess?: (context: IContext, logger: any) => Promise<void>;
   onFailure?: (context: IContext, logger: any) => Promise<void>;
   onCancelled?: (context: IContext, logger: any) => Promise<void>;
-  onCompleted?: (context: IContext, logger: any) => Promise<any>;
+  onCompleted?: (context: IContext, logger: any) => Promise<void>;
   onInit?: (context: IContext, logger: any) => Promise<any>;
 }
 
@@ -44,19 +44,19 @@ export interface IScriptOptions {
   'continue-on-error'?: boolean;
 }
 
-export interface IUsesOptions {
-  uses: string;
+export interface IPluginOptions {
+  plugin: string;
   stepCount?: string;
   id?: string;
   name?: string;
   if?: string;
   env?: Record<string, any>;
   'continue-on-error'?: boolean;
-  with?: Record<string, any>;
-  type?: 'run' | 'postRun' | 'completed'; //内部处理 用于区分是run还是postRun
+  inputs?: Record<string, any>;
+  type?: 'run' | 'postRun'; //内部处理 用于区分是run还是postRun
 }
 
-export type IStepOptions = IRunOptions | IUsesOptions | IScriptOptions;
+export type IStepOptions = IRunOptions | IPluginOptions | IScriptOptions;
 
 export enum STEP_IF {
   SUCCESS = 'success()',
@@ -100,6 +100,7 @@ export interface IRecord {
 }
 
 export interface IContext {
+  cwd: string; // 当前工作目录
   stepCount: string; // 记录当前执行的step
   steps: ISteps[];
   env: Record<string, any>; // 记录合并后的环境变量

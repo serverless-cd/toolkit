@@ -1,9 +1,9 @@
 import Engine, { IStepOptions, IContext } from '../src';
 import { map } from 'lodash';
 import * as path from 'path';
-const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
+const logPrefix = path.join(__dirname, 'logs');
 
-test.only('某一步执行失败，错误信息记录在context.error', async () => {
+test('某一步执行失败，错误信息记录在context.error', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { run: 'npm run error', id: 'xerror' },
@@ -29,6 +29,9 @@ test('某一步执行失败，后续步骤执行状态为skip', async () => {
     run: item.run,
   }));
   expect(data).toEqual([
+    {
+      status: 'success',
+    },
     {
       status: 'success',
       run: 'echo "hello"',
@@ -57,6 +60,9 @@ test('某一步执行失败，但该步骤添加了continue-on-error: true，后
     run: item.run,
   }));
   expect(data).toEqual([
+    {
+      status: 'success',
+    },
     {
       status: 'success',
       run: 'echo "hello"',
@@ -88,6 +94,9 @@ test('某一步执行失败，但该步骤添加了continue-on-error: true，但
   expect(data).toEqual([
     {
       status: 'success',
+    },
+    {
+      status: 'success',
       run: 'echo "hello"',
     },
     {
@@ -112,6 +121,9 @@ test('某一步执行失败，后续某步骤标记了if: ${{ failure() }}', asy
     run: item.run,
   }));
   expect(data).toEqual([
+    {
+      status: 'success',
+    },
     {
       status: 'success',
       run: 'echo "hello"',
@@ -145,6 +157,9 @@ test('某一步执行失败，后续多个步骤标记了if: ${{ failure() }}', 
     run: item.run,
   }));
   expect(data).toEqual([
+    {
+      status: 'success',
+    },
     {
       status: 'success',
       run: 'echo "hello"',
@@ -185,6 +200,9 @@ test("某一步执行失败，后续某步骤标记了if: ${{ failure() && steps
   expect(data).toEqual([
     {
       status: 'success',
+    },
+    {
+      status: 'success',
       run: 'echo "hello"',
     },
     {
@@ -222,6 +240,9 @@ test("某一步执行失败，后续某步骤标记了if: ${{ failure() && steps
   expect(data).toEqual([
     {
       status: 'success',
+    },
+    {
+      status: 'success',
       run: 'echo "hello"',
     },
     {
@@ -255,6 +276,9 @@ test('某一步执行失败，后续某步骤标记了if: ${{ success() }}', asy
   expect(data).toEqual([
     {
       status: 'success',
+    },
+    {
+      status: 'success',
       run: 'echo "hello"',
     },
     {
@@ -286,6 +310,9 @@ test('某一步执行失败，后续某步骤标记了if: ${{ always() }}', asyn
     run: item.run,
   }));
   expect(data).toEqual([
+    {
+      status: 'success',
+    },
     {
       status: 'success',
       run: 'echo "hello"',

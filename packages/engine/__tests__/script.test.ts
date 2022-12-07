@@ -1,7 +1,7 @@
 import Engine, { IStepOptions } from '../src';
 import { get } from 'lodash';
 import * as path from 'path';
-const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
+const logPrefix = path.join(__dirname, 'logs');
 
 test('系统命令:ls-la', async () => {
   const steps = [

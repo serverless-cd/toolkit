@@ -1,18 +1,18 @@
-import { parseSpec, setServerlessCdVariable } from '../../src';
+import { parseSpec } from '../../src';
 import * as path from 'path';
 
 test('yaml文件未找到', () => {
   const TEMPLATE_YAML = 'serverless-pipeline-no.yaml';
-  setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, TEMPLATE_YAML));
-  expect(() => parseSpec()).toThrow(`${TEMPLATE_YAML} not found`);
+  expect(() => parseSpec(path.join(__dirname, TEMPLATE_YAML))).toThrow(
+    `${TEMPLATE_YAML} not found`,
+  );
 });
 
 test('yaml文件内容格式不正确', () => {
   const TEMPLATE_YAML = 'serverless-pipeline-error.yaml';
-  setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, TEMPLATE_YAML));
   expect.assertions(1);
   try {
-    parseSpec();
+    parseSpec(path.join(__dirname, TEMPLATE_YAML));
   } catch (e) {
     expect((e as Error).toString()).toMatch(`Error: ${TEMPLATE_YAML} format is incorrect`);
   }
@@ -20,8 +20,8 @@ test('yaml文件内容格式不正确', () => {
 
 test('env 解析', () => {
   const TEMPLATE_YAML = 'serverless-pipeline.yaml';
-  setServerlessCdVariable('TEMPLATE_PATH', path.join(__dirname, TEMPLATE_YAML));
-  const res = parseSpec();
+  const res = parseSpec(path.join(__dirname, TEMPLATE_YAML));
+  console.log(JSON.stringify(res, null, 2));
   expect(res.steps).toEqual([
     {
       run: "echo 'Hi {{ env.name }}'",

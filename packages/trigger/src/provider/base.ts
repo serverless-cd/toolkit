@@ -51,8 +51,8 @@ export default abstract class BaseEvent {
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
           if (bol) {
-            console.log('webhook match pr exclude rules');
-            return generateErrorResult('webhook match pr exclude rules');
+            console.log('webhook match pull_request exclude rules');
+            return generateErrorResult('webhook match pull_request exclude rules');
           }
         }
       }
@@ -74,7 +74,7 @@ export default abstract class BaseEvent {
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
           if (bol) {
-            console.log('webhook match pr precise rules');
+            console.log('webhook match pull_request precise rules');
             return generateSuccessResult(params, this.body);
           }
         }
@@ -90,7 +90,7 @@ export default abstract class BaseEvent {
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
           if (bol) {
-            console.log('webhook match pr prefix rules');
+            console.log('webhook match pull_request prefix rules');
             return generateSuccessResult(params, this.body);
           }
         }
@@ -106,13 +106,13 @@ export default abstract class BaseEvent {
           );
           const bol = validTarget.length > 0 && validSource.length > 0;
           if (bol) {
-            console.log('webhook match pr include rules');
+            console.log('webhook match pull_request include rules');
             return generateSuccessResult(params, this.body);
           }
         }
       }
     }
-    return generateErrorResult('webhook not match pr rules');
+    return generateErrorResult('webhook not match pull_request rules');
   }
   doPush(trigger: ITrigger, info: IPushInfo) {
     const params = {

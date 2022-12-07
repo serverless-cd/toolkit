@@ -1,9 +1,9 @@
 import BaseEvent from './base';
 import {
   getPushInfo,
-  getPrInfoWithCodeup,
+  getPrInfoWithCodeupOrGitlab,
   generateErrorResult,
-  checkTypeWithCodeup,
+  checkTypeWithCodeupOrGitlab,
 } from '../utils';
 import { ITrigger, ICodeupEvent, IPrTypesVal } from '../type';
 import { get, isEmpty, includes } from 'lodash';
@@ -27,20 +27,20 @@ export default class Codeup extends BaseEvent {
 
     const eventType = get(this.headers, 'x-codeup-event') as ICodeupEvent;
     console.log(`get x-codeup-event value: ${eventType}`);
-    // 检测 push, pr
+    // 检测 push, pull_request
     // push 检测 分支 和 tag
     if (includes(['Push Hook', 'Tag Push Hook'], eventType)) {
       const info = getPushInfo(get(this.body, 'ref', ''));
       console.log(`get push info: ${JSON.stringify(info)}`);
       return this.doPush(codeup, info);
     }
-    // pr 检测 分支
+    // pull_request 检测 分支
     if (eventType === 'Merge Request Hook') {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
-      const result = checkTypeWithCodeup(codeup, this.body);
+      const result = checkTypeWithCodeupOrGitlab(codeup, this.body);
       if (!result.success) return generateErrorResult(result.message);
-      const prInfo = getPrInfoWithCodeup(this.body);
-      console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
+      const prInfo = getPrInfoWithCodeupOrGitlab(this.body);
+      console.log(`get pull_request branch: ${JSON.stringify(prInfo)}`);
       return this.doPr(codeup, { ...prInfo, type: result.type as IPrTypesVal });
     }
     return generateErrorResult(`Unsupported event type: ${eventType}`);

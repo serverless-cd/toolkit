@@ -1,12 +1,12 @@
 import Engine, { IStepOptions } from '../src';
 import * as path from 'path';
-import { get } from 'lodash';
+import { get, find } from 'lodash';
 const logPrefix = path.join(__dirname, 'logs');
 
 test('contains: if success', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world"', if: "${{ contains(github.ref, 'engine')}}" },
+    { run: 'echo "world"', if: "${{ contains(github.ref, 'engine')}}", id: 'contains' },
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
@@ -24,13 +24,14 @@ test('contains: if success', async () => {
   });
   const res = await engine.start();
   console.log(res);
-  expect(get(res, 'steps[1].status')).toEqual('success');
+  const obj = find(res.steps, { id: 'contains' });
+  expect(obj?.status).toEqual('success');
 });
 
 test('contains: if fail', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world"', if: "${{ contains(github.ref, 'engine')}}" },
+    { run: 'echo "world"', if: "${{ contains(github.ref, 'engine')}}", id: 'contains' },
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
@@ -48,13 +49,14 @@ test('contains: if fail', async () => {
   });
   const res = await engine.start();
   console.log(res);
-  expect(get(res, 'steps[1].status')).toEqual('skipped');
+  const obj = find(res.steps, { id: 'contains' });
+  expect(obj?.status).toEqual('skipped');
 });
 
 test('startsWith: if success', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world"', if: "${{ startsWith(github.ref, 'refs/heads')}}" },
+    { run: 'echo "world"', if: "${{ startsWith(github.ref, 'refs/heads')}}", id: 'startsWith' },
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
@@ -72,13 +74,14 @@ test('startsWith: if success', async () => {
   });
   const res = await engine.start();
   console.log(res);
-  expect(get(res, 'steps[1].status')).toEqual('success');
+  const obj = find(res.steps, { id: 'startsWith' });
+  expect(obj?.status).toEqual('success');
 });
 
 test('startsWith: if fail', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world"', if: "${{ startsWith(github.ref, 'engine')}}" },
+    { run: 'echo "world"', if: "${{ startsWith(github.ref, 'engine')}}", id: 'startsWith' },
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
@@ -96,13 +99,14 @@ test('startsWith: if fail', async () => {
   });
   const res = await engine.start();
   console.log(res);
-  expect(get(res, 'steps[1].status')).toEqual('skipped');
+  const obj = find(res.steps, { id: 'startsWith' });
+  expect(obj?.status).toEqual('skipped');
 });
 
-test.only('endsWith: if success', async () => {
+test('endsWith: if success', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world"', if: "${{ endsWith(github.ref, 'engine')}}" },
+    { run: 'echo "world"', if: "${{ endsWith(github.ref, 'engine')}}", id: 'endsWith' },
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
@@ -120,13 +124,14 @@ test.only('endsWith: if success', async () => {
   });
   const res = await engine.start();
   console.log(res);
-  expect(get(res, 'steps[1].status')).toEqual('success');
+  const obj = find(res.steps, { id: 'endsWith' });
+  expect(obj?.status).toEqual('success');
 });
 
-test.only('endsWith: if fail', async () => {
+test('endsWith: if fail', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world"', if: "${{ endsWith(github.ref, 'engine')}}" },
+    { run: 'echo "world"', if: "${{ endsWith(github.ref, 'engine')}}", id: 'endsWith' },
   ] as IStepOptions[];
   const engine = new Engine({
     steps,
@@ -144,5 +149,6 @@ test.only('endsWith: if fail', async () => {
   });
   const res = await engine.start();
   console.log(res);
-  expect(get(res, 'steps[1].status')).toEqual('skipped');
+  const obj = find(res.steps, { id: 'endsWith' });
+  expect(obj?.status).toEqual('skipped');
 });

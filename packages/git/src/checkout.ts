@@ -1,13 +1,13 @@
-import { EngineLogger } from '@serverless-cd/core';
+import { Logger, parseRef } from '@serverless-cd/core';
 import simpleGit, { SimpleGit } from 'simple-git';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs-extra';
-import { replace, get, startsWith } from 'lodash';
+import { replace, get, isEmpty } from 'lodash';
 import { IConfig } from './types';
 
 class Checkout {
-  private logger: EngineLogger;
+  private logger: Logger;
   private git: SimpleGit;
   private existing: boolean = false;
   constructor(private config: IConfig) {
@@ -82,14 +82,15 @@ class Checkout {
   }
   private checkInputs() {
     const { commit, ref = '' } = this.config;
-    const branch = startsWith(ref, 'refs/heads/') ? replace(ref, 'refs/heads/', '') : undefined;
-    const tag = startsWith(ref, 'refs/tags/') ? replace(ref, 'refs/tags/', '') : undefined;
-
-    if (tag) {
-      return { tag, commit };
+    if (isEmpty(ref)) {
+      return { isNothing: true };
     }
-    if (branch && commit) {
-      return { branch, commit };
+    const { type, value } = parseRef(ref);
+    if (type === 'tag') {
+      return { tag: value, commit };
+    }
+    if (type === 'branch' && commit) {
+      return { branch: value, commit };
     }
     if (commit) {
       return { commit };

@@ -139,10 +139,10 @@ describe('执行终态emit测试', () => {
 });
 
 describe('步骤执行过程中emit测试', () => {
-  test('uses success on process', async () => {
+  test('plugin success on process', async () => {
     const steps = [
       {
-        uses: path.join(__dirname, 'fixtures', 'success'),
+        plugin: path.join(__dirname, 'fixtures', 'success'),
         id: 'xapp',
         inputs: { milliseconds: 10 },
       },
@@ -176,10 +176,10 @@ describe('步骤执行过程中emit测试', () => {
       { status: 'success', outputs: {} },
     ]);
   });
-  test('uses success on process', async () => {
+  test('plugin success on process', async () => {
     const steps = [
       {
-        uses: path.join(__dirname, 'fixtures', 'success'),
+        plugin: path.join(__dirname, 'fixtures', 'success'),
         id: 'xapp',
         inputs: { milliseconds: 10 },
       },
@@ -327,7 +327,7 @@ test('测试context status(task status)', async () => {
   expect(statusList).toEqual(['running', 'success']);
 });
 
-test.only('测试onInit 成功 返回steps数据', async () => {
+test('测试onInit 成功 返回steps数据', async () => {
   const engine = new Engine({
     logConfig: {
       logPrefix,
@@ -412,7 +412,7 @@ test('测试onInit执行失败', async () => {
     status: item.status,
   }));
   expect(data).toEqual([
-    { run: 'Init', status: 'failure' },
+    { run: 'Set up task', status: 'failure' },
     { run: 'echo "hello"', status: 'skipped' },
     { run: 'echo "world"', status: 'skipped' },
   ]);

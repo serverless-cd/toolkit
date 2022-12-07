@@ -1,7 +1,7 @@
 import Engine, { IStepOptions, IContext } from '../src';
-import { get, map } from 'lodash';
+import { map } from 'lodash';
 import * as path from 'path';
-const logPrefix = path.join(__dirname, 'logs', '/tmp/uid/appname/releaseid');
+const logPrefix = path.join(__dirname, 'logs');
 
 test('模版可以识别${{steps.xhello.status === "success"}}', async () => {
   const steps = [
@@ -20,6 +20,7 @@ test('模版可以识别${{steps.xhello.status === "success"}}', async () => {
     run: item.run,
   }));
   expect(data).toEqual([
+    { status: 'success' },
     {
       status: 'success',
       run: 'echo "hello"',
@@ -52,6 +53,7 @@ test('模版可以识别${{steps.xhello.status !== "success"}}', async () => {
     run: item.run,
   }));
   expect(data).toEqual([
+    { status: 'success' },
     {
       status: 'success',
       run: 'echo "hello"',
@@ -84,6 +86,7 @@ test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.st
     run: item.run,
   }));
   expect(data).toEqual([
+    { status: 'success' },
     {
       status: 'success',
       run: 'echo "hello"',
@@ -117,6 +120,7 @@ test("模版可以识别${{ steps.xhello.status === 'success' && steps.xworld.st
     run: item.run,
   }));
   expect(data).toEqual([
+    { status: 'success' },
     {
       status: 'success',
       run: 'echo "hello"',
@@ -148,6 +152,7 @@ test('模版可以识别 ${{env.name === "xiaoming"}}', async () => {
     run: item.run,
   }));
   expect(data).toEqual([
+    { status: 'success' },
     {
       status: 'skipped',
       run: 'echo "hello"',

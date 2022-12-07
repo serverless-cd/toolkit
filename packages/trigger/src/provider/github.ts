@@ -24,20 +24,20 @@ export default class Github extends BaseEvent {
 
     const eventType = get(this.headers, 'x-github-event') as IGithubEvent;
     console.log(`get x-github-event value: ${eventType}`);
-    // 检测 push, pr
+    // 检测 push, pull_request
     // push 检测 分支 和 tag
     if (eventType === 'push') {
       const info = getPushInfo(get(this.body, 'ref', ''));
       console.log(`get push info: ${JSON.stringify(info)}`);
       return this.doPush(github, info);
     }
-    // pr 检测 分支
+    // pull_request 检测 分支
     if (eventType === 'pull_request') {
       // 检查type ['opened', 'reopened', 'closed', 'merged']
       const result = this.checkType(github);
       if (!result.success) return generateErrorResult(result.message);
       const prInfo = getPrInfo(this.body);
-      console.log(`get pr branch: ${JSON.stringify(prInfo)}`);
+      console.log(`get pull_request branch: ${JSON.stringify(prInfo)}`);
       return this.doPr(github, { ...prInfo, type: result.type as IPrTypesVal });
     }
     return generateErrorResult(`Unsupported event type: ${eventType}`);
@@ -54,12 +54,12 @@ export default class Github extends BaseEvent {
     if (includes([IPrTypes.OPENED, IPrTypes.REOPENED], action)) {
       type = action;
       valid = includes(types, action);
-      message = `pr type is ${action}, but only ${types} is allowed`;
+      message = `pull_request type is ${action}, but only ${types} is allowed`;
     }
     if (action === IPrTypes.CLOSED) {
       type = merged ? IPrTypes.MERGED : IPrTypes.CLOSED;
       valid = includes(types, type);
-      message = `pr type is ${action} and merged is ${merged}, but only ${types} is allowed`;
+      message = `pull_request type is ${action} and merged is ${merged}, but only ${types} is allowed`;
     }
     if (valid) {
       console.log('check type success');
