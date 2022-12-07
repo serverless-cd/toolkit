@@ -49,12 +49,16 @@ export interface ITrigger {
   };
 }
 
+export interface IGiteeTrigger extends ITrigger {
+  password?: string;
+}
+
 export type ITriggers =
   | {
       github: ITrigger;
     }
   | {
-      gitee: ITrigger;
+      gitee: IGiteeTrigger;
     }
   | {
       codeup: ITrigger;

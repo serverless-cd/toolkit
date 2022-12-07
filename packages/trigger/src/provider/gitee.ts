@@ -1,6 +1,7 @@
 import BaseEvent from './base';
+import crypto from 'crypto';
 import { getPushInfo, getPrInfo, generateErrorResult } from '../utils';
-import { ITrigger, IGiteeEvent, IPrTypes, IPrTypesVal, IGiteeAction } from '../type';
+import { IGiteeTrigger, IGiteeEvent, IPrTypes, IPrTypesVal, IGiteeAction } from '../type';
 import { get, isEmpty, includes } from 'lodash';
 
 export default class Gitee extends BaseEvent {
@@ -9,15 +10,12 @@ export default class Gitee extends BaseEvent {
     if (isEmpty(_gitee)) {
       throw new Error(`No ${this.provider} configuration found`);
     }
-    const gitee = _gitee as ITrigger;
-
-    console.log('verify secret status...');
-    const secret = get(gitee, 'secret', '');
-    const verifySecretStatus = this.verifySecret(secret);
+    const gitee = _gitee as IGiteeTrigger;
+    const verifySecretStatus = this.verifySecret(gitee);
     if (verifySecretStatus) {
-      console.log('verify secret success');
+      console.log('verify secret or password success');
     } else {
-      throw new Error('Verify secret error');
+      throw new Error('verify secret or password error');
     }
 
     const eventType = get(this.headers, 'x-gitee-event') as IGiteeEvent;
@@ -40,7 +38,7 @@ export default class Gitee extends BaseEvent {
     }
     return generateErrorResult(`Unsupported event type: ${eventType}`);
   }
-  private checkType(github: ITrigger) {
+  private checkType(github: IGiteeTrigger) {
     const action = get(this.body, 'action', '') as IPrTypesVal;
     const merged = get(this.body, 'pull_request.merged', false);
     console.log(`get pull_request type: ${action}`);
@@ -68,11 +66,25 @@ export default class Gitee extends BaseEvent {
     console.log('check type error');
     return { success: false, message, type: newAction };
   }
-  private verifySecret(secret: string | undefined): boolean {
+  private verifySecret(gitee: IGiteeTrigger): boolean {
     const signature = get(this.headers, 'x-gitee-token', '');
-    if (isEmpty(secret) && isEmpty(signature)) {
-      return true;
+    const secret = get(gitee, 'secret', '');
+    if (secret) {
+      console.log('verify secret status...');
+      const timestamp = get(this.headers, 'x-gitee-timestamp', '');
+      const str = crypto
+        .createHmac('sha256', secret)
+        .update(`${timestamp}\n${secret}`)
+        .digest()
+        .toString('base64');
+      return str === signature;
     }
-    return signature === secret;
+    const password = get(gitee, 'password', '');
+    if (password) {
+      console.log('verify password status...');
+      return signature === password;
+    }
+    if (isEmpty(signature)) return true;
+    return false;
   }
 }

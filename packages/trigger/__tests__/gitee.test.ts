@@ -1,6 +1,7 @@
 import verifyLegitimacy, { IPrTypes } from '../src';
 import {
   pushWithBranch,
+  pushWithBranchBySecret,
   pushWithTag,
   prWithOpened,
   prWithClosed,
@@ -9,6 +10,42 @@ import {
 } from './mock/gitee';
 
 test('gitee webhook push with branch case', async () => {
+  const eventConfig = {
+    gitee: {
+      password: 'shihuali123',
+      push: {
+        branches: {
+          prefix: ['feature'],
+          precise: ['master'],
+          include: ['master'],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, pushWithBranch);
+  console.log(res);
+
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://gitee.com/shihuali/start-express-ff.git',
+      provider: 'gitee',
+      pusher: {
+        name: 'shihuali',
+        email: 'shihuali5257@126.com',
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
+      },
+      push: { branch: 'master', tag: undefined },
+      commit: {
+        id: 'e5ae1e4776fcdffc8098b420be940cf5565b1404',
+        message:
+          'update s_en.yaml.\n' + '\n' + 'Signed-off-by: shihuali &lt;shihuali5257@126.com&gt;',
+      },
+    },
+  });
+});
+
+test.only('gitee webhook push with branch case (签名密钥)', async () => {
   const eventConfig = {
     gitee: {
       secret: 'shihuali123',
@@ -21,7 +58,7 @@ test('gitee webhook push with branch case', async () => {
       },
     },
   };
-  const res = await verifyLegitimacy(eventConfig, pushWithBranch);
+  const res = await verifyLegitimacy(eventConfig, pushWithBranchBySecret);
   console.log(res);
 
   expect(res).toEqual({
