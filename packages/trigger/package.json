@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/trigger",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "校验webhook与触发条件是否匹配",
   "author": "wss-git <wssgryx@163.com>",
   "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit#readme",
