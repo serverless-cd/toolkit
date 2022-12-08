@@ -1,4 +1,4 @@
-import verifyLegitimacy, { IPrTypes } from '../src';
+import verifyLegitimacy, { IPrTypes, getProvider } from '../src';
 import {
   pushWithBranch,
   pushWithTag,
@@ -7,6 +7,12 @@ import {
   prWithReopened,
   prWithMerged,
 } from './mock/codeup';
+
+test.only('getProvider 测试', async () => {
+  const provider = getProvider(pushWithBranch);
+  console.log(provider);
+  expect(provider).toBe('codeup');
+});
 
 test('codeup webhook push with branch case', async () => {
   const eventConfig = {

@@ -17,4 +17,7 @@ export async function verifyLegitimacy(triggers: ITriggers, payload: IPayload) {
   const res: IVerify = await eventClient.verify();
   return res;
 }
+
+export const getProvider = webhook.getTriggerEvent;
+
 export default verifyLegitimacy;
