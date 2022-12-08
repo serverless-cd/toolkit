@@ -97,12 +97,14 @@ export interface IVerify {
   data: {
     url: string;
     provider: IProvider;
+    repo_id: number;
     pusher: {
       name: string;
       email: string;
       avatar_url: string;
     };
     push?: {
+      ref: string;
       branch?: string;
       tag?: string;
     };
