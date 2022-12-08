@@ -1,4 +1,4 @@
-import verifyLegitimacy, { IPrTypes } from '../src';
+import verifyLegitimacy, { IPrTypes, getProvider } from '../src';
 import {
   pushWithBranch,
   pushWithTag,
@@ -8,6 +8,12 @@ import {
   prWithMerged,
   releaseWithPublished,
 } from './mock/github';
+
+test.only('getProvider 测试', async () => {
+  const provider = getProvider(pushWithBranch);
+  console.log(provider);
+  expect(provider).toBe('github');
+});
 
 test('no trigger data', async () => {
   const eventConfig = {

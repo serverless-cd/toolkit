@@ -1,4 +1,4 @@
-import verifyLegitimacy, { IPrTypes } from '../src';
+import verifyLegitimacy, { IPrTypes, getProvider } from '../src';
 import {
   pushWithBranch,
   pushWithBranchBySecret,
@@ -8,6 +8,12 @@ import {
   prWithReopened,
   prWithMerged,
 } from './mock/gitee';
+
+test.only('getProvider 测试', async () => {
+  const provider = getProvider(pushWithBranch);
+  console.log(provider);
+  expect(provider).toBe('gitee');
+});
 
 test('gitee webhook push with branch case', async () => {
   const eventConfig = {
