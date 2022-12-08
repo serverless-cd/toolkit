@@ -30,12 +30,13 @@ test('gitee webhook push with branch case', async () => {
     data: {
       url: 'https://gitee.com/shihuali/start-express-ff.git',
       provider: 'gitee',
+      repo_id: 23408082,
       pusher: {
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
         name: 'shihuali',
         email: 'shihuali5257@126.com',
-        avatar_url: 'https://gitee.com/assets/no_portrait.png',
       },
-      push: { branch: 'master', tag: undefined },
+      push: { branch: 'master', tag: undefined, ref: 'refs/heads/master' },
       commit: {
         id: 'e5ae1e4776fcdffc8098b420be940cf5565b1404',
         message:
@@ -45,7 +46,7 @@ test('gitee webhook push with branch case', async () => {
   });
 });
 
-test.only('gitee webhook push with branch case (签名密钥)', async () => {
+test('gitee webhook push with branch case (签名密钥)', async () => {
   const eventConfig = {
     gitee: {
       secret: 'shihuali123',
@@ -66,12 +67,13 @@ test.only('gitee webhook push with branch case (签名密钥)', async () => {
     data: {
       url: 'https://gitee.com/shihuali/start-express-ff.git',
       provider: 'gitee',
+      repo_id: 23408082,
       pusher: {
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
         name: 'shihuali',
         email: 'shihuali5257@126.com',
-        avatar_url: 'https://gitee.com/assets/no_portrait.png',
       },
-      push: { branch: 'master', tag: undefined },
+      push: { branch: 'master', tag: undefined, ref: 'refs/heads/master' },
       commit: {
         id: 'e5ae1e4776fcdffc8098b420be940cf5565b1404',
         message:
@@ -102,12 +104,13 @@ test('gitee webhook push with tag case', async () => {
     data: {
       url: 'https://gitee.com/shihuali/start-express-ff.git',
       provider: 'gitee',
+      repo_id: 23408082,
       pusher: {
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
         name: 'shihuali',
         email: 'shihuali5257@126.com',
-        avatar_url: 'https://gitee.com/assets/no_portrait.png',
       },
-      push: { branch: undefined, tag: 'v0.0.1' },
+      push: { branch: undefined, tag: 'v0.0.1', ref: 'refs/tags/v0.0.1' },
       commit: {
         id: 'f808ff5622d7fa38fb4800c543b49fccb7ad969b',
         message: 'update s_en.yaml. 33\n\nSigned-off-by: shihuali <shihuali5257@126.com>',
@@ -136,10 +139,11 @@ test('gitee webhook success with pr opened', async () => {
     data: {
       url: 'https://gitee.com/shihuali/start-express-ff.git',
       provider: 'gitee',
+      repo_id: 23408082,
       pusher: {
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
         name: 'shihuali',
         email: 'shihuali5257@126.com',
-        avatar_url: 'https://gitee.com/assets/no_portrait.png',
       },
       pull_request: { type: 'opened', target_branch: 'master', source_branch: 'dev' },
       commit: {
@@ -188,10 +192,11 @@ test('gitee webhook success with pr closed', async () => {
     data: {
       url: 'https://gitee.com/shihuali/start-express-ff.git',
       provider: 'gitee',
+      repo_id: 23408082,
       pusher: {
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
         name: 'shihuali',
         email: 'shihuali5257@126.com',
-        avatar_url: 'https://gitee.com/assets/no_portrait.png',
       },
       pull_request: { type: 'closed', target_branch: 'master', source_branch: 'dev' },
       commit: {
@@ -240,10 +245,11 @@ test('gitee webhook success with pr reopened', async () => {
     data: {
       url: 'https://gitee.com/shihuali/start-express-ff.git',
       provider: 'gitee',
+      repo_id: 23408082,
       pusher: {
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
         name: 'shihuali',
         email: 'shihuali5257@126.com',
-        avatar_url: 'https://gitee.com/assets/no_portrait.png',
       },
       pull_request: { type: 'reopened', target_branch: 'master', source_branch: 'dev' },
       commit: {
@@ -292,10 +298,11 @@ test('gitee webhook success with pr merged', async () => {
     data: {
       url: 'https://gitee.com/shihuali/start-express-ff.git',
       provider: 'gitee',
+      repo_id: 23408082,
       pusher: {
+        avatar_url: 'https://gitee.com/assets/no_portrait.png',
         name: 'shihuali',
         email: 'shihuali5257@126.com',
-        avatar_url: 'https://gitee.com/assets/no_portrait.png',
       },
       pull_request: { type: 'merged', target_branch: 'master', source_branch: 'dev' },
       commit: {

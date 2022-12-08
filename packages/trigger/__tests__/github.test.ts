@@ -37,15 +37,13 @@ test('github webhook push with branch prefix is empty(请填写分支前缀，�
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
+      repo_id: 559774849,
       pusher: {
+        avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
         name: 'xsahxl',
         email: 'xsahxl@126.com',
-        avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
       },
-      push: {
-        branch: 'main',
-        tag: undefined,
-      },
+      push: { branch: 'main', tag: undefined, ref: 'refs/heads/main' },
       commit: {
         id: '6b956d234e19ebf2ab68a5df906d8c7f2afc51d2',
         message: 'Update readme.md',
@@ -69,20 +67,20 @@ test('github webhook push with branch case', async () => {
   };
 
   const res = await verifyLegitimacy(eventConfig, pushWithBranch);
+  console.log(res);
+
   expect(res).toEqual({
     success: true,
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
+      repo_id: 559774849,
       pusher: {
+        avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
         name: 'xsahxl',
         email: 'xsahxl@126.com',
-        avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
       },
-      push: {
-        branch: 'main',
-        tag: undefined,
-      },
+      push: { branch: 'main', tag: undefined, ref: 'refs/heads/main' },
       commit: {
         id: '6b956d234e19ebf2ab68a5df906d8c7f2afc51d2',
         message: 'Update readme.md',
@@ -111,15 +109,13 @@ test('github webhook push with tag case', async () => {
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
+      repo_id: 559774849,
       pusher: {
+        avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
         name: 'xsahxl',
         email: 'xsahxl@126.com',
-        avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
       },
-      push: {
-        branch: undefined,
-        tag: 'v0.0.1',
-      },
+      push: { branch: undefined, tag: 'v0.0.1', ref: 'refs/tags/v0.0.1' },
       commit: {
         id: '6b956d234e19ebf2ab68a5df906d8c7f2afc51d2',
         message: 'Update readme.md',
@@ -143,14 +139,17 @@ test('github webhook success with pr opened', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithOpened);
+  console.log(res);
   expect(res).toEqual({
     success: true,
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
+      repo_id: 559774849,
       pusher: {
-        name: 'xsahxl',
         avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
+        name: 'xsahxl',
+        email: undefined,
       },
       pull_request: { type: 'opened', target_branch: 'main', source_branch: 'dev' },
       commit: { id: null, message: 'test pr' },
@@ -192,14 +191,18 @@ test('github webhook success with pr closed', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithClosed);
+  console.log(res);
+
   expect(res).toEqual({
     success: true,
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
+      repo_id: 559774849,
       pusher: {
-        name: 'xsahxl',
         avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
+        name: 'xsahxl',
+        email: undefined,
       },
       pull_request: { type: 'closed', target_branch: 'main', source_branch: 'dev' },
       commit: {
@@ -244,14 +247,18 @@ test('github webhook success with pr reopened', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithReopened);
+  console.log(res);
+
   expect(res).toEqual({
     success: true,
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
+      repo_id: 559774849,
       pusher: {
-        name: 'xsahxl',
         avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
+        name: 'xsahxl',
+        email: undefined,
       },
       pull_request: { type: 'reopened', target_branch: 'main', source_branch: 'dev' },
       commit: {
@@ -296,14 +303,18 @@ test('github webhook success with pr merged', async () => {
     },
   };
   const res = await verifyLegitimacy(eventConfig, prWithMerged);
+  console.log(res);
+
   expect(res).toEqual({
     success: true,
     data: {
       url: 'https://github.com/xsahxl/test-cd.git',
       provider: 'github',
+      repo_id: 559774849,
       pusher: {
-        name: 'xsahxl',
         avatar_url: 'https://avatars.githubusercontent.com/u/21330840?v=4',
+        name: 'xsahxl',
+        email: undefined,
       },
       pull_request: { type: 'merged', target_branch: 'main', source_branch: 'dev' },
       commit: {
@@ -333,7 +344,7 @@ test('github webhook error with pr merged', async () => {
   expect(res?.success).toEqual(false);
 });
 
-test.only('github webhook release 测试返回值', async () => {
+test('github webhook release 测试返回值', async () => {
   const eventConfig = {
     github: {
       secret: 'shl123',

@@ -28,12 +28,13 @@ test('codeup webhook push with branch case', async () => {
     data: {
       url: 'https://codeup.aliyun.com/60b045b52c5969c370c5a63e/mamba/fc-node12.git',
       provider: 'codeup',
+      repo_id: 1179172,
       pusher: {
+        avatar_url: undefined,
         name: 'dankun_simplemvc',
         email: 'yuankun.yk@alibaba-inc.com',
-        avatar_url: undefined,
       },
-      push: { branch: 'master', tag: undefined },
+      push: { branch: 'master', tag: undefined, ref: 'refs/heads/master' },
       commit: {
         id: '4fe524d23668336a778eb02ef79aee7f362a1940',
         message: '更新 a.js',
@@ -63,12 +64,13 @@ test('codeup webhook push with tag case', async () => {
     data: {
       url: 'https://codeup.aliyun.com/60b045b52c5969c370c5a63e/mamba/fc-node12.git',
       provider: 'codeup',
+      repo_id: 1179172,
       pusher: {
+        avatar_url: undefined,
         name: 'dankun_simplemvc',
         email: 'yuankun.yk@alibaba-inc.com',
-        avatar_url: undefined,
       },
-      push: { branch: undefined, tag: 'v0.0.1' },
+      push: { branch: undefined, tag: 'v0.0.1', ref: 'refs/tags/v0.0.1' },
       commit: {
         id: '4fe524d23668336a778eb02ef79aee7f362a1940',
         message: '更新 a.js',
@@ -98,11 +100,12 @@ test('codeup webhook success with pr opened', async () => {
     data: {
       url: 'https://codeup.aliyun.com/60b045b52c5969c370c5a63e/mamba/fc-node12.git',
       provider: 'codeup',
+      repo_id: 1179172,
       pusher: {
-        name: 'dankun_simplemvc',
-        email: undefined,
         avatar_url:
           'https://tcs-devops.aliyuncs.com/thumbnail/1123e8ac0fe68964928e4a1fc46b78d177ab/w/100/h/100',
+        name: 'dankun_simplemvc',
+        email: undefined,
       },
       pull_request: { type: 'opened', target_branch: 'master', source_branch: 'dev' },
       commit: { id: undefined, message: '更新 a.js' },
@@ -150,11 +153,12 @@ test('codeup webhook success with pr closed', async () => {
     data: {
       url: 'https://codeup.aliyun.com/60b045b52c5969c370c5a63e/mamba/fc-node12.git',
       provider: 'codeup',
+      repo_id: 1179172,
       pusher: {
-        name: 'dankun_simplemvc',
-        email: 'yuankun.yk@alibaba-inc.com',
         avatar_url:
           'https://tcs-devops.aliyuncs.com/thumbnail/1123e8ac0fe68964928e4a1fc46b78d177ab/w/100/h/100',
+        name: 'dankun_simplemvc',
+        email: 'yuankun.yk@alibaba-inc.com',
       },
       pull_request: { type: 'closed', target_branch: 'master', source_branch: 'dev' },
       commit: {
@@ -205,11 +209,12 @@ test('codeup webhook success with pr reopened', async () => {
     data: {
       url: 'https://codeup.aliyun.com/60b045b52c5969c370c5a63e/mamba/fc-node12.git',
       provider: 'codeup',
+      repo_id: 1179172,
       pusher: {
-        name: 'dankun_simplemvc',
-        email: 'yuankun.yk@alibaba-inc.com',
         avatar_url:
           'https://tcs-devops.aliyuncs.com/thumbnail/1123e8ac0fe68964928e4a1fc46b78d177ab/w/100/h/100',
+        name: 'dankun_simplemvc',
+        email: 'yuankun.yk@alibaba-inc.com',
       },
       pull_request: { type: 'reopened', target_branch: 'master', source_branch: 'dev' },
       commit: {
@@ -260,11 +265,12 @@ test('codeup webhook success with pr merged', async () => {
     data: {
       url: 'https://codeup.aliyun.com/60b045b52c5969c370c5a63e/mamba/fc-node12.git',
       provider: 'codeup',
+      repo_id: 1179172,
       pusher: {
-        name: 'dankun_simplemvc',
-        email: 'yuankun.yk@alibaba-inc.com',
         avatar_url:
           'https://tcs-devops.aliyuncs.com/thumbnail/1123e8ac0fe68964928e4a1fc46b78d177ab/w/100/h/100',
+        name: 'dankun_simplemvc',
+        email: 'yuankun.yk@alibaba-inc.com',
       },
       pull_request: { type: 'merged', target_branch: 'master', source_branch: 'dev' },
       commit: {

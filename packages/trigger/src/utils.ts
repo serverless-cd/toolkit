@@ -13,6 +13,7 @@ export const generateSuccessResult = (inputs: any, body: any) => {
   const data: any = {
     url: get(body, 'repository.clone_url'),
     provider: get(inputs, 'provider'),
+    repo_id: get(body, 'repository.id'),
     pusher: {},
     [key]: {},
     commit: {},
@@ -20,6 +21,7 @@ export const generateSuccessResult = (inputs: any, body: any) => {
   if (key === 'push') {
     data[key]['branch'] = get(inputs, 'branch');
     data[key]['tag'] = get(inputs, 'tag');
+    data[key]['ref'] = get(body, 'ref');
     data.commit['id'] = get(body, 'head_commit.id');
     data.commit['message'] = get(body, 'head_commit.message');
   }
@@ -36,11 +38,13 @@ export const generateSuccessResult = (inputs: any, body: any) => {
   if (provider === IUserAgent.GITLAB) {
     if (key === 'push') {
       data.url = get(body, 'repository.git_http_url');
+      data.repo_id = `${get(body, 'repository.homepage')}:${get(body, 'project_id')}`;
       data.commit['id'] = get(body, 'commit.sha');
       data.commit['message'] = get(body, 'commit.message');
     }
     if (key === 'pull_request') {
       data.url = get(body, 'project.http_url');
+      data.repo_id = `${get(body, 'repository.homepage')}:${get(body, 'project.id')}`;
       data.commit['id'] =
         get(body, 'object_attributes.merge_commit_sha') ||
         get(body, 'object_attributes.last_commit.id');
@@ -57,8 +61,10 @@ export const generateSuccessResult = (inputs: any, body: any) => {
         data.commit['id'] = commitObj.id;
         data.commit['message'] = commitObj.message;
       }
+      data.repo_id = get(body, 'project_id');
     }
     if (key === 'pull_request') {
+      data.repo_id = get(body, 'object_attributes.source_project_id');
       data.commit['id'] = get(body, 'object_attributes.last_commit.id');
       data.commit['message'] =
         get(body, 'object_attributes.last_commit.message') || get(body, 'object_attributes.title');
