@@ -113,7 +113,7 @@ test('which', async () => {
   expect(get(res, 'status')).toBe('success');
 });
 
-test('文件路径', async () => {
+test('文件绝对路径', async () => {
   const steps = [
     {
       script: path.resolve(__dirname, './script.js'),
@@ -121,6 +121,18 @@ test('文件路径', async () => {
     },
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res = await engine.start();
+  expect(get(res, 'status')).toBe('success');
+});
+
+test.only('文件相对路径', async () => {
+  const steps = [
+    {
+      script: './script.js',
+      id: 'xscript',
+    },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix }, cwd: __dirname });
   const res = await engine.start();
   expect(get(res, 'status')).toBe('success');
 });
