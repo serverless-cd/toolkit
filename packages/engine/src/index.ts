@@ -420,13 +420,11 @@ class Engine {
     }
   }
   private async doScript(item: IScriptOptions) {
-    item.script = path.isAbsolute(item.script)
+    const newScript = path.isAbsolute(item.script)
       ? item.script
       : path.join(this.context.cwd, item.script);
-    // 文件路径
-    if (fs.existsSync(item.script)) {
-      item.script = fs.readFileSync(item.script, 'utf-8');
-    }
+    // 文件路径 or 脚本内容
+    item.script = fs.existsSync(newScript) ? fs.readFileSync(item.script, 'utf-8') : item.script;
     const ifCondition = artTemplate.compile(item.script);
     item.script = ifCondition(this.getFilterContext());
     const script = getScript(item.script);

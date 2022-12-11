@@ -48,10 +48,10 @@ test('自定义logger', async () => {
 test('获取某一步的outputs', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+    { plugin: './fixtures/app', id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' } });
+  const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' }, cwd: __dirname });
   const res: IContext | undefined = await engine.start();
   const data = map(res?.steps, (item) => ({
     status: item.status,

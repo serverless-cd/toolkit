@@ -3,6 +3,7 @@ import { IStepOptions, IPluginOptions } from '../types';
 import { fs } from '@serverless-cd/core';
 import { command, Options } from 'execa';
 import _ from 'lodash';
+import * as path from 'path';
 const pkg = require('../../package.json');
 
 export function getLogPath(filePath: string) {
@@ -40,8 +41,13 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
   for (const item of steps) {
     const pluginItem = item as IPluginOptions;
     if (pluginItem.plugin) {
+      const newPlugin = path.isAbsolute(pluginItem.plugin)
+        ? pluginItem.plugin
+        : path.join(that.context.cwd, pluginItem.plugin);
       // 本地路径时，不需要安装依赖
-      if (!fs.existsSync(pluginItem.plugin)) {
+      if (fs.existsSync(newPlugin)) {
+        pluginItem.plugin = newPlugin;
+      } else {
         // --no-save
         that.logger.info(`install plugin ${pluginItem.plugin}...`);
         const cp = command(
@@ -54,7 +60,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
       const app = require(pluginItem.plugin);
       pluginItem.type = 'run';
       if (app.postRun) {
-        postArray.push({ ...item, type: 'postRun' } as IPluginOptions);
+        postArray.push({ ...pluginItem, type: 'postRun' } as IPluginOptions);
       }
     }
     runArray.push(item);
