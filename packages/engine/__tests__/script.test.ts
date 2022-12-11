@@ -125,7 +125,7 @@ test('文件绝对路径', async () => {
   expect(get(res, 'status')).toBe('success');
 });
 
-test.only('文件相对路径', async () => {
+test('文件相对路径', async () => {
   const steps = [
     {
       script: './script.js',

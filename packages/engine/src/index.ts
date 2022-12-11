@@ -386,8 +386,8 @@ class Engine {
       }
     }
   }
-  private async doSrc(_item: IStepOptions) {
-    const item = { ..._item };
+  private async doSrc(item: IStepOptions) {
+    const { inputs } = this.options;
     const runItem = item as IRunOptions;
     const pluginItem = item as IPluginOptions;
     const scriptItem = item as IScriptOptions;
@@ -395,10 +395,10 @@ class Engine {
     if (runItem.run) {
       let execPath = runItem['working-directory'] || this.context.cwd;
       execPath = path.isAbsolute(execPath) ? execPath : path.join(this.context.cwd, execPath);
-      this.logName(_item);
+      this.logName(item);
       const ifCondition = artTemplate.compile(runItem.run);
       runItem.run = ifCondition(this.getFilterContext());
-      const cp = runScript(runItem.run, { cwd: execPath });
+      const cp = runScript(runItem.run, { cwd: execPath, env: { ...inputs?.env, ...item.env } });
       this.childProcess.push(cp);
       const res = await this.onFinish(cp);
       return res;
@@ -424,7 +424,7 @@ class Engine {
       ? item.script
       : path.join(this.context.cwd, item.script);
     // 文件路径 or 脚本内容
-    item.script = fs.existsSync(newScript) ? fs.readFileSync(item.script, 'utf-8') : item.script;
+    item.script = fs.existsSync(newScript) ? fs.readFileSync(newScript, 'utf-8') : item.script;
     const ifCondition = artTemplate.compile(item.script);
     item.script = ifCondition(this.getFilterContext());
     const script = getScript(item.script);

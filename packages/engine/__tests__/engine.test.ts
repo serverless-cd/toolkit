@@ -68,6 +68,17 @@ test('获取某一步的outputs', async () => {
   ]);
 });
 
+test('run env 测试', async () => {
+  process.env.name = 'init name';
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello', env: { name: 'xiaoming' } },
+    { run: 'node ./run-env.js', env: { name: 'xiaohong' } },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' }, cwd: __dirname });
+  const res: IContext | undefined = await engine.start();
+  expect(res?.status).toBe('success');
+});
+
 test('cancel测试', (done) => {
   const lazy = (fn: any) => {
     setTimeout(() => {
