@@ -134,6 +134,7 @@ test('文件相对路径', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix }, cwd: __dirname });
   const res = await engine.start();
+  console.log(res);
   expect(get(res, 'status')).toBe('success');
 });
 

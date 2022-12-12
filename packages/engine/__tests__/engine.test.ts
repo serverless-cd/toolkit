@@ -57,7 +57,7 @@ test('获取某一步的outputs', async () => {
     status: item.status,
     outputs: item.outputs,
   }));
-
+  console.log(res);
   expect(res?.status).toBe('success');
   expect(data).toEqual([
     { status: 'success' },

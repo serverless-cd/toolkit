@@ -41,6 +41,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
   for (const item of steps) {
     const pluginItem = item as IPluginOptions;
     if (pluginItem.plugin) {
+      const originPlugin = pluginItem.plugin;
       const newPlugin = path.isAbsolute(pluginItem.plugin)
         ? pluginItem.plugin
         : path.join(that.context.cwd, pluginItem.plugin);
@@ -59,8 +60,14 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
       }
       const app = require(pluginItem.plugin);
       pluginItem.type = 'run';
+      // log显示的时候，仅需要展示最初的plugin值
+      pluginItem.name = `Run ${originPlugin}`;
       if (app.postRun) {
-        postArray.push({ ...pluginItem, type: 'postRun' } as IPluginOptions);
+        postArray.push({
+          ...pluginItem,
+          type: 'postRun',
+          name: `Post Run ${originPlugin}`,
+        } as IPluginOptions);
       }
     }
     runArray.push(item);
