@@ -72,9 +72,14 @@ test('run env 测试', async () => {
   process.env.name = 'init name';
   const steps = [
     { run: 'echo "hello"', id: 'xhello', env: { name: 'xiaoming' } },
-    { run: 'node ./run-env.js', env: { name: 'xiaohong' } },
+    { run: 'node ./run-env.js', env: { name: '${{secrets.name}}' } },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' }, cwd: __dirname });
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    cwd: __dirname,
+    inputs: { secrets: { name: 'xiaohong' } },
+  });
   const res: IContext | undefined = await engine.start();
   expect(res?.status).toBe('success');
 });
