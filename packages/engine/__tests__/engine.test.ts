@@ -48,16 +48,16 @@ test('自定义logger', async () => {
 test('获取某一步的outputs', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+    { plugin: './fixtures/app', id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo "world"' },
   ] as IStepOptions[];
-  const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' } });
+  const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' }, cwd: __dirname });
   const res: IContext | undefined = await engine.start();
   const data = map(res?.steps, (item) => ({
     status: item.status,
     outputs: item.outputs,
   }));
-
+  console.log(res);
   expect(res?.status).toBe('success');
   expect(data).toEqual([
     { status: 'success' },
@@ -66,6 +66,44 @@ test('获取某一步的outputs', async () => {
     { status: 'success', outputs: {} },
     { status: 'success', outputs: { success: true } },
   ]);
+});
+
+test('魔法变量识别 task status', async () => {
+  const steps = [{ run: 'echo ${{status}}' }] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' } });
+  const res: IContext | undefined = await engine.start();
+  console.log(res);
+  expect(res?.status).toBe('success');
+});
+
+test.only('unsetEnvs 测试', async () => {
+  process.env.message = '我是主进程的字段';
+  const steps = [{ run: 'echo ${{status}}' }] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    unsetEnvs: ['message'],
+  });
+  const res: IContext | undefined = await engine.start();
+  console.log(process.env.message, 'process.env.message');
+  console.log(res);
+  expect(res?.status).toBe('success');
+});
+
+test('run env 测试', async () => {
+  process.env.name = 'init name';
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello', env: { name: 'xiaoming' } },
+    { run: 'node ./run-env.js', env: { name: '${{secrets.name}}' } },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    cwd: __dirname,
+    inputs: { secrets: { name: 'xiaohong' } },
+  });
+  const res: IContext | undefined = await engine.start();
+  expect(res?.status).toBe('success');
 });
 
 test('cancel测试', (done) => {

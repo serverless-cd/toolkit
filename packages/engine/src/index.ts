@@ -62,6 +62,15 @@ class Engine {
     this.context.inputs = inputs as {};
     this.context.secrets = inputs?.secrets;
     this.doArtTemplateVariable();
+    this.doUnsetEnvs();
+  }
+  private async doUnsetEnvs() {
+    const { unsetEnvs } = this.options;
+    if (!isEmpty(unsetEnvs)) {
+      each(unsetEnvs, (item) => {
+        delete process.env[item];
+      });
+    }
   }
   private doArtTemplateVariable() {
     artTemplate.defaults.imports.contains = includes;
@@ -154,7 +163,6 @@ class Engine {
               this.recordContext(item, { status: STEP_STATUS.RUNNING });
               // 记录环境变量
               this.context.env = item.env as {};
-              this.doReplace$(item);
               // 先判断if条件，成功则执行该步骤。
               if (item.if) {
                 // 替换 failure()
@@ -177,8 +185,7 @@ class Engine {
                 );
                 // 替换 always()
                 item.if = replace(item.if, STEP_IF.ALWAYS, 'true');
-                const ifCondition = artTemplate.compile(item.if);
-                item.if = ifCondition(this.getFilterContext());
+                item.if = this.doArtTemplateCompile(item.if);
                 return item.if === 'true' ? this.handleSrc(item) : this.doSkip(item);
               }
               // 如果已取消，则不执行该步骤, 并记录状态为 cancelled
@@ -249,21 +256,6 @@ class Engine {
       outputLog(this.logger, error);
     }
   }
-
-  private doReplace$(item: IStepOptions) {
-    const runItem = item as IRunOptions;
-    const scriptItem = item as IScriptOptions;
-    const fn = (str: string) => replace(str, /\${{/g, '{{');
-    if (runItem.run) {
-      runItem.run = fn(runItem.run);
-    }
-    if (scriptItem.script) {
-      scriptItem.script = fn(scriptItem.script);
-    }
-    if (item.if) {
-      item.if = fn(item.if);
-    }
-  }
   private recordContext(item: IStepOptions, options: Record<string, any>) {
     const { status, error, outputs, name, process_time } = options;
     const { events } = this.options;
@@ -309,6 +301,7 @@ class Engine {
     const { env = {}, secrets = {} } = this.context;
     return {
       ...inputs,
+      status: this.context.status,
       steps: this.record.steps,
       env: { ...inputs?.env, ...env },
       secrets,
@@ -386,8 +379,7 @@ class Engine {
       }
     }
   }
-  private async doSrc(_item: IStepOptions) {
-    const item = { ..._item };
+  private async doSrc(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const pluginItem = item as IPluginOptions;
     const scriptItem = item as IScriptOptions;
@@ -395,10 +387,9 @@ class Engine {
     if (runItem.run) {
       let execPath = runItem['working-directory'] || this.context.cwd;
       execPath = path.isAbsolute(execPath) ? execPath : path.join(this.context.cwd, execPath);
-      this.logName(_item);
-      const ifCondition = artTemplate.compile(runItem.run);
-      runItem.run = ifCondition(this.getFilterContext());
-      const cp = runScript(runItem.run, { cwd: execPath });
+      this.logName(item);
+      runItem.run = this.doArtTemplateCompile(runItem.run);
+      const cp = runScript(runItem.run, { cwd: execPath, env: this.parseEnv(runItem) });
       this.childProcess.push(cp);
       const res = await this.onFinish(cp);
       return res;
@@ -419,13 +410,26 @@ class Engine {
       return await this.doScript(scriptItem);
     }
   }
-  private async doScript(item: IScriptOptions) {
-    // 文件路径
-    if (fs.existsSync(item.script)) {
-      item.script = fs.readFileSync(item.script, 'utf-8');
+  private parseEnv(item: IRunOptions) {
+    const { inputs } = this.options;
+    const newEnv = { ...inputs?.env, ...item.env };
+    for (const key in newEnv) {
+      const val = newEnv[key];
+      newEnv[key] = this.doArtTemplateCompile(val);
     }
-    const ifCondition = artTemplate.compile(item.script);
-    item.script = ifCondition(this.getFilterContext());
+    return newEnv;
+  }
+  private doArtTemplateCompile(value: string) {
+    const newVal = replace(value, /\${{/g, '{{');
+    return artTemplate.compile(newVal)(this.getFilterContext());
+  }
+  private async doScript(item: IScriptOptions) {
+    const newScript = path.isAbsolute(item.script)
+      ? item.script
+      : path.join(this.context.cwd, item.script);
+    // 文件路径 or 脚本内容
+    item.script = fs.existsSync(newScript) ? fs.readFileSync(newScript, 'utf-8') : item.script;
+    item.script = this.doArtTemplateCompile(item.script);
     const script = getScript(item.script);
     try {
       const fun = new Function(script);

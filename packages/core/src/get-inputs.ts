@@ -1,5 +1,5 @@
 import { isEmpty, replace } from 'lodash';
-import artTemplate from 'art-template';
+const artTemplate = require('art-template');
 
 interface IkeyValue {
   [key: string]: any;
@@ -7,6 +7,7 @@ interface IkeyValue {
 
 export function getInputs(inputs: IkeyValue, context: IkeyValue) {
   if (isEmpty(inputs)) return;
+  artTemplate.defaults.escape = false;
   function deepCopy(obj: any) {
     let result: any = obj.constructor === Array ? [] : {};
     if (typeof obj === 'object') {
