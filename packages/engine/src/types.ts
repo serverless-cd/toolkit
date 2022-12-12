@@ -5,6 +5,7 @@ export interface IEngineOptions {
   logConfig?: ILogConfig;
   cwd?: string; // 当前工作目录
   events?: IEvent;
+  unsetEnvs?: string[]; // 需要清除的环境变量
 }
 
 interface IEvent {

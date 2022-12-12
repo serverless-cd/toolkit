@@ -68,10 +68,24 @@ test('获取某一步的outputs', async () => {
   ]);
 });
 
-test.only('魔法变量识别 task status', async () => {
+test('魔法变量识别 task status', async () => {
   const steps = [{ run: 'echo ${{status}}' }] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix, logLevel: 'DEBUG' } });
   const res: IContext | undefined = await engine.start();
+  console.log(res);
+  expect(res?.status).toBe('success');
+});
+
+test.only('unsetEnvs 测试', async () => {
+  process.env.message = '我是主进程的字段';
+  const steps = [{ run: 'echo ${{status}}' }] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    unsetEnvs: ['message'],
+  });
+  const res: IContext | undefined = await engine.start();
+  console.log(process.env.message, 'process.env.message');
   console.log(res);
   expect(res?.status).toBe('success');
 });

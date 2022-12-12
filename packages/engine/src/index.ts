@@ -62,6 +62,15 @@ class Engine {
     this.context.inputs = inputs as {};
     this.context.secrets = inputs?.secrets;
     this.doArtTemplateVariable();
+    this.doUnsetEnvs();
+  }
+  private async doUnsetEnvs() {
+    const { unsetEnvs } = this.options;
+    if (!isEmpty(unsetEnvs)) {
+      each(unsetEnvs, (item) => {
+        delete process.env[item];
+      });
+    }
   }
   private doArtTemplateVariable() {
     artTemplate.defaults.imports.contains = includes;
