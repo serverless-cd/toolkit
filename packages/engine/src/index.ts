@@ -292,6 +292,7 @@ class Engine {
     const { env = {}, secrets = {} } = this.context;
     return {
       ...inputs,
+      status: this.context.status,
       steps: this.record.steps,
       env: { ...inputs?.env, ...env },
       secrets,
