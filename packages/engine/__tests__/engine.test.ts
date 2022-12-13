@@ -1,6 +1,7 @@
 import Engine, { IStepOptions, IContext } from '../src';
-import { get, map } from 'lodash';
+import { lodash } from '@serverless-cd/core';
 import * as path from 'path';
+const { get, map } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
 
 test.skip('logger oss', async () => {
@@ -76,7 +77,7 @@ test('魔法变量识别 task status', async () => {
   expect(res?.status).toBe('success');
 });
 
-test.only('unsetEnvs 测试', async () => {
+test('unsetEnvs 测试', async () => {
   process.env.message = '我是主进程的字段';
   const steps = [{ run: 'echo ${{status}}' }] as IStepOptions[];
   const engine = new Engine({

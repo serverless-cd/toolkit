@@ -1,10 +1,9 @@
-import { uniqueId } from 'lodash';
 import { IStepOptions, IPluginOptions } from '../types';
-import { fs } from '@serverless-cd/core';
+import { fs, lodash } from '@serverless-cd/core';
 import { command, Options } from 'execa';
-import _ from 'lodash';
 import * as path from 'path';
 const pkg = require('../../package.json');
+const { uniqueId, filter, includes } = lodash;
 
 export function getLogPath(filePath: string) {
   return `step_${filePath}.log`;
@@ -86,7 +85,7 @@ export function getProcessTime(time: number) {
  */
 export function runScript(runStr: string, options: Options<string>) {
   const shellTokens = ['>', '>>', '|', '||', '&&'];
-  const runnerTokens = _.filter(shellTokens, (item) => _.includes(runStr, item));
+  const runnerTokens = filter(shellTokens, (item) => includes(runStr, item));
   if (Array.isArray(runnerTokens) && runnerTokens.length > 0) {
     return command(runStr, { ...options, shell: true });
   } else {

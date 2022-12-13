@@ -1,6 +1,7 @@
 import Engine, { IStepOptions } from '../src';
-import { get } from 'lodash';
+import { lodash } from '@serverless-cd/core';
 import * as path from 'path';
+const { get } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
 
 describe('${{secret.name}} => 日志需要为 ***', () => {

@@ -1,4 +1,4 @@
-import { EngineLogger, artTemplate, fs } from '@serverless-cd/core';
+import { EngineLogger, artTemplate, fs, lodash } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import {
   IStepOptions,
@@ -14,21 +14,6 @@ import {
   ISteps,
   STEP_IF,
 } from './types';
-import {
-  isEmpty,
-  get,
-  each,
-  replace,
-  map,
-  find,
-  isFunction,
-  values,
-  has,
-  concat,
-  includes,
-  startsWith,
-  endsWith,
-} from 'lodash';
 import * as path from 'path';
 import * as os from 'os';
 // @ts-ignore
@@ -49,6 +34,22 @@ import {
   DEFAULT_COMPLETED_LOG,
 } from './constants';
 export { IStepOptions, IContext } from './types';
+
+const {
+  isEmpty,
+  get,
+  each,
+  replace,
+  map,
+  find,
+  isFunction,
+  values,
+  has,
+  concat,
+  includes,
+  startsWith,
+  endsWith,
+} = lodash;
 
 class Engine {
   private childProcess: any[] = [];
