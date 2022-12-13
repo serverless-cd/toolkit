@@ -1,6 +1,7 @@
 import Engine, { IStepOptions, IContext } from '../src';
-import { map } from 'lodash';
+import { lodash } from '@serverless-cd/core';
 import * as path from 'path';
+const { map } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
 
 test('模版可以识别${{steps.xhello.status === "success"}}', async () => {

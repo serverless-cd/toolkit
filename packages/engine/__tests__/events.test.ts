@@ -1,6 +1,7 @@
 import Engine, { IStepOptions } from '../src';
-import { map } from 'lodash';
+import { lodash } from '@serverless-cd/core';
 import * as path from 'path';
+const { map } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
 const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 

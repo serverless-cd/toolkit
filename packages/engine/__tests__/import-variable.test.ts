@@ -1,6 +1,7 @@
 import Engine, { IStepOptions } from '../src';
+import { lodash } from '@serverless-cd/core';
 import * as path from 'path';
-import { get, find } from 'lodash';
+const { find } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
 
 test('contains: if success', async () => {
