@@ -14,6 +14,7 @@
     "test:core": "jest --testTimeout 10000 packages/core --watchAll",
     "test:trigger": "jest --testTimeout 10000 packages/trigger --watchAll",
     "test:git": "jest --testTimeout 100000 packages/git --watchAll",
+    "test:setup": "jest --testTimeout 100000 packages/setup-runtime --watchAll",
     "test:ots-orm": "jest --testTimeout 100000 packages/ots-orm --watchAll",
     "test:git-provider": "jest --testTimeout 10000 packages/git-provider/__tests__/codeup.test.ts --watchAll",
     "test:git-provider-coverage": "jest --testTimeout 10000 packages/git-provider --coverage --coverageDirectory coverage/git-provider",
