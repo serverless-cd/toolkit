@@ -60,7 +60,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
       const app = require(pluginItem.plugin);
       pluginItem.type = 'run';
       // log显示的时候，仅需要展示最初的plugin值
-      pluginItem.name = `Run ${originPlugin}`;
+      pluginItem.name = pluginItem.name || `Run ${originPlugin}`;
       if (app.postRun) {
         postArray.push({
           ...pluginItem,

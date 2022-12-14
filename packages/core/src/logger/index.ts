@@ -9,7 +9,7 @@ import {
 } from 'egg-logger';
 import chalk from 'chalk';
 import OssLogger, { IOssConfig } from './oss-logger';
-import { each, includes } from 'lodash';
+import { each, includes, isEmpty } from 'lodash';
 
 const duartionRegexp = /([0-9]+ms)/g;
 const categoryRegexp = /(\[[\w\-_.:]+\])/g;
@@ -33,6 +33,7 @@ interface MyFileTransportOptions extends FileTransportOptions {
 }
 
 function mark(val: string) {
+  if (isEmpty(val)) return val;
   return val.length > 8
     ? val.slice(0, 3) + '*'.repeat(val.length - 6) + val.slice(val.length - 3, val.length)
     : '***';
