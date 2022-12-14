@@ -1,6 +1,7 @@
 node_modules/
 packages/*/node_modules/
 packages/*/__tests__/_temp/
+packages/setup-runtime/__tests__/opt
 .DS_Store
 logs/
 coverage/
