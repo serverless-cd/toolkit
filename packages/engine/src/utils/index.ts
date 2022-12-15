@@ -2,6 +2,7 @@ import { IStepOptions, IPluginOptions } from '../types';
 import { fs, lodash } from '@serverless-cd/core';
 import { command, Options } from 'execa';
 import * as path from 'path';
+import { PLUGIN_INSTALL_PATH } from '../constants';
 const pkg = require('../../package.json');
 const { uniqueId, filter, includes } = lodash;
 
@@ -34,6 +35,16 @@ export function getScript(val: string) {
     }`;
 }
 
+export function getPluginRequirePath(val: string) {
+  if (fs.existsSync(val)) return val;
+  const prefix = getPluginPrefixPath(val);
+  return path.join(prefix, 'node_modules', val);
+}
+export function getPluginPrefixPath(val: string) {
+  const [user, name] = val.split('/');
+  return path.join(PLUGIN_INSTALL_PATH, user, name);
+}
+
 export async function parsePlugin(steps: IStepOptions[], that: any) {
   const postArray = [] as IPluginOptions[];
   const runArray = [] as IStepOptions[];
@@ -48,16 +59,22 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
       if (fs.existsSync(newPlugin)) {
         pluginItem.plugin = newPlugin;
       } else {
-        // --no-save
         that.logger.info(`install plugin ${pluginItem.plugin}...`);
+        const pluginPrefixPath = getPluginPrefixPath(pluginItem.plugin);
+        fs.ensureDirSync(pluginPrefixPath);
+        const packageJsonPath = path.join(pluginPrefixPath, 'package.json');
+        if (!fs.existsSync(packageJsonPath)) {
+          fs.writeFileSync(packageJsonPath, JSON.stringify({ dependencies: {} }, null, 2));
+        }
         const cp = command(
           `npm install ${pluginItem.plugin} --registry=https://registry.npmmirror.com`,
+          { cwd: pluginPrefixPath },
         );
         that.childProcess.push(cp);
         await that.onFinish(cp);
         that.logger.info(`install plugin ${pluginItem.plugin} success`);
       }
-      const app = require(pluginItem.plugin);
+      const app = require(getPluginRequirePath(pluginItem.plugin));
       pluginItem.type = 'run';
       // log显示的时候，仅需要展示最初的plugin值
       pluginItem.name = pluginItem.name || `Run ${originPlugin}`;

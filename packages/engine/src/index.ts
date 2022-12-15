@@ -26,6 +26,7 @@ import {
   getLogPath,
   runScript,
   outputLog,
+  getPluginRequirePath,
 } from './utils';
 import {
   INIT_STEP_COUNT,
@@ -399,7 +400,7 @@ class Engine {
     if (pluginItem.plugin) {
       this.logName(item);
       // onInit时，会安装plugin依赖
-      const app = require(pluginItem.plugin);
+      const app = require(getPluginRequirePath(pluginItem.plugin));
       const newContext = { ...this.context, $variables: this.getFilterContext() };
       return pluginItem.type === 'run'
         ? await app.run(get(pluginItem, 'inputs', {}), newContext, this.logger)
