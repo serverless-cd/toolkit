@@ -22,7 +22,7 @@ test('env 解析', () => {
   const TEMPLATE_YAML = 'serverless-pipeline.yaml';
   const res = parseSpec(path.join(__dirname, TEMPLATE_YAML));
   console.log(JSON.stringify(res, null, 2));
-  expect(res.steps).toEqual([
+  expect(res?.steps).toEqual([
     {
       run: "echo 'Hi {{ env.name }}'",
       env: {
