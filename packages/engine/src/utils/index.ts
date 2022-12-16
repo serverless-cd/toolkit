@@ -101,7 +101,7 @@ export function getProcessTime(time: number) {
  * @param options
  */
 export function runScript(runStr: string, options: Options<string>) {
-  const shellTokens = ['>', '>>', '|', '||', '&&'];
+  const shellTokens = ['>', '>>', '|', '||', '&&', '$'];
   const runnerTokens = filter(shellTokens, (item) => includes(runStr, item));
   if (Array.isArray(runnerTokens) && runnerTokens.length > 0) {
     return command(runStr, { ...options, shell: true });

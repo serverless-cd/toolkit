@@ -91,6 +91,19 @@ test('unsetEnvs 测试', async () => {
   expect(res?.status).toBe('success');
 });
 
+test('echo $PATH', async () => {
+  process.env.name = 'init name';
+  const steps = [{ run: 'echo $PATH', id: 'xhello', env: { name: 'xiaoming' } }] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    cwd: __dirname,
+    inputs: { secrets: { name: 'xiaohong' } },
+  });
+  const res: IContext | undefined = await engine.start();
+  expect(res?.status).toBe('success');
+});
+
 test('run env 测试', async () => {
   process.env.name = 'init name';
   const steps = [
