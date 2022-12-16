@@ -12,11 +12,13 @@ export default class Setup {
   region: string;
   fcClient: any;
   dest: string;
+  internal: boolean;
 
   constructor(props: IProps) {
     this.runtimes = props.runtimes || [];
     this.region = props.region || 'cn-hongkong';
     this.dest = props.dest || '/opt';
+    this.internal = typeof props.internal === 'boolean' ? props.internal : (props.region ? true : false);
 
     const client = new Client(props.credentials);
     this.fcClient = client.getFc2({ region: this.region });
@@ -29,7 +31,7 @@ export default class Setup {
       // 下载runtime包
       console.log(`download ${runtime} start`);
       const { code } = (await this.fcClient.get(`/layerarn/${encodeURIComponent(arn)}`))?.data;
-      const url = code.location.replace('-internal.aliyuncs.com', '.aliyuncs.com');
+      const url = this.internal ? code.location.replace('-internal.aliyuncs.com', '.aliyuncs.com') : code.location;
       const localPath = await this.download(url, runtime);
       console.log(`download ${runtime} end`);
       // 解压runtime包

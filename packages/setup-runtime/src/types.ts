@@ -27,4 +27,5 @@ export interface IProps {
   region: string;
   credentials: ICredentials;
   dest?: string;
+  internal?: boolean;
 }
