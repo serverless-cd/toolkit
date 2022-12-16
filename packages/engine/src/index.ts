@@ -1,5 +1,6 @@
 import { EngineLogger, artTemplate, fs, lodash } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
+import { command } from 'execa';
 import {
   IStepOptions,
   IRunOptions,
@@ -24,7 +25,6 @@ import {
   getProcessTime,
   getDefaultInitLog,
   getLogPath,
-  runScript,
   outputLog,
   getPluginRequirePath,
 } from './utils';
@@ -391,7 +391,7 @@ class Engine {
       execPath = path.isAbsolute(execPath) ? execPath : path.join(this.context.cwd, execPath);
       this.logName(item);
       runItem.run = this.doArtTemplateCompile(runItem.run);
-      const cp = runScript(runItem.run, { cwd: execPath, env: this.parseEnv(runItem) });
+      const cp = command(runItem.run, { cwd: execPath, env: this.parseEnv(runItem), shell: true });
       this.childProcess.push(cp);
       const res = await this.onFinish(cp);
       return res;
