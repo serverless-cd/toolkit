@@ -13,12 +13,15 @@ function parseSpec(filePath: string) {
 
   try {
     const res = yaml.load(fs.readFileSync(filePath, 'utf8'));
-    return {
-      steps: map(get(res, 'steps'), (step: any) => {
-        step.env = merge({}, get(res, 'env'), get(step, 'env'));
-        return step;
-      }),
-    };
+    if (res) {
+      return {
+        ...res,
+        steps: map(get(res, 'steps'), (step: any) => {
+          step.env = merge({}, get(res, 'env'), get(step, 'env'));
+          return step;
+        }),
+      };
+    }
   } catch (error) {
     const e = error as Error;
     let message = `${filename} format is incorrect`;
