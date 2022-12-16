@@ -196,7 +196,7 @@ test('script 测试', async () => {
 test('inputs测试', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
-    { run: 'echo "world', id: 'xworld', if: '${{name==="xiaoming"}}' },
+    { run: 'echo "world"', id: 'xworld', if: '${{name==="xiaoming"}}' },
     { run: 'echo ${{name}}', id: 'xname' },
   ] as IStepOptions[];
   const engine = new Engine({
@@ -209,6 +209,7 @@ test('inputs测试', async () => {
     status: item.status,
     id: item.id,
   }));
+  console.log(data);
   expect(data).toEqual([
     { status: 'success' },
     { status: 'success', id: 'xhello' },
