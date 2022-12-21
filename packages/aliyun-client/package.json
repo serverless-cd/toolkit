@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/aliyun-client",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "构建 aliyun sdk",
   "author": "wss-git <wssgryx@163.com>",
   "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit#readme",
@@ -30,6 +30,7 @@
   "dependencies": {
     "@alicloud/fc-open20210406": "^2.0.0",
     "@alicloud/fc2": "^2.6.3",
+    "@alicloud/pop-core": "^1.7.12",
     "ali-oss": "^6.17.1",
     "tablestore": "^5.3.1"
   }
