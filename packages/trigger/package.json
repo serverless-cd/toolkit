@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/trigger",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "校验webhook与触发条件是否匹配",
   "author": "wss-git <wssgryx@163.com>",
   "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit#readme",
@@ -23,6 +23,7 @@
     "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --outfile=lib/index.js"
   },
   "dependencies": {
+    "@serverless-cd/core": "^0.0.14",
     "lodash": "^4.17.21",
     "micromatch": "^4.0.5"
   },

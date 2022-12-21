@@ -6,7 +6,7 @@ import {
   checkTypeWithCodeupOrGitlab,
 } from '../utils';
 import { ITrigger, IGitlabEvent, IPrTypesVal } from '../type';
-import { get, isEmpty } from 'lodash';
+import { get, isEmpty, includes } from 'lodash';
 
 export default class Gitlab extends BaseEvent {
   async verify(): Promise<any> {
@@ -29,8 +29,8 @@ export default class Gitlab extends BaseEvent {
     console.log(`get x-gitlab-event value: ${eventType}`);
     // 检测 push, pull_request
     // push 检测 分支 和 tag
-    if (eventType === 'Job Hook') {
-      const info = getPushInfoWithGitlab(this.body);
+    if (includes(['Push Hook', 'Tag Push Hook', 'Job Hook'], eventType)) {
+      const info = getPushInfoWithGitlab(eventType, this.body);
       console.log(`get push info: ${JSON.stringify(info)}`);
       return this.doPush(gitlab, info);
     }

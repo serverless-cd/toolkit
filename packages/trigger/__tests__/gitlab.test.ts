@@ -1,14 +1,16 @@
 import verifyLegitimacy, { IPrTypes, getProvider } from '../src';
 import {
   pushWithBranch,
+  pushWithBranch15,
   pushWithTag,
   prWithOpened,
   prWithClosed,
   prWithReopened,
   prWithMerged,
+  prWithMerged1,
 } from './mock/gitlab';
 
-test.only('getProvider 测试', async () => {
+test('getProvider 测试', async () => {
   const provider = getProvider(pushWithBranch);
   console.log(provider);
   expect(provider).toBe('gitlab');
@@ -46,6 +48,43 @@ test('gitlab webhook push with branch case', async () => {
       commit: {
         id: '11f3b6b360d8ae4e5f71ec36422a5b776df02896',
         message: 'Update README.md',
+      },
+    },
+  });
+});
+
+test('gitlab 15.7 webhook push with branch case', async () => {
+  const eventConfig = {
+    gitlab: {
+      secret: 'serverless-devs',
+      push: {
+        branches: {
+          precise: ['6348-feat'],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, pushWithBranch15);
+  console.log(res);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'https://gitlab.com/zsqk/Zsqk.git',
+      provider: 'gitlab',
+      repo_id: 'https://gitlab.com/zsqk/Zsqk:3499914',
+      pusher: {
+        avatar_url: 'https://gitlab.com/uploads/-/system/user/avatar/1681820/avatar.png',
+        name: '2ni',
+        email: '',
+      },
+      push: {
+        branch: '6348-feat',
+        tag: undefined,
+        ref: 'refs/heads/6348-feat',
+      },
+      commit: {
+        id: '25b702b4f846d523d23ef6cedcb30dd12c3a24a3',
+        message: 'opt: 新增模拟数据及 API 数据类型\n',
       },
     },
   });
@@ -312,4 +351,42 @@ test('gitlab webhook error with pr merged', async () => {
   const res = await verifyLegitimacy(eventConfig, prWithMerged);
   console.log(res);
   expect(res?.success).toEqual(false);
+});
+
+test.only('gitlab new case webhook success with pr merged', async () => {
+  const eventConfig = {
+    gitlab: {
+      secret: 'serverless-devs',
+      pull_request: {
+        types: [IPrTypes.MERGED],
+        branches: {
+          prefix: [{ target: 'master', source: 'dev' }],
+          precise: [{ target: 'master', source: 'dev' }],
+          include: [{ target: 'master', source: 'dev' }],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, prWithMerged1);
+  console.log(res);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/start-django-tyqt.git',
+      provider: 'gitlab',
+      repo_id:
+        'http://code.cb6d4506da5914f9e8d5d7f30050ec555.cn-shanghai.alicontainer.com/root/start-django-tyqt:8',
+      pusher: {
+        avatar_url:
+          'https://www.gravatar.com/avatar/e52a08688eff32719cb02c8d6ec4ead3?s=80&d=identicon',
+        name: 'Administrator',
+        email: 'serverles-cd@163.com',
+      },
+      pull_request: { type: 'merged', target_branch: 'master', source_branch: 'dev' },
+      commit: {
+        id: '52e1e9084304509220fe27a0b434b8cdb658cbdc',
+        message: 'Update s.yaml',
+      },
+    },
+  });
 });
