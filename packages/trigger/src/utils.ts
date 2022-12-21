@@ -1,3 +1,4 @@
+import { parseRef } from '@serverless-cd/core';
 import { startsWith, replace, get, isEmpty, includes, find } from 'lodash';
 import { ITrigger, IPrTypes, IPrTypesVal, IGiteeAction, IProvider, IUserAgent } from './type';
 // 最终返回失败结果
@@ -41,6 +42,14 @@ export const generateSuccessResult = (inputs: any, body: any) => {
       data.repo_id = `${get(body, 'repository.homepage')}:${get(body, 'project_id')}`;
       data.commit['id'] = get(body, 'commit.sha');
       data.commit['message'] = get(body, 'commit.message');
+      // 兼容gitlab 15.7
+      if (isEmpty(data.commit['id'])) {
+        const commitObj = find(get(body, 'commits'), (obj) => obj.id === get(body, 'after'));
+        if (commitObj) {
+          data.commit['id'] = commitObj.id;
+          data.commit['message'] = commitObj.message;
+        }
+      }
     }
     if (key === 'pull_request') {
       data.url = get(body, 'project.http_url');
@@ -50,9 +59,9 @@ export const generateSuccessResult = (inputs: any, body: any) => {
         get(body, 'object_attributes.last_commit.id');
       data.commit['message'] = get(body, 'object_attributes.title');
     }
-    data.pusher['avatar_url'] = get(body, 'user.avatar_url');
-    data.pusher['name'] = get(body, 'user.name');
-    data.pusher['email'] = get(body, 'user.email');
+    data.pusher['avatar_url'] = get(body, 'user.avatar_url') || get(body, 'user_avatar');
+    data.pusher['name'] = get(body, 'user.name') || get(body, 'user_name');
+    data.pusher['email'] = get(body, 'user.email') || get(body, 'user_email');
   }
   if (provider === IUserAgent.CODEUP) {
     if (key === 'push') {
@@ -92,10 +101,14 @@ export const getPushInfo = (ref: string) => {
   throw new Error(`Unsupported ref: ${ref}, push event only support branch or tag`);
 };
 
-export const getPushInfoWithGitlab = (body: any) => {
+export const getPushInfoWithGitlab = (eventType: string, body: any) => {
   const ref = get(body, 'ref', '');
-  const tag = get(body, 'tag', false);
-  return { [tag ? 'tag' : 'branch']: ref };
+  if (eventType === 'Job Hook') {
+    const tag = get(body, 'tag', false);
+    return { [tag ? 'tag' : 'branch']: ref };
+  }
+  const { type, value } = parseRef(ref);
+  return { [type]: value };
 };
 
 export const getPrInfo = (body: any) => {
