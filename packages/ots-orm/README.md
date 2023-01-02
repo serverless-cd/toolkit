@@ -1,4 +1,7 @@
-#### 使用
+# OTS-ORM
+详细使用文档请[前往](http://serverless-cd.cn/docs/dev-guide/toolkit/ots-orm)
+
+## 使用
 
 ```
 const Orm = require('@serverless-cd/ots-orm');
