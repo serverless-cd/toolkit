@@ -1,5 +1,5 @@
 # `git-provider`
-校验webhook与触发条件是否匹配，支持以下provider
+不同代码托管平台API集合，支持以下provider
 - github
 - gitee
 - gitlab
