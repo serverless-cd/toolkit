@@ -51,6 +51,7 @@ export default class Github extends Base {
 
   //创建一个fork: https://docs.github.com/en/rest/repos/forks?apiVersion=2022-11-28#create-a-fork
   async createFork(params: IGithubFork): Promise<IForkOutput[]> {
+    super.validateCreateForkParams(params);
     const rows = await this.requestList('POST /repos/{owner}/{repo}/forks',_.defaults(params,this.getDefaultParame()));
 
     return _.map(rows, (row) => ({
