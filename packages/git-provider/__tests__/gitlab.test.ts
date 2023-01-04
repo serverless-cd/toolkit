@@ -47,9 +47,7 @@ test.only('create fork', async () => {
     owner,
     repo,
   });
-  for (const row of res) {
-    expect(_.has(row, 'id')).toBeTruthy();
-    expect(_.has(row, 'full_name')).toBeTruthy();
-    expect(_.has(row, 'url')).toBeTruthy();
-  }
+  expect(_.has(res, 'id')).toBeTruthy();
+  expect(_.has(res, 'full_name')).toBeTruthy();
+  expect(_.has(res, 'url')).toBeTruthy();
 });

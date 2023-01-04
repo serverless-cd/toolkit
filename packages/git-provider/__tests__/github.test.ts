@@ -156,10 +156,8 @@ test.only('create fork', async () => {
     access_token,
   });
   const rows = await prioverd.createFork({ owner: OWNER, repo: REPO });
-  for (const row of rows) {
-    expect(_.has(row, 'id')).toBeTruthy();
-    expect(_.has(row, 'full_name')).toBeTruthy();
-    expect(_.has(row, 'url')).toBeTruthy();
-  }
+  expect(_.has(rows, 'id')).toBeTruthy();
+  expect(_.has(rows, 'full_name')).toBeTruthy();
+  expect(_.has(rows, 'url')).toBeTruthy();
 });
 
