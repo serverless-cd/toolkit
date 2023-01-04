@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput } from '../types/output';
 import Base from './base';
 
 const PARAMS = {
@@ -109,6 +109,9 @@ export default class Gitlab extends Base {
     throw new Error('Method not implemented.');
   }
   putFile(params: IPutFile): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  createFork(params: ICreateFork): Promise<IForkOutput> {
     throw new Error('Method not implemented.');
   }
 }
