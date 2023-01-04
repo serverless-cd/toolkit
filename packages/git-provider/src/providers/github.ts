@@ -2,8 +2,8 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById } from '../types/github';
-import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput } from '../types/output';
+import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById, IGithubFork } from '../types/github';
+import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 
 export default class Github extends Base {
@@ -48,6 +48,17 @@ export default class Github extends Base {
       source: row,
     }));
   };
+
+  //创建一个fork: https://docs.github.com/en/rest/repos/forks?apiVersion=2022-11-28#create-a-fork
+  async createFork(params: IGithubFork): Promise<IForkOutput[]> {
+    const rows = await this.requestList('POST /repos/{owner}/{repo}/forks',_.defaults(params,this.getDefaultParame()));
+
+    return _.map(rows, (row) => ({
+      id: row.id,
+      full_name: row.name,
+      url: row.html_url
+    }));
+  }
 
   // 获取组织的仓库: https://docs.github.com/cn/rest/repos/repos#list-organization-repositories
   async listOrgRepos (org: string): Promise<IRepoOutput[]> {

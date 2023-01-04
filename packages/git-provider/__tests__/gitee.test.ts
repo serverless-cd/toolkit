@@ -33,7 +33,7 @@ test('list branchs', async () => {
   }
 });
 
-test.only('get commit by id', async () => {
+test('get commit by id', async () => {
   const prioverd = git('gitee', { access_token });
   const sha = '1816c284614dede42d0e0c7eaace00166adc79f0';
   const config = await prioverd.getCommitById({
@@ -118,4 +118,14 @@ test('webhook', async () => {
     await prioverd.getWebhook({ owner: OWNER, repo: REPO, hook_id });
   }).rejects.toThrow('Request failed with status code 404');
   console.log('expect delete successfully');
+});
+
+test.only('create fork', async () => {
+  const prioverd = git('gitee', { access_token });
+  const createFork = await prioverd.createFork({ owner: OWNER, repo: REPO });
+  console.log(createFork)
+  expect(_.has(createFork, 'id')).toBeTruthy();
+  expect(_.has(createFork, 'full_name')).toBeTruthy();
+  expect(_.has(createFork, 'url')).toBeTruthy();
+  console.log('expect create successfully');  
 });
