@@ -68,7 +68,7 @@ test('list branchs', async () => {
   }
 });
 
-test.only('get commit by id', async () => {
+test('get commit by id', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -149,3 +149,17 @@ test('webhook', async () => {
   }).rejects.toThrow('Not Found');
   console.log('expect delete successfully');
 });
+
+
+test.only('create fork', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const rows = await prioverd.createFork({ owner: OWNER, repo: REPO });
+  for (const row of rows) {
+    expect(_.has(row, 'id')).toBeTruthy();
+    expect(_.has(row, 'full_name')).toBeTruthy();
+    expect(_.has(row, 'url')).toBeTruthy();
+  }
+});
+

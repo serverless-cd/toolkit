@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput } from '../types/output';
 import Base from './base';
 
 const PARAMS = {
@@ -38,9 +38,25 @@ export default class Gitlab extends Base {
       id = encodeURIComponent(`${owner}/${repo}`);
     }
 
-    const rows = await this.requestList(`/api/v4/projects/${id}/repository/branches`, PARAMS);
+    const rows = await this.requestList(`/api/v4/projects/${id}/repository/branches`, PARAMS, 'GET');
     return _.map(rows, (row) => ({
       name: row.name, commit_sha: _.get(row, 'commit.id'), source: row,
+    }));
+  }
+
+  //https://docs.gitlab.com/ee/api/projects.html#fork-project
+  async createFork(params: ICreateFork): Promise<any> {
+    let id: any | undefined = _.get(params, 'id');
+    if (_.isNil(id)) {
+      super.validateCreateForkParams(params);
+      const { owner, repo } = params as IListBranchs;
+      id = encodeURIComponent(`${owner}/${repo}`);
+    }
+    const rows = await this.requestList(`/api/v4/projects/${id}/fork`, PARAMS, 'POST');
+    return _.map(rows, (row) => ({
+      id: row.id,
+      full_name: row.path_with_namespace,
+      url: row.web_url
     }));
   }
 
@@ -63,11 +79,11 @@ export default class Gitlab extends Base {
   }
 
 
-  private async requestList(path: string, params: any): Promise<any[]> {
+  private async requestList(path: string, params: any, method: any): Promise<any[]> {
     let rows: any[] = [];
     let rowLength = 0;
     do {
-      const { data } = await this.request(path, 'GET', params);
+      const { data } = await this.request(path, method , params);
       rows = _.concat(rows, data);
       rowLength = _.size(data);
       params.pagination = params.pagination as number + 1;

@@ -27,6 +27,12 @@ export interface IListBranchs {
   repo: string;
 }
 
+export interface ICreateFork {
+  owner: string;
+  repo: string;
+  id: any;
+}
+
 export interface IGetRefCommit {
   owner: string;
   repo: string;

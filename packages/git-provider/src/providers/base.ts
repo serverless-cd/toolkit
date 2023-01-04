@@ -47,6 +47,15 @@ export default abstract class Base {
     }
   }
 
+  validateCreateForkParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+  }
+
   validateGetRefCommitParams(params: unknown) {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');

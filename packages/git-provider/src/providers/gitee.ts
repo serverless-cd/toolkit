@@ -1,8 +1,8 @@
 import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput } from '../types/output';
+import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById, ICreateFork } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput, IForkOutput } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 
 const V5 = 'https://gitee.com/api/v5';
@@ -172,6 +172,21 @@ export default class Gitee extends Base {
 
     const { owner, repo, hook_id } = params;
     await this.requestV5(`/repos/${owner}/${repo}/hooks/${hook_id}`, 'DELETE', {});
+  }
+
+
+  // https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoForks
+  async createFork(params: ICreateFork): Promise<IForkOutput> {
+    super.validateCreateForkParams(params);
+
+    const { owner, repo } = params;
+    const result = await this.requestV5(`/repos/${owner}/${repo}/forks`,  'POST', params);
+    const source = _.get(result, 'data', {});
+    return {
+      id: source.id,
+      full_name: source.name,
+      url: source.url,
+    }
   }
 
   async requestV5(path: string, method: string, params: Object): Promise<any> {

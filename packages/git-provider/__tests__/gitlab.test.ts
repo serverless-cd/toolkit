@@ -27,7 +27,7 @@ test('list branch', async () => {
   }
 });
 
-test.only('get commit by id', async () => {
+test('get commit by id', async () => {
   const sha = 'dce7a1c9ea604aa70372809fab5db921ff05b9f8';
   const prioverd = git('gitlab', config);
   const res = await prioverd.getCommitById({
@@ -39,4 +39,17 @@ test.only('get commit by id', async () => {
   expect(res.sha).toBe(sha);
   expect(_.isString(res.message)).toBeTruthy();
   expect(_.has(res, 'source')).toBeTruthy();
+});
+
+test.only('create fork', async () => {
+  const prioverd = git('gitlab', config);
+  const res = await prioverd.createFork({
+    owner,
+    repo,
+  });
+  for (const row of res) {
+    expect(_.has(row, 'id')).toBeTruthy();
+    expect(_.has(row, 'full_name')).toBeTruthy();
+    expect(_.has(row, 'url')).toBeTruthy();
+  }
 });
