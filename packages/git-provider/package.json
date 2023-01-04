@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/git-provider",
-  "version": "0.0.9",
+  "version": "0.0.9-beta.1",
   "description": "git",
   "keywords": [
     "serverless-cd",
@@ -22,7 +22,8 @@
     "url": "https://github.com/serverless-cd/serverless-cd-toolkit/issues"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
     "@alicloud/pop-core": "^1.7.12",
