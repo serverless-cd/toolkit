@@ -172,6 +172,9 @@ export default class Codeup {
   putFile(params: any): Promise<void> {
     throw new Error('Method not implemented.');
   }
+  createFork(params: any): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 
   private _test_debug_log(data: any, log: string = 'test') {
     try {
