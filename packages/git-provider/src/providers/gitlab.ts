@@ -46,18 +46,16 @@ export default class Gitlab extends Base {
 
   //https://docs.gitlab.com/ee/api/projects.html#fork-project
   async createFork(params: ICreateFork): Promise<any> {
-    let id: any | undefined = _.get(params, 'id');
-    if (_.isNil(id)) {
-      super.validateCreateForkParams(params);
-      const { owner, repo } = params as IListBranchs;
-      id = encodeURIComponent(`${owner}/${repo}`);
-    }
-    const rows = await this.requestList(`/api/v4/projects/${id}/fork`, PARAMS, 'POST');
-    return _.map(rows, (row) => ({
-      id: row.id,
-      full_name: row.path_with_namespace,
-      url: row.web_url
-    }));
+    super.validateCreateForkParams(params);
+    const { owner, repo } = params as IListBranchs;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    const rows = await this.request(`/api/v4/projects/${id}/fork`, 'POST', params);
+    const source = _.get(rows, 'data', {});
+    return {
+      id: _.get(source, 'id'),
+      full_name: _.get(source, 'path_with_namespace'),
+      url: _.get(source, 'web_url'),
+    };
   }
 
   async getCommitById(params: IGetCommitById | { id: string; sha: string }): Promise<ICommitOutput> {

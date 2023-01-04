@@ -50,15 +50,15 @@ export default class Github extends Base {
   };
 
   //创建一个fork: https://docs.github.com/en/rest/repos/forks?apiVersion=2022-11-28#create-a-fork
-  async createFork(params: IGithubFork): Promise<IForkOutput[]> {
+  async createFork(params: IGithubFork): Promise<any> {
     super.validateCreateForkParams(params);
-    const rows = await this.requestList('POST /repos/{owner}/{repo}/forks',_.defaults(params,this.getDefaultParame()));
-
-    return _.map(rows, (row) => ({
-      id: row.id,
-      full_name: row.name,
-      url: row.html_url
-    }));
+    const rows = await this.octokit.request('POST /repos/{owner}/{repo}/forks',params);
+    const source = _.get(rows, 'data', {});
+    return {
+        id: _.get(source, 'id'),
+        full_name: _.get(source, 'full_name'),
+        url: _.get(source, 'html_url')
+      };
   }
 
   // 获取组织的仓库: https://docs.github.com/cn/rest/repos/repos#list-organization-repositories
