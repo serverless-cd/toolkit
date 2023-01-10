@@ -11,10 +11,24 @@ const tableName = 'test_orm';
 const indexName = 'test_orm_index';
 
 describe('orm', () => {
-  const id = (new Date().getTime()).toString();
-  const orm = new Orm(config, tableName, indexName);
+  const id = new Date().getTime().toString();
+  const orm = new Orm(config, tableName);
 
-  test.only('find', async () => {
+  test('findAllWithPk', async () => {
+    const result = await orm.findAllWithPk(['id']);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  test.only('createTable', async () => {
+    await orm.createTable([
+      {
+        name: 'gid',
+        type: 'INTEGER',
+      },
+    ]);
+  });
+
+  test('find', async () => {
     console.log('test update end');
 
     console.log('find');
@@ -23,15 +37,14 @@ describe('orm', () => {
 
     const findOnePayload = await orm.findOne();
     console.log('findOnePayload: ', findOnePayload);
-    
+
     const findAllPayload = await orm.findAll();
     console.log('findAllPayload: ', findAllPayload);
-
 
     const findByLikePayload = await orm.findByLike({ string: '123' });
     console.log('findByLikePayload: ', findByLikePayload);
     console.log('find end');
-  })
+  });
 
   test('create', async () => {
     const attributeColumns = {
@@ -65,5 +78,4 @@ describe('orm', () => {
     expect(deletePayload.id).toBeUndefined();
     console.log('test delete end');
   });
-})
-
+});
