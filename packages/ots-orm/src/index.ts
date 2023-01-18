@@ -18,6 +18,7 @@ import {
   INF_MIN,
   INF_MAX,
 } from 'tablestore';
+const debug = require('debug')("orm:ots");
 import { orderQuery, wrapAttributes, wrapRow, wrapRows } from './utils';
 
 interface IConfig {
@@ -71,14 +72,12 @@ export = class Orm {
     let curMsg = '';
     if (typeof message === 'object') {
       try {
-        curMsg = JSON.stringify(message, null, 2);
+        curMsg = JSON.stringify(message);
       } catch (error) {}
     } else {
       curMsg = message;
     }
-    if(process?.env?.DEBUG) {
-      console.log(`${this.tableName}: ${curMsg}`);
-    }
+    debug(`${this.tableName}: ${curMsg}`);
   }
 
   constructor(config: IConfig, tableName: string, indexName?: string) {

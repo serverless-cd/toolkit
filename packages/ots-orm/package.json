@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/ots-orm",
-  "version": "1.1.1-beta-1",
+  "version": "1.1.1",
   "description": "aliyun ots orm",
   "keywords": [
     "ots",
@@ -22,6 +22,7 @@
     "access": "public"
   },
   "dependencies": {
+    "debug": "^4.3.4",
     "tablestore": "^5.2.2"
   },
   "repository": {
