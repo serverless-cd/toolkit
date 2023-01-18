@@ -26,24 +26,27 @@ jobs:
         working-directory: ./packages/core
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      # - name: git publish
-      #   run: npm publish
-      #   if: ${{ contains(github.ref, 'git')}}
-      #   working-directory: ./packages/git
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: git-provider publish
         run: npm publish
         if: ${{ contains(github.ref, 'git-provider')}}
         working-directory: ./packages/git-provider
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      - name: ots-orm publish
+      - name: git publish
         run: npm publish
+        if: ${{ contains(github.ref, 'git')}}
+        working-directory: ./packages/git
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: ots-orm publish
+        run: npx semantic-release
         if: ${{ contains(github.ref, 'ots-orm')}}
         working-directory: ./packages/ots-orm
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}} 
+          GITHUB_TOKEN: ${{ secrets.PERSON_GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # env:
+        #   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}} 
       - name: trigger publish
         run: npm publish
         if: ${{ contains(github.ref, 'trigger')}}
