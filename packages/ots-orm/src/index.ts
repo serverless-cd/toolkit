@@ -77,7 +77,7 @@ export = class Orm {
     } else {
       curMsg = message;
     }
-    debug(`${this.tableName}: ${curMsg}`);
+    debug(`[${this.tableName}] ${curMsg}`);
   }
 
   constructor(config: IConfig, tableName: string, indexName?: string) {
