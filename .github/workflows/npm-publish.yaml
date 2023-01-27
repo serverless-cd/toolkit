@@ -42,14 +42,11 @@ jobs:
         run: | 
           npm install
           npm run build
-          npx semantic-release
+          npm publish
         if: ${{ contains(github.ref, 'ots-orm')}}
         working-directory: ./packages/ots-orm
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSON_GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        # env:
-        #   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}} 
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}} 
       - name: trigger publish
         run: npm publish
         if: ${{ contains(github.ref, 'trigger')}}
