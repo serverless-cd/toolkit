@@ -39,7 +39,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: ots-orm publish
-        run: npx semantic-release
+        run: | 
+          npm install
+          npm run build
+          npx semantic-release
         if: ${{ contains(github.ref, 'ots-orm')}}
         working-directory: ./packages/ots-orm
         env:
