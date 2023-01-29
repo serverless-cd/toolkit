@@ -14,27 +14,6 @@ export function getDefaultInitLog() {
   return `Info: ${pkg.name}: ${pkg.version}, ${process.platform}-${process.arch}, node-${process.version}`;
 }
 
-export function getScript(val: string) {
-  return `
-    return async function run({ $, cd, fs, glob, chalk, YAML, which, os, path, logger }) {
-      $.log = (entry)=> {
-        switch (entry.kind) {
-          case 'cmd':
-            logger.info(entry.cmd)
-            break
-          case 'stdout':
-          case 'stderr':
-            logger.info(entry.data.toString())
-            break
-          case 'cd':
-            logger.info('$ ' + chalk.greenBright('cd') + ' ' +  entry.dir)
-            break
-        }
-      }
-      ${val}
-    }`;
-}
-
 export function getPluginRequirePath(val: string) {
   if (fs.existsSync(val)) return val;
   const prefix = getPluginPrefixPath(val);

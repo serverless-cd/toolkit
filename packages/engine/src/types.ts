@@ -35,16 +35,6 @@ export interface IRunOptions {
   'working-directory'?: string;
 }
 
-export interface IScriptOptions {
-  script: string;
-  stepCount?: string;
-  id?: string;
-  name?: string;
-  if?: string;
-  env?: Record<string, any>;
-  'continue-on-error'?: boolean;
-}
-
 export interface IPluginOptions {
   plugin: string;
   stepCount?: string;
@@ -57,7 +47,7 @@ export interface IPluginOptions {
   type?: 'run' | 'postRun'; //内部处理 用于区分是run还是postRun
 }
 
-export type IStepOptions = IRunOptions | IPluginOptions | IScriptOptions;
+export type IStepOptions = IRunOptions | IPluginOptions;
 
 export enum STEP_IF {
   SUCCESS = 'success()',

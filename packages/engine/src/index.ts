@@ -4,7 +4,6 @@ import { command } from 'execa';
 import {
   IStepOptions,
   IRunOptions,
-  IScriptOptions,
   IPluginOptions,
   IRecord,
   IStatus,
@@ -16,11 +15,7 @@ import {
   STEP_IF,
 } from './types';
 import * as path from 'path';
-import * as os from 'os';
-// @ts-ignore
-import * as zx from '@serverless-cd/zx';
 import {
-  getScript,
   parsePlugin,
   getProcessTime,
   getDefaultInitLog,
@@ -384,7 +379,6 @@ class Engine {
   private async doSrc(item: IStepOptions) {
     const runItem = item as IRunOptions;
     const pluginItem = item as IPluginOptions;
-    const scriptItem = item as IScriptOptions;
     // run
     if (runItem.run) {
       let execPath = runItem['working-directory'] || this.context.cwd;
@@ -406,11 +400,6 @@ class Engine {
         ? await app.run(get(pluginItem, 'inputs', {}), newContext, this.logger)
         : await app.postRun(get(pluginItem, 'inputs', {}), newContext, this.logger);
     }
-    // script
-    if (scriptItem.script) {
-      this.logName(item);
-      return await this.doScript(scriptItem);
-    }
   }
   private parseEnv(item: IRunOptions) {
     const { inputs } = this.options;
@@ -424,25 +413,6 @@ class Engine {
   private doArtTemplateCompile(value: string) {
     const newVal = replace(value, /\${{/g, '{{');
     return artTemplate.compile(newVal)(this.getFilterContext());
-  }
-  private async doScript(item: IScriptOptions) {
-    const newScript = path.isAbsolute(item.script)
-      ? item.script
-      : path.join(this.context.cwd, item.script);
-    // 文件路径 or 脚本内容
-    item.script = fs.existsSync(newScript) ? fs.readFileSync(newScript, 'utf-8') : item.script;
-    item.script = this.doArtTemplateCompile(item.script);
-    const script = getScript(item.script);
-    try {
-      const fun = new Function(script);
-      const run = fun();
-      await run({ ...zx, os, path, logger: this.logger });
-      return Promise.resolve({});
-    } catch (err) {
-      const errorMsg = (err as Error).toString();
-      this.logger.info(errorMsg);
-      return Promise.reject(errorMsg);
-    }
   }
   private async doSkip(item: IStepOptions) {
     // id 添加状态
@@ -486,7 +456,6 @@ class Engine {
     // 打印 step 名称
     const runItem = item as IRunOptions;
     const pluginItem = item as IPluginOptions;
-    const scriptItem = item as IScriptOptions;
     let msg = '';
     if (runItem.run) {
       msg = runItem.name || `Run ${runItem.run}`;
@@ -494,9 +463,6 @@ class Engine {
     if (pluginItem.plugin) {
       msg =
         pluginItem.name || `${pluginItem.type === 'run' ? 'Run' : 'Post Run'} ${pluginItem.plugin}`;
-    }
-    if (scriptItem.script) {
-      msg = runItem.name || `Run ${scriptItem.script}`;
     }
     const isSkip = get(this.record, `${item.stepCount}.status`) === STEP_STATUS.SKIP;
     msg = isSkip ? `[skipped] ${msg}` : msg;
