@@ -79,8 +79,8 @@ export default class Github extends Base {
     await this.octokit.request('DELETE /repos/{owner}/{repo}',params);
   }
 
-   //获取一个repo: https://docs.github.com/zh/rest/repos/repos#delete-a-repository
-   async hasRepo(params: IGithubHasRepo): Promise<IHasRepoOutput> {
+  //获取一个repo: https://docs.github.com/zh/rest/repos/repos#get-a-repository
+  async hasRepo(params: IGithubHasRepo): Promise<IHasRepoOutput> {
     super.validateHasRepoParams(params);
     const rows = await this.octokit.request('GET /repos/{owner}/{repo}',params);
     const source = _.get(rows, 'data', {});

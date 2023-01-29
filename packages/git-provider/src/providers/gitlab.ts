@@ -58,7 +58,7 @@ export default class Gitlab extends Base {
     };
   }
 
-   //创建一个repo: https://docs.gitlab.com/ee/api/projects.html#delete-project
+   //创建一个repo: https://docs.gitlab.com/ee/api/projects.html#create-project
    async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
     super.validateCreateRepoParams(params);
 
@@ -79,7 +79,7 @@ export default class Gitlab extends Base {
     await this.request(`api/v4/projects/${id}`,'DELETE',params);
   }
 
-   //获取一个repo: https://docs.github.com/zh/rest/repos/repos#delete-a-repository
+   //获取一个repo: https://docs.gitlab.com/ee/api/projects.html#get-single-project
    async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
     super.validateHasRepoParams(params);
     const { owner, repo } = params as IHasRepo;
