@@ -54,7 +54,7 @@ test('create fork', async () => {
 
 test('create a repo', async () => {
   const prioverd = git('gitlab', config);
-  const res = await prioverd.createRepo({ name: 'testCreateRepo'});
+  const res = await prioverd.createRepo({ name: 'testCreateRepo', visibility: 'private', description: 'testtest'});
   console.log(res)
   expect(_.has(res, 'id')).toBeTruthy();
   expect(_.has(res, 'full_name')).toBeTruthy();

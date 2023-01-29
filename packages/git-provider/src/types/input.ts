@@ -34,6 +34,9 @@ export interface ICreateFork {
 
 export interface ICreateRepo {
   name: string;
+  private?: boolean;
+  description?: string;
+  visibility?: string;
 }
 
 export interface IDeleteRepo {

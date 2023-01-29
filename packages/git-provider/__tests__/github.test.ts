@@ -165,7 +165,7 @@ test('create a repo', async () => {
   const prioverd = git('github', {
     access_token,
   });
-  const rows = await prioverd.createRepo({ name: 'testCreateRepo11'});
+  const rows = await prioverd.createRepo({ name: 'testCreateRepo5' , private:true , description: 'testetest'});
   expect(_.has(rows, 'id')).toBeTruthy();
   expect(_.has(rows, 'full_name')).toBeTruthy();
   expect(_.has(rows, 'url')).toBeTruthy();
