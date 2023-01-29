@@ -112,7 +112,7 @@ export default class Codeup {
   async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
     const name = _.get(params, 'name');
     const organizationId = _.get(params, 'organization_id');
-    const visibilityLevel = _.get(params, 'visibilityLevel') || 10;
+    const visibilityLevel = _.get(params, 'visibility_level') || 10;
     const description =  _.get(params, 'description') || '';
 
     if (!name) {
