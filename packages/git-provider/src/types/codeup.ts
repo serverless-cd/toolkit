@@ -18,7 +18,7 @@ export interface IListRepo {
 
 export interface ICreateRepo {
   name: string;
-  visibility_level?: number;
+  visibility_level?: string;
   description?: string;
 }
 
