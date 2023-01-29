@@ -13,7 +13,6 @@
   "license": "ISC",
   "dependencies": {
     "@serverless-cd/core": "^0.0.13",
-    "@serverless-cd/zx": "^0.0.5",
     "execa": "^5.1.1",
     "xstate": "^4.33.0"
   },
