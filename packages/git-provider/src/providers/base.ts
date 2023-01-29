@@ -47,6 +47,39 @@ export default abstract class Base {
     }
   }
 
+  validateCreateForkParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+  }
+
+  validateDeleteRepoParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+  }
+
+  validateHasRepoParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+  }
+
+  validateCreateRepoParams(params: unknown) {
+    if (!_.has(params, 'name')) {
+      throw new Error('You must specify the name of the repository');
+    }
+  }
+
   validateGetRefCommitParams(params: unknown) {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');

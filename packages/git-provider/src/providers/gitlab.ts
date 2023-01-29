@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
 import Base from './base';
 
 const PARAMS = {
@@ -38,10 +38,59 @@ export default class Gitlab extends Base {
       id = encodeURIComponent(`${owner}/${repo}`);
     }
 
-    const rows = await this.requestList(`/api/v4/projects/${id}/repository/branches`, PARAMS);
+    const rows = await this.requestList(`/api/v4/projects/${id}/repository/branches`, PARAMS, 'GET');
     return _.map(rows, (row) => ({
       name: row.name, commit_sha: _.get(row, 'commit.id'), source: row,
     }));
+  }
+
+  //https://docs.gitlab.com/ee/api/projects.html#fork-project
+  async createFork(params: ICreateFork): Promise<IForkOutput> {
+    super.validateCreateForkParams(params);
+    const { owner, repo } = params as ICreateFork;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    const rows = await this.request(`/api/v4/projects/${id}/fork`, 'POST', params);
+    const source = _.get(rows, 'data', {});
+    return {
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'path_with_namespace',''),
+      url: _.get(source, 'web_url','')
+    };
+  }
+
+   //创建一个repo: https://docs.gitlab.com/ee/api/projects.html#delete-project
+   async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
+    super.validateCreateRepoParams(params);
+
+    const rows = await this.request(`api/v4/projects`,'POST',params);
+    const source = _.get(rows, 'data', {});
+    return {
+        id: _.get(source, 'id') as unknown as number,
+        full_name: _.get(source, 'path_with_namespace',''),
+        url: _.get(source, 'web_url','')
+    };
+  }
+
+  //删除一个repo: https://docs.gitlab.com/ee/api/projects.html#delete-project
+  async deleteRepo(params: IDeleteRepo): Promise<any> {
+    super.validateDeleteRepoParams(params);
+    const { owner, repo } = params as IDeleteRepo;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    await this.request(`api/v4/projects/${id}`,'DELETE',params);
+  }
+
+   //获取一个repo: https://docs.github.com/zh/rest/repos/repos#delete-a-repository
+   async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
+    super.validateHasRepoParams(params);
+    const { owner, repo } = params as IHasRepo;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    const rows = await this.request(`api/v4/projects/${id}`,'GET',params);
+    const source = _.get(rows, 'data', {});
+    return {
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'path_with_namespace',''),
+      url: _.get(source, 'web_url','')
+    };
   }
 
   async getCommitById(params: IGetCommitById | { id: string; sha: string }): Promise<ICommitOutput> {
@@ -63,11 +112,11 @@ export default class Gitlab extends Base {
   }
 
 
-  private async requestList(path: string, params: any): Promise<any[]> {
+  private async requestList(path: string, params: any, method: any): Promise<any[]> {
     let rows: any[] = [];
     let rowLength = 0;
     do {
-      const { data } = await this.request(path, 'GET', params);
+      const { data } = await this.request(path, method , params);
       rows = _.concat(rows, data);
       rowLength = _.size(data);
       params.pagination = params.pagination as number + 1;

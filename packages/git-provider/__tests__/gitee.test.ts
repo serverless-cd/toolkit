@@ -33,7 +33,7 @@ test('list branchs', async () => {
   }
 });
 
-test.only('get commit by id', async () => {
+test('get commit by id', async () => {
   const prioverd = git('gitee', { access_token });
   const sha = '1816c284614dede42d0e0c7eaace00166adc79f0';
   const config = await prioverd.getCommitById({
@@ -116,6 +116,40 @@ test('webhook', async () => {
   await prioverd.deleteWebhook({ owner: OWNER, repo: REPO, hook_id, });
   await expect(async () => {
     await prioverd.getWebhook({ owner: OWNER, repo: REPO, hook_id });
+  }).rejects.toThrow('Request failed with status code 404');
+  console.log('expect delete successfully');
+});
+
+test('create fork', async () => {
+  const prioverd = git('gitee', { access_token });
+  const createFork = await prioverd.createFork({ owner: OWNER, repo: REPO });
+  console.log(createFork)
+  expect(_.has(createFork, 'id')).toBeTruthy();
+  expect(_.has(createFork, 'full_name')).toBeTruthy();
+  expect(_.has(createFork, 'url')).toBeTruthy();
+  console.log('expect create successfully');  
+});
+
+test.only('create a  repo', async () => {
+  const prioverd = git('gitee', { access_token });
+  const createFork = await prioverd.createRepo({ name: 'testCreateRepo1' });
+  console.log(createFork)
+  expect(_.has(createFork, 'id')).toBeTruthy();
+  expect(_.has(createFork, 'full_name')).toBeTruthy();
+  expect(_.has(createFork, 'url')).toBeTruthy();
+  console.log('expect create successfully');  
+});
+
+test('delete a repo', async () => {
+  const prioverd = git('gitee', { access_token });
+  const repo = await prioverd.hasRepo({ owner: OWNER, repo: REPO });
+  console.log(repo);
+  expect(_.has(repo, 'id')).toBeTruthy();
+  console.log('has repo successfully');
+
+  await prioverd.deleteRepo({ owner: OWNER, repo: REPO })
+  await expect(async () => {
+    await prioverd.hasRepo({ owner: OWNER, repo: REPO });
   }).rejects.toThrow('Request failed with status code 404');
   console.log('expect delete successfully');
 });
