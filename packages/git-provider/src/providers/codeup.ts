@@ -112,6 +112,8 @@ export default class Codeup {
   async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
     const name = _.get(params, 'name');
     const organizationId = _.get(params, 'organization_id');
+    const visibilityLevel = _.get(params, 'visibilityLevel') || 10;
+    const description =  _.get(params, 'description') || '';
 
     if (!name) {
       throw new Error('You must specify project_name');
@@ -121,7 +123,7 @@ export default class Codeup {
     }
     
     const url ='/repository/create';
-    const result = await this.request({ url, method: 'POST' , params: { organizationId }, data: { name }});
+    const result = await this.request({ url, method: 'POST' , params: { organizationId }, data: { name , visibilityLevel , description  }});
     const source = _.get(result, 'result', {});
     return {
         id: _.get(source, 'id') as unknown as number,
