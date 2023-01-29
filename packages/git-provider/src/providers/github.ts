@@ -2,8 +2,8 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById, IGithubFork } from '../types/github';
-import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput } from '../types/output';
+import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById, IGithubFork, IGithubCreateRepo, IGithubDeleteRepo, IGithubHasRepo } from '../types/github';
+import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 
 export default class Github extends Base {
@@ -49,16 +49,46 @@ export default class Github extends Base {
     }));
   };
 
-  //创建一个fork: https://docs.github.com/en/rest/repos/forks?apiVersion=2022-11-28#create-a-fork
-  async createFork(params: IGithubFork): Promise<any> {
+  //创建一个fork: https://docs.github.com/en/rest/repos/forks#create-a-fork
+  async createFork(params: IGithubFork): Promise<IForkOutput> {
     super.validateCreateForkParams(params);
     const rows = await this.octokit.request('POST /repos/{owner}/{repo}/forks',params);
     const source = _.get(rows, 'data', {});
     return {
-        id: _.get(source, 'id'),
-        full_name: _.get(source, 'full_name'),
-        url: _.get(source, 'html_url')
+        id: _.get(source, 'id') as unknown as number,
+        full_name: _.get(source, 'full_name',''),
+        url: _.get(source, 'html_url','')
       };
+  }
+
+  //创建一个repo: https://docs.github.com/zh/rest/repos/repos#create-an-organization-repository
+  async createRepo(params: IGithubCreateRepo): Promise<ICreateRepoOutput> {
+    super.validateCreateRepoParams(params);
+    const rows = await this.octokit.request('POST /user/repos',params);
+    const source = _.get(rows, 'data', {});
+    return {
+        id: _.get(source, 'id') as unknown as number,
+        full_name: _.get(source, 'full_name',''),
+        url: _.get(source, 'url','')
+    };
+  }
+
+  //删除一个repo: https://docs.github.com/zh/rest/repos/repos#delete-a-repository
+  async deleteRepo(params: IGithubDeleteRepo): Promise<any> {
+    super.validateDeleteRepoParams(params);
+    await this.octokit.request('DELETE /repos/{owner}/{repo}',params);
+  }
+
+  //获取一个repo: https://docs.github.com/zh/rest/repos/repos#get-a-repository
+  async hasRepo(params: IGithubHasRepo): Promise<IHasRepoOutput> {
+    super.validateHasRepoParams(params);
+    const rows = await this.octokit.request('GET /repos/{owner}/{repo}',params);
+    const source = _.get(rows, 'data', {});
+    return {
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'full_name',''),
+      url: _.get(source, 'html_url','')
+    };
   }
 
   // 获取组织的仓库: https://docs.github.com/cn/rest/repos/repos#list-organization-repositories

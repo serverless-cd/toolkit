@@ -1,7 +1,7 @@
 import _, { map } from 'lodash';
-import { IGetCommitById, IListBranch, IListRepo } from '../types/codeup';
+import { IGetCommitById, IListBranch, IListRepo, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/codeup';
 import { IAliConfig } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
 
 
 const { ROAClient } = require('@alicloud/pop-core');
@@ -108,6 +108,69 @@ export default class Codeup {
     };
   }
 
+  //创建一个repo: https://help.aliyun.com/document_detail/215681.html
+  async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
+    const name = _.get(params, 'name');
+    const organizationId = _.get(params, 'organization_id');
+    const visibilityLevel = _.get(params, 'visibility_level') || '10';
+    const description =  _.get(params, 'description') || '';
+
+    if (!name) {
+      throw new Error('You must specify project_name');
+    }
+    if (!organizationId) {
+      throw new Error('You must specify organization_id');
+    }
+    
+    const url ='/repository/create';
+    const result = await this.request({ url, method: 'POST' , params: { organizationId }, data: { name , visibilityLevel , description  }});
+    const source = _.get(result, 'result', {});
+    return {
+        id: _.get(source, 'id') as unknown as number,
+        full_name: _.get(source, 'name',''),
+        url: _.get(source, 'webUrl','')
+    };
+  }
+
+  //删除一个repo: https://help.aliyun.com/document_detail/460705.html
+  async deleteRepo(params: IDeleteRepo): Promise<any> {
+    const repositoryId = _.get(params, 'project_id');
+    const organizationId = _.get(params, 'organization_id');
+
+    if (!repositoryId) {
+      throw new Error('You must specify project_repositoryId');
+    }
+    if (!organizationId) {
+      throw new Error('You must specify organization_id');
+    }
+    const reason = _.get(params, 'repositoryId') || 'git-provider删除代码库';
+    const url = `/repository/${repositoryId}/remove`
+    await this.request({ url, method: 'POST' , params: { organizationId, repositoryId }, data: { reason }});
+  }
+
+  //获取一个repo: https://help.aliyun.com/document_detail/460466.html
+  async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
+    const identity = _.get(params, 'project_id');
+    const organizationId = _.get(params, 'organization_id');
+
+    
+    if (!identity) {
+      throw new Error('You must specify project_identity');
+    }
+    if (!organizationId) {
+      throw new Error('You must specify organization_id');
+    }
+
+    const url='/repository/get'
+    const rows = await this.request({ url, params : { identity, organizationId } });
+    const source = _.get(rows, 'repository', {});
+    return {
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'name',''),
+      url: _.get(source, 'webUrl','')
+    };
+  }
+
   private async requestList(url: string, params: { [key: string]: any }): Promise<any[]> {
     let rows: any[] = [];
     let rowLength = 0;
@@ -140,11 +203,9 @@ export default class Codeup {
       },
       options = {},
     } = args;
-
     if (params.accessToken) {
       params.accessToken = this.access_token;
     }
-
     try {
       return await this.client.request(method, url, params, JSON.stringify(data), headers, options);
     } catch (e) {

@@ -22,6 +22,18 @@ export interface IForkOutput {
   url: string;
 }
 
+export interface ICreateRepoOutput {
+  id: number;
+  full_name: string;
+  url: string;
+}
+
+export interface IHasRepoOutput {
+  id: number;
+  full_name: string;
+  url: string;
+}
+
 export interface IBranchOutput {
   name: string;
   commit_sha: string;

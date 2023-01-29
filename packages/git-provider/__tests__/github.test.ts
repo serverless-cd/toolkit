@@ -151,7 +151,7 @@ test('webhook', async () => {
 });
 
 
-test.only('create fork', async () => {
+test('create fork', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -161,3 +161,28 @@ test.only('create fork', async () => {
   expect(_.has(rows, 'url')).toBeTruthy();
 });
 
+test('create a repo', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const rows = await prioverd.createRepo({ name: 'testCreateRepo5' , private:true , description: 'testetest'});
+  expect(_.has(rows, 'id')).toBeTruthy();
+  expect(_.has(rows, 'full_name')).toBeTruthy();
+  expect(_.has(rows, 'url')).toBeTruthy();
+});
+
+test.only('delete a repo', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const repo = await prioverd.hasRepo({ owner: OWNER, repo: REPO });
+  console.log(repo);
+  expect(_.has(repo, 'id')).toBeTruthy();
+  console.log('has repo successfully');
+
+  await prioverd.deleteRepo({ owner: OWNER, repo: REPO })
+  await expect(async () => {
+    await prioverd.hasRepo({ owner: OWNER, repo: REPO });
+  }).rejects.toThrow('Not Found');
+  console.log('expect delete successfully');
+});

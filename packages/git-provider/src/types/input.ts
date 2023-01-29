@@ -32,6 +32,23 @@ export interface ICreateFork {
   repo: string;
 }
 
+export interface ICreateRepo {
+  name: string;
+  private?: boolean;
+  description?: string;
+  visibility?: string;
+}
+
+export interface IDeleteRepo {
+  owner: string;
+  repo: string;
+}
+
+export interface IHasRepo {
+  owner: string;
+  repo: string;
+}
+
 export interface IGetRefCommit {
   owner: string;
   repo: string;

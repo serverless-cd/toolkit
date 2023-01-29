@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput } from '../types/output';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
 import Base from './base';
 
 const PARAMS = {
@@ -45,16 +45,51 @@ export default class Gitlab extends Base {
   }
 
   //https://docs.gitlab.com/ee/api/projects.html#fork-project
-  async createFork(params: ICreateFork): Promise<any> {
+  async createFork(params: ICreateFork): Promise<IForkOutput> {
     super.validateCreateForkParams(params);
-    const { owner, repo } = params as IListBranchs;
+    const { owner, repo } = params as ICreateFork;
     const id = encodeURIComponent(`${owner}/${repo}`);
     const rows = await this.request(`/api/v4/projects/${id}/fork`, 'POST', params);
     const source = _.get(rows, 'data', {});
     return {
-      id: _.get(source, 'id'),
-      full_name: _.get(source, 'path_with_namespace'),
-      url: _.get(source, 'web_url'),
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'path_with_namespace',''),
+      url: _.get(source, 'web_url','')
+    };
+  }
+
+   //创建一个repo: https://docs.gitlab.com/ee/api/projects.html#create-project
+   async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
+    super.validateCreateRepoParams(params);
+
+    const rows = await this.request(`api/v4/projects`,'POST',params);
+    const source = _.get(rows, 'data', {});
+    return {
+        id: _.get(source, 'id') as unknown as number,
+        full_name: _.get(source, 'path_with_namespace',''),
+        url: _.get(source, 'web_url','')
+    };
+  }
+
+  //删除一个repo: https://docs.gitlab.com/ee/api/projects.html#delete-project
+  async deleteRepo(params: IDeleteRepo): Promise<any> {
+    super.validateDeleteRepoParams(params);
+    const { owner, repo } = params as IDeleteRepo;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    await this.request(`api/v4/projects/${id}`,'DELETE',params);
+  }
+
+   //获取一个repo: https://docs.gitlab.com/ee/api/projects.html#get-single-project
+   async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
+    super.validateHasRepoParams(params);
+    const { owner, repo } = params as IHasRepo;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    const rows = await this.request(`api/v4/projects/${id}`,'GET',params);
+    const source = _.get(rows, 'data', {});
+    return {
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'path_with_namespace',''),
+      url: _.get(source, 'web_url','')
     };
   }
 

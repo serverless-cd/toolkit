@@ -15,3 +15,19 @@ export interface IGetCommitById {
 export interface IListRepo {
   organization_id: string;
 }
+
+export interface ICreateRepo {
+  name: string;
+  visibility_level?: string;
+  description?: string;
+}
+
+export interface IDeleteRepo {
+  project_id: string;
+  organization_id: string;
+}
+
+export interface IHasRepo {
+  project_id: string;
+  organization_id: string;
+}
