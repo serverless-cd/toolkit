@@ -52,3 +52,40 @@ test('get commit by id', async () => {
   expect(_.isString(res.message)).toBeTruthy();
   expect(_.has(res, 'source')).toBeTruthy();
 });
+
+test('create a repo', async () => {
+  const name="testCreateRepo";
+  const prioverd = git('codeup', config);
+  const res = await prioverd.createRepo({
+    name,
+    organization_id: organization_id
+  });
+  expect(res.id).toBeTruthy();
+  expect(res.full_name).toBeTruthy();
+  expect(res.url).toBeTruthy();
+})
+
+test('get a repo', async () => {
+  const prioverd = git('codeup', config);
+  const res = await prioverd.hasRepo({
+    project_id: project_id,
+    organization_id: organization_id
+  });
+  expect(res.id).toBeTruthy();
+  expect(res.full_name).toBeTruthy();
+  expect(res.url).toBeTruthy();
+})
+
+test.only('delete a repo', async () => {
+  const prioverd = git('codeup', config);
+  const project = await prioverd.hasRepo({ project_id: project_id, organization_id: organization_id });
+  console.log(project);
+  expect(_.has(project, 'id')).toBeTruthy();
+  console.log('has repo successfully');
+
+  await prioverd.deleteRepo({ project_id: project_id, organization_id: organization_id })
+  await expect(async () => {
+    await prioverd.hasRepo({ project_id: project_id, organization_id: organization_id });
+  }).rejects.toThrow('code: 403, 访问的资源无权限!');
+  console.log('expect delete successfully');
+})
