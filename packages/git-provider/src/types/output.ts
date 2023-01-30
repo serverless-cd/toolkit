@@ -56,3 +56,8 @@ export interface IGetWebhookOutput {
   url: string;
   source: any;
 }
+
+export interface IGetProtectBranchOutput {
+  required_pull_request_reviews: boolean;
+  required_approving_review_count: number;
+}

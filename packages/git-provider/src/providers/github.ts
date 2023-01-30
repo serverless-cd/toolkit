@@ -2,8 +2,8 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById, IGithubFork, IGithubCreateRepo, IGithubDeleteRepo, IGithubHasRepo } from '../types/github';
-import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
+import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById, IGithubFork, IGithubCreateRepo, IGithubDeleteRepo, IGithubHasRepo, IGithubSetProtectBranch, IGithubGetProtectBranch } from '../types/github';
+import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 
 export default class Github extends Base {
@@ -88,6 +88,35 @@ export default class Github extends Base {
       id: _.get(source, 'id') as unknown as number,
       full_name: _.get(source, 'full_name',''),
       url: _.get(source, 'html_url','')
+    };
+  }
+
+  //设置保护分支: https://docs.github.com/zh/rest/branches/branch-protection#update-branch-protection
+  async setProtectionBranch(params: IGithubSetProtectBranch): Promise<any> {
+    super.validateProtectBranchParams(params);
+    const requiredPrApprove:number = _.get(params, 'required_pull_request_reviews',true) ? 1 : 0;
+    Reflect.deleteProperty(params,'required_pull_request_reviews');
+    const parameters = {
+      required_status_checks: null,
+      enforce_admins: null,
+      required_pull_request_reviews: {
+        required_approving_review_count: requiredPrApprove,
+      },
+      restrictions: null,
+      ...params,
+    }
+    await this.octokit.request('PUT /repos/{owner}/{repo}/branches/{branch}/protection',parameters);
+  }
+
+  //获取保护分支信息: https://docs.github.com/zh/rest/branches/branch-protection#get-branch-protection
+  async getProtectionBranch(params: IGithubGetProtectBranch): Promise<IGetProtectBranchOutput> {
+    super.validateGetProtectBranchParams(params);
+    const res = await this.octokit.request('GET /repos/{owner}/{repo}/branches/{branch}/protection',params);
+    const source = _.get(res, 'data', {});
+    const required_pull_request_reviews = _.get(source, 'required_pull_request_reviews', {});
+    return {
+      required_pull_request_reviews: !_.isNil(required_pull_request_reviews),
+      required_approving_review_count: _.get(required_pull_request_reviews, 'required_approving_review_count',0)
     };
   }
 

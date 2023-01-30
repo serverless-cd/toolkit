@@ -171,7 +171,7 @@ test('create a repo', async () => {
   expect(_.has(rows, 'url')).toBeTruthy();
 });
 
-test.only('delete a repo', async () => {
+test('delete a repo', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -185,4 +185,25 @@ test.only('delete a repo', async () => {
     await prioverd.hasRepo({ owner: OWNER, repo: REPO });
   }).rejects.toThrow('Not Found');
   console.log('expect delete successfully');
+});
+
+test.only('update a branch protection', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const required_pull_request_reviews = true;
+  const branch = 'master'
+  const res = await prioverd.setProtectionBranch({ 
+    owner: OWNER,
+    repo: REPO,
+    branch: branch,
+    required_pull_request_reviews: required_pull_request_reviews,
+  });
+  const getProtectBranch = await prioverd.getProtectionBranch({ 
+    owner: OWNER,
+    repo: REPO,
+    branch: branch,
+  });
+  expect(_.has(getProtectBranch, 'required_pull_request_reviews')).toBe(required_pull_request_reviews);
+  console.log('expect set branch protection successfully')
 });

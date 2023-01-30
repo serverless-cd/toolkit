@@ -80,6 +80,30 @@ export default abstract class Base {
     }
   }
 
+  validateProtectBranchParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+    if (!_.has(params, 'branch')) {
+      throw new Error('You must specify branch');
+    }
+  }
+
+  validateGetProtectBranchParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+    if (!_.has(params, 'branch')) {
+      throw new Error('You must specify branch');
+    }
+  }
+
   validateGetRefCommitParams(params: unknown) {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');

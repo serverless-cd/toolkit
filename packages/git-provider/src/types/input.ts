@@ -49,6 +49,19 @@ export interface IHasRepo {
   repo: string;
 }
 
+export interface ISetProtectBranch {
+  owner: string;
+  repo: string;
+  branch: string,
+  required_pull_request_reviews?: boolean,
+}
+
+export interface IGetProtectBranch {
+  owner: string;
+  repo: string;
+  branch: string,
+}
+
 export interface IGetRefCommit {
   owner: string;
   repo: string;
