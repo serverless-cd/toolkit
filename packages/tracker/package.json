@@ -1,0 +1,22 @@
+{
+  "name": "@serverless-cd/tracker",
+  "version": "0.0.1",
+  "description": "sevrerless-cd tracker 日志上报",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/lodash": "^4.14.182",
+    "abort-controller": "^3.0.0",
+    "nanoid": "^4.0.0",
+    "node-fetch": "^3.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
