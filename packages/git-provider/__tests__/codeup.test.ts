@@ -76,7 +76,8 @@ test('get a repo', async () => {
   expect(res.url).toBeTruthy();
 })
 
-test('delete a repo', async () => {
+
+test.only('delete a repo', async () => {
   const prioverd = git('codeup', config);
   const project = await prioverd.hasRepo({ project_id: project_id, organization_id: organization_id });
   console.log(project);
@@ -97,5 +98,6 @@ test.only('set a branch protection', async () => {
 
   expect(_.get(project, 'protected')).toBeTruthy();
   console.log('set branch protection successfully');
+
 
 })

@@ -91,6 +91,7 @@ export default class Github extends Base {
     };
   }
 
+
   //设置保护分支: https://docs.github.com/zh/rest/branches/branch-protection#update-branch-protection
   async setProtectionBranch(params: IGithubSetProtectBranch): Promise<any> {
     super.validateProtectBranchParams(params);
@@ -116,6 +117,7 @@ export default class Github extends Base {
       protected: !_.isNil(required_pull_request_reviews),
     };
   }
+
 
   // 获取组织的仓库: https://docs.github.com/cn/rest/repos/repos#list-organization-repositories
   async listOrgRepos (org: string): Promise<IRepoOutput[]> {
