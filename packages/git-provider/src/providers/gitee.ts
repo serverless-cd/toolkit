@@ -236,7 +236,7 @@ async setProtectionBranch(params: ISetProtectBranch): Promise<any> {
   await this.requestV5(`/repos/${owner}/${repo}/branches/${branch}/setting`, 'PUT', parameters);
 }
 
-//获取保护分支信息: https://docs.github.com/zh/rest/branches/branch-protection#get-branch-protection
+//获取保护分支信息: https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranchesBranch
 async getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput> {
   super.validateGetProtectBranchParams(params);
   const { owner, repo, branch } = params;
