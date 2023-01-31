@@ -76,7 +76,7 @@ test('get a repo', async () => {
   expect(res.url).toBeTruthy();
 })
 
-test.only('delete a repo', async () => {
+test('delete a repo', async () => {
   const prioverd = git('codeup', config);
   const project = await prioverd.hasRepo({ project_id: project_id, organization_id: organization_id });
   console.log(project);
@@ -88,4 +88,14 @@ test.only('delete a repo', async () => {
     await prioverd.hasRepo({ project_id: project_id, organization_id: organization_id });
   }).rejects.toThrow('code: 403, 访问的资源无权限!');
   console.log('expect delete successfully');
+})
+
+test.only('set a branch protection', async () => {
+  const prioverd = git('codeup', config);
+  await prioverd.setProtectionBranch({ project_id: project_id, organization_id: organization_id, branch:'master' });
+  const project = await prioverd.getProtectionBranch({ project_id: project_id, organization_id: organization_id, branch:'master' });
+
+  expect(_.get(project, 'protected')).toBeTruthy();
+  console.log('set branch protection successfully');
+
 })

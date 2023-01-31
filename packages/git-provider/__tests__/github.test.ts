@@ -191,19 +191,17 @@ test.only('update a branch protection', async () => {
   const prioverd = git('github', {
     access_token,
   });
-  const required_pull_request_reviews = true;
   const branch = 'master'
-  const res = await prioverd.setProtectionBranch({ 
+  await prioverd.setProtectionBranch({ 
     owner: OWNER,
     repo: REPO,
     branch: branch,
-    required_pull_request_reviews: required_pull_request_reviews,
   });
   const getProtectBranch = await prioverd.getProtectionBranch({ 
     owner: OWNER,
     repo: REPO,
     branch: branch,
   });
-  expect(_.has(getProtectBranch, 'required_pull_request_reviews')).toBe(required_pull_request_reviews);
+  expect(_.has(getProtectBranch, 'protected')).toBeTruthy();
   console.log('expect set branch protection successfully')
 });

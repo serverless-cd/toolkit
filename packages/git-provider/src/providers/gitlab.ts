@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch, IUnprotectBranch } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
 import Base from './base';
 
 const PARAMS = {
@@ -90,6 +90,38 @@ export default class Gitlab extends Base {
       id: _.get(source, 'id') as unknown as number,
       full_name: _.get(source, 'path_with_namespace',''),
       url: _.get(source, 'web_url','')
+    };
+  }
+
+  //设置保护分支: https://docs.gitlab.com/ee/api/protected_branches.html#protect-repository-branches
+  async setProtectionBranch(params: ISetProtectBranch): Promise<any> {
+    super.validateProtectBranchParams(params);
+    const { owner, repo } = params ;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    await this.request(`api/v4/projects/${id}/protected_branches`, 'POST' ,  { id, name: params.branch, ...params});
+  }
+
+  //删除保护分支: https://docs.gitlab.com/ee/api/protected_branches.html#unprotect-repository-branches
+  async unProtectionBranch(params: IUnprotectBranch): Promise<any> {
+    const { owner, repo, branch } = params ;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    const parameters = {
+      id: id,
+      name: params.branch,
+    }
+    const res = await this.request(`api/v4/projects/${id}/protected_branches/${branch}`, 'DELETE' , parameters);
+    return res;
+  }
+
+  //获取保护分支信息: https://docs.gitlab.com/ee/api/protected_branches.html#get-a-single-protected-branch-or-wildcard-protected-branch
+  async getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput> {
+    super.validateGetProtectBranchParams(params);
+    const { owner, repo, branch:name } = params ;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    const res = await this.request(`api/v4/projects/${id}/protected_branches/${name}`, 'GET' ,params);
+    const source = _.get(res, 'data', {});
+    return {
+      protected: _.isObject(source),
     };
   }
 

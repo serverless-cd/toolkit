@@ -130,7 +130,7 @@ test('create fork', async () => {
   console.log('expect create successfully');  
 });
 
-test.only('create a  repo', async () => {
+test('create a  repo', async () => {
   const prioverd = git('gitee', { access_token });
   const createFork = await prioverd.createRepo({ name: 'testCreateRepo1' });
   console.log(createFork)
@@ -152,4 +152,21 @@ test('delete a repo', async () => {
     await prioverd.hasRepo({ owner: OWNER, repo: REPO });
   }).rejects.toThrow('Request failed with status code 404');
   console.log('expect delete successfully');
+});
+
+test.only('create a protection branch', async () => {
+  const prioverd = git('gitee', { access_token });
+  const branch = 'master'
+  await prioverd.setProtectionBranch({ 
+    owner: OWNER,
+    repo: REPO,
+    branch: branch,
+  });
+  const res = await prioverd.getProtectionBranch({ 
+    owner: OWNER,
+    repo: REPO,
+    branch: branch,
+  });
+  expect(_.get(res, 'protected')).toBeTruthy();
+  console.log('expect set branch protection successfully');  
 });

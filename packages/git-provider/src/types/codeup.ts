@@ -31,3 +31,15 @@ export interface IHasRepo {
   project_id: string;
   organization_id: string;
 }
+
+export interface ISetProtectBranch {
+  project_id: string;
+  organization_id: string;
+  branch: string;
+}
+
+export interface IGetProtectBranch {
+  project_id: string;
+  organization_id: string;
+  branch: string,
+}

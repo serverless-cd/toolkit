@@ -1,7 +1,7 @@
 import _, { map } from 'lodash';
-import { IGetCommitById, IListBranch, IListRepo, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/codeup';
+import { IGetCommitById, IListBranch, IListRepo, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch } from '../types/codeup';
 import { IAliConfig } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
 
 
 const { ROAClient } = require('@alicloud/pop-core');
@@ -168,6 +168,61 @@ export default class Codeup {
       id: _.get(source, 'id') as unknown as number,
       full_name: _.get(source, 'name',''),
       url: _.get(source, 'webUrl','')
+    };
+  }
+
+  //设置一个保护分支: https://help.aliyun.com/document_detail/463003.html
+  async setProtectionBranch(params: ISetProtectBranch): Promise<any> {
+    const repositoryId = _.get(params, 'project_id');
+    const organizationId = _.get(params, 'organization_id');
+    const branch = _.get(params, 'branch');
+
+    if (!repositoryId) {
+      throw new Error('You must specify project_repositoryId');
+    }
+    if (!organizationId) {
+      throw new Error('You must specify organization_id');
+    }
+    if (!branch) {
+      throw new Error('You must specify branch');
+    }
+
+    const url =`/repository/${repositoryId}/protect_branches`;
+    await this.request({ 
+      url,
+      method: 'POST' ,
+      params: { organizationId, repositoryId }, 
+      data: { branch ,
+              allowPushRoles: [ 40 ] ,
+              allowMergeRoles: [ 40 ] 
+            }
+    });
+  }
+
+  //获取一个保护分支: https://help.aliyun.com/document_detail/215681.html
+  async getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput> {
+    const repositoryId = _.get(params, 'project_id');
+    const organizationId = _.get(params, 'organization_id');
+    const branch = _.get(params, 'branch');
+
+    if (!repositoryId) {
+      throw new Error('You must specify project_repositoryId');
+    }
+    if (!organizationId) {
+      throw new Error('You must specify organization_id');
+    }
+    if (!branch) {
+      throw new Error('You must specify branch');
+    }
+
+    const url =`/repository/${repositoryId}/protect_branches`;
+    const rows = await this.request({ url, params : { organizationId, repositoryId } });
+    const array = _.get(rows, 'result', {});
+    array.filter( ( item:any ) => {
+      return item.branch === branch
+    },[])
+    return {
+      protected: !_.isEmpty(array)
     };
   }
 

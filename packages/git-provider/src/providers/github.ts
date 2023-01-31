@@ -94,13 +94,11 @@ export default class Github extends Base {
   //设置保护分支: https://docs.github.com/zh/rest/branches/branch-protection#update-branch-protection
   async setProtectionBranch(params: IGithubSetProtectBranch): Promise<any> {
     super.validateProtectBranchParams(params);
-    const requiredPrApprove:number = _.get(params, 'required_pull_request_reviews',true) ? 1 : 0;
-    Reflect.deleteProperty(params,'required_pull_request_reviews');
     const parameters = {
       required_status_checks: null,
       enforce_admins: null,
       required_pull_request_reviews: {
-        required_approving_review_count: requiredPrApprove,
+        required_approving_review_count: 1,
       },
       restrictions: null,
       ...params,
@@ -115,8 +113,7 @@ export default class Github extends Base {
     const source = _.get(res, 'data', {});
     const required_pull_request_reviews = _.get(source, 'required_pull_request_reviews', {});
     return {
-      required_pull_request_reviews: !_.isNil(required_pull_request_reviews),
-      required_approving_review_count: _.get(required_pull_request_reviews, 'required_approving_review_count',0)
+      protected: !_.isNil(required_pull_request_reviews),
     };
   }
 

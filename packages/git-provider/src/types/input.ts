@@ -52,11 +52,16 @@ export interface IHasRepo {
 export interface ISetProtectBranch {
   owner: string;
   repo: string;
-  branch: string,
-  required_pull_request_reviews?: boolean,
+  branch: string;
 }
 
 export interface IGetProtectBranch {
+  owner: string;
+  repo: string;
+  branch: string,
+}
+
+export interface IUnprotectBranch {
   owner: string;
   repo: string;
   branch: string,

@@ -62,7 +62,7 @@ test('create a repo', async () => {
 });
 
 
-test.only('delete a repo', async () => {
+test('delete a repo', async () => {
   const prioverd = git('gitlab', config);
   const project = await prioverd.hasRepo({ owner: owner, repo: repo });
   console.log(project);
@@ -74,4 +74,21 @@ test.only('delete a repo', async () => {
     await prioverd.hasRepo({ owner: owner, repo: repo });
   }).rejects.toThrow('Request failed with status code 404');
   console.log('expect delete successfully');
+});
+
+test.only('set branch protection', async () => {
+  const prioverd = git('gitlab', config);
+  const branch = 'test'
+  await prioverd.setProtectionBranch({
+    owner: owner, 
+    repo: repo, 
+    branch: branch,
+  });
+  const res =  await prioverd.getProtectionBranch({
+    owner: owner, 
+    repo: repo, 
+    branch: branch,
+  });
+  expect(_.get(res, 'protected')).toBeTruthy();
+  console.log('expect delete successfully')
 });

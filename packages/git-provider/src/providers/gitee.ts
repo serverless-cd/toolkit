@@ -1,8 +1,8 @@
 import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
+import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo, IGetProtectBranch, ISetProtectBranch } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 
 const V5 = 'https://gitee.com/api/v5';
@@ -218,6 +218,32 @@ async deleteRepo(params: IDeleteRepo): Promise<any> {
     id: source.id,
     full_name: source.full_name,
     url: source.url,
+  }
+}
+
+//设置保护分支: https://gitee.com/api/v5/swagger#/putV5ReposOwnerRepoBranchesBranchProtection
+async setProtectionBranch(params: ISetProtectBranch): Promise<any> {
+  super.validateProtectBranchParams(params);
+  const { owner, repo, branch } = params;
+  const parameters = {
+    owner,
+    repo,
+    wildcard: branch,
+    pusher: 'admin',
+    merger: 'admin',
+  }
+  await this.requestV5(`/repos/${owner}/${repo}/branches/${branch}/protection`, 'PUT' ,{ owner, repo, branch });
+  await this.requestV5(`/repos/${owner}/${repo}/branches/${branch}/setting`, 'PUT', parameters);
+}
+
+//获取保护分支信息: https://docs.github.com/zh/rest/branches/branch-protection#get-branch-protection
+async getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput> {
+  super.validateGetProtectBranchParams(params);
+  const { owner, repo, branch } = params;
+  const res = await this.requestV5(`/repos/${owner}/${repo}/branches/${branch}`, 'GET' , params);
+  const source = _.get(res, 'data', {});
+  return {
+    protected: source.protected,
   }
 }
 
