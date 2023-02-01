@@ -72,7 +72,7 @@ export default class Gitlab extends Base {
   }
 
   //删除一个repo: https://docs.gitlab.com/ee/api/projects.html#delete-project
-  async deleteRepo(params: IDeleteRepo): Promise<any> {
+  async deleteRepo(params: IDeleteRepo): Promise<void> {
     super.validateDeleteRepoParams(params);
     const { owner, repo } = params as IDeleteRepo;
     const id = encodeURIComponent(`${owner}/${repo}`);
@@ -94,7 +94,7 @@ export default class Gitlab extends Base {
   }
 
   //设置保护分支: https://docs.gitlab.com/ee/api/protected_branches.html#protect-repository-branches
-  async setProtectionBranch(params: ISetProtectBranch): Promise<any> {
+  async setProtectionBranch(params: ISetProtectBranch): Promise<void> {
     super.validateProtectBranchParams(params);
     const { owner, repo } = params ;
     const id = encodeURIComponent(`${owner}/${repo}`);

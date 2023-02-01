@@ -2,12 +2,12 @@ import _, { map } from 'lodash';
 import { IGetCommitById, IListBranch, IListRepo, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch } from '../types/codeup';
 import { IAliConfig } from '../types/input';
 import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
-
+import CodeupBase from './codeup-base';
 
 const { ROAClient } = require('@alicloud/pop-core');
 const PARAMS = { page: 1, pageSize: 100 };
 
-export default class Codeup {
+export default class Codeup extends CodeupBase {
   readonly client: any;
   private access_token: string;
 
@@ -17,6 +17,7 @@ export default class Codeup {
       throw new Error('Access token is required');
     }
 
+    super(config);
     this.access_token = access_token;
     this.client = new ROAClient({
       accessKeyId: _.get(config, 'accessKeyId'),
@@ -29,10 +30,8 @@ export default class Codeup {
 
   // https://help.aliyun.com/document_detail/460465.html
   async listRepos(params: IListRepo): Promise<IRepoOutput[]> {
-    const organizationId = _.get(params, 'organization_id');
-    if (!organizationId) {
-      throw new Error('You must specify organization_id');
-    }
+    super.validateListReposParams(params);
+    const { organization_id: organizationId } = params as IListRepo;
 
     const url = '/repository/list';
     const rows = await this.requestList(url, {
@@ -56,14 +55,8 @@ export default class Codeup {
 
   // https://help.aliyun.com/document_detail/461641.html
   async listBranches(params: IListBranch): Promise<IBranchOutput[]> {
-    const projectId = _.get(params, 'project_id');
-    const organizationId = _.get(params, 'organization_id');
-    if (!projectId) {
-      throw new Error('You must specify project_id');
-    }
-    if (!organizationId) {
-      throw new Error('You must specify organization_id');
-    }
+    super.validateListBranchesParams(params);
+    const { organization_id: organizationId, project_id: projectId } = params as IListBranch;
 
     const url = `/repository/${projectId}/branches`;
     const rows = await this.requestList(url, {
@@ -82,18 +75,8 @@ export default class Codeup {
 
   // https://help.aliyun.com/document_detail/463000.html
   async getCommitById(params: IGetCommitById): Promise<ICommitOutput> {
-    const projectId = _.get(params, 'project_id');
-    const organizationId = _.get(params, 'organization_id');
-    const sha = _.get(params, 'sha');
-    if (!projectId) {
-      throw new Error('You must specify project_id');
-    }
-    if (!organizationId) {
-      throw new Error('You must specify organization_id');
-    }
-    if (!sha) {
-      throw new Error('You must specify sha');
-    }
+    super.validateGetCommitByIdParams(params);
+    const { organization_id: organizationId, project_id: projectId, sha } = params as IGetCommitById;
   
     const url = `/repository/${projectId}/commits/${sha}`;
     const result = await this.request({ url, params: { organizationId } });
@@ -110,17 +93,10 @@ export default class Codeup {
 
   //创建一个repo: https://help.aliyun.com/document_detail/215681.html
   async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
-    const name = _.get(params, 'name');
-    const organizationId = _.get(params, 'organization_id');
+    super.validateCreateRepoParams(params);
+    const { name, organization_id: organizationId } = params as ICreateRepo;
     const visibilityLevel = _.get(params, 'visibility_level') || '10';
     const description =  _.get(params, 'description') || '';
-
-    if (!name) {
-      throw new Error('You must specify project_name');
-    }
-    if (!organizationId) {
-      throw new Error('You must specify organization_id');
-    }
     
     const url ='/repository/create';
     const result = await this.request({ url, method: 'POST' , params: { organizationId }, data: { name , visibilityLevel , description  }});
@@ -134,15 +110,9 @@ export default class Codeup {
 
   //删除一个repo: https://help.aliyun.com/document_detail/460705.html
   async deleteRepo(params: IDeleteRepo): Promise<any> {
-    const repositoryId = _.get(params, 'project_id');
-    const organizationId = _.get(params, 'organization_id');
+    super.validateDeleteRepoParams(params);
+    const { project_id: repositoryId, organization_id: organizationId } = params as IDeleteRepo
 
-    if (!repositoryId) {
-      throw new Error('You must specify project_repositoryId');
-    }
-    if (!organizationId) {
-      throw new Error('You must specify organization_id');
-    }
     const reason = _.get(params, 'repositoryId') || 'git-provider删除代码库';
     const url = `/repository/${repositoryId}/remove`
     await this.request({ url, method: 'POST' , params: { organizationId, repositoryId }, data: { reason }});
@@ -150,16 +120,8 @@ export default class Codeup {
 
   //获取一个repo: https://help.aliyun.com/document_detail/460466.html
   async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
-    const identity = _.get(params, 'project_id');
-    const organizationId = _.get(params, 'organization_id');
-
-    
-    if (!identity) {
-      throw new Error('You must specify project_identity');
-    }
-    if (!organizationId) {
-      throw new Error('You must specify organization_id');
-    }
+    super.validateHasRepoParams(params);
+    const { project_id: identity, organization_id: organizationId } = params as IHasRepo;
 
     const url='/repository/get'
     const rows = await this.request({ url, params : { identity, organizationId } });
@@ -172,20 +134,9 @@ export default class Codeup {
   }
 
   //设置一个保护分支: https://help.aliyun.com/document_detail/463003.html
-  async setProtectionBranch(params: ISetProtectBranch): Promise<any> {
-    const repositoryId = _.get(params, 'project_id');
-    const organizationId = _.get(params, 'organization_id');
-    const branch = _.get(params, 'branch');
-
-    if (!repositoryId) {
-      throw new Error('You must specify project_repositoryId');
-    }
-    if (!organizationId) {
-      throw new Error('You must specify organization_id');
-    }
-    if (!branch) {
-      throw new Error('You must specify branch');
-    }
+  async setProtectionBranch(params: ISetProtectBranch): Promise<void> {
+    super.validateProtectBranchParams(params);
+    const { project_id: repositoryId, organization_id: organizationId, branch} = params as ISetProtectBranch;
 
     const url =`/repository/${repositoryId}/protect_branches`;
     await this.request({ 
@@ -201,19 +152,8 @@ export default class Codeup {
 
   //获取一个保护分支: https://help.aliyun.com/document_detail/215681.html
   async getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput> {
-    const repositoryId = _.get(params, 'project_id');
-    const organizationId = _.get(params, 'organization_id');
-    const branch = _.get(params, 'branch');
-
-    if (!repositoryId) {
-      throw new Error('You must specify project_repositoryId');
-    }
-    if (!organizationId) {
-      throw new Error('You must specify organization_id');
-    }
-    if (!branch) {
-      throw new Error('You must specify branch');
-    }
+    super.validateProtectBranchParams(params);
+    const { project_id: repositoryId, organization_id: organizationId, branch} = params as ISetProtectBranch;
 
     const url =`/repository/${repositoryId}/protect_branches`;
     const rows = await this.request({ url, params : { organizationId, repositoryId } });

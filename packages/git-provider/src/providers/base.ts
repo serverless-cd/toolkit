@@ -1,7 +1,7 @@
 
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile, IGetCommitById } from '../types/input';
-import { IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch } from '../types/input';
+import { IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput  } from '../types/output';
 
 export default abstract class Base {
   constructor(_config: any) { }
@@ -15,6 +15,12 @@ export default abstract class Base {
   abstract deleteWebhook(params: IDeleteWebhook): Promise<void>;
   abstract getWebhook(params: IGetWebhook): Promise<IGetWebhookOutput>;
   abstract putFile(params: IPutFile): Promise<void>;
+  abstract createFork(params: ICreateFork): Promise<IForkOutput>;
+  abstract createRepo(params: ICreateRepo): Promise<ICreateRepoOutput>;
+  abstract deleteRepo(params: IDeleteRepo): Promise<void>;
+  abstract hasRepo(params: IHasRepo): Promise<IHasRepoOutput>;
+  abstract setProtectionBranch(params: ISetProtectBranch): Promise<void>;
+  abstract getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput>;
 
   getWebhookDefaults(params: any): IWebhookEvent[] {
     return _.get(params, 'events', ['push', 'release']);
