@@ -61,7 +61,6 @@ test('create a repo', async () => {
   expect(_.has(res, 'url')).toBeTruthy();
 });
 
-
 test('delete a repo', async () => {
   const prioverd = git('gitlab', config);
   const project = await prioverd.hasRepo({ owner: owner, repo: repo });
