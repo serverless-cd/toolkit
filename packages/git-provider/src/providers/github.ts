@@ -69,7 +69,7 @@ export default class Github extends Base {
     return {
         id: _.get(source, 'id') as unknown as number,
         full_name: _.get(source, 'full_name',''),
-        url: _.get(source, 'url','')
+        url: _.get(source, 'html_url','')
     };
   }
 

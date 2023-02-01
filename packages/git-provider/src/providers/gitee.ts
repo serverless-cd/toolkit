@@ -197,7 +197,7 @@ export default class Gitee extends Base {
   return {
     id: source.id,
     full_name: source.full_name,
-    url: source.url,
+    url: source.html_url,
   }
 }
 
@@ -217,7 +217,7 @@ async deleteRepo(params: IDeleteRepo): Promise<any> {
   return {
     id: source.id,
     full_name: source.full_name,
-    url: source.url,
+    url: source.html_url,
   }
 }
 
