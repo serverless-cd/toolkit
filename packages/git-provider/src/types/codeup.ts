@@ -44,3 +44,8 @@ export interface IGetProtectBranch {
   organization_id: string;
   branch: string,
 }
+
+export interface ICheckRepoEmpty {
+  project_id: string;
+  organization_id: string;
+}

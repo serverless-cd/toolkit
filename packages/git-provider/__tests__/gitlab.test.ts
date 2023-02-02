@@ -75,7 +75,7 @@ test('delete a repo', async () => {
   console.log('expect delete successfully');
 });
 
-test.only('set branch protection', async () => {
+test('set branch protection', async () => {
   const prioverd = git('gitlab', config);
   const branch = 'test'
   await prioverd.setProtectionBranch({
@@ -89,5 +89,24 @@ test.only('set branch protection', async () => {
     branch: branch,
   });
   expect(_.get(res, 'protected')).toBeTruthy();
-  console.log('expect delete successfully')
+  console.log('expect set branch protection successfully')
+});
+
+test('check whether a repo exists', async () => {
+  const prioverd = git('gitlab', config);
+  const res = await prioverd.hasRepo({
+    owner: owner, 
+    repo: repo, 
+  });
+  console.log(res)
+});
+
+test.only('check whether a repo is empty', async () => {
+  const prioverd = git('gitlab', config);
+  const res = await prioverd.checkRepoEmpty({
+    owner: owner, 
+    repo: repo, 
+  });
+  console.log(res);
+  expect(_.has(res,'isEmpty')).toBeTruthy();
 });

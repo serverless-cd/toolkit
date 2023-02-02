@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch, IUnprotectBranch } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
+import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch, IUnprotectBranch, ICheckRepoEmpty } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput, ICheckRepoEmptyOutput } from '../types/output';
 import Base from './base';
 
 const PARAMS = {
@@ -79,19 +79,40 @@ export default class Gitlab extends Base {
     await this.request(`api/v4/projects/${id}`,'DELETE',params);
   }
 
-   //获取一个repo: https://docs.gitlab.com/ee/api/projects.html#get-single-project
-   async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
+  //获取一个repo: https://docs.gitlab.com/ee/api/projects.html#get-single-project
+  async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
     super.validateHasRepoParams(params);
     const { owner, repo } = params as IHasRepo;
     const id = encodeURIComponent(`${owner}/${repo}`);
-    const rows = await this.request(`api/v4/projects/${id}`,'GET',params);
+    try {
+      const rows = await this.request(`api/v4/projects/${id}`,'GET',params);
+      const source = _.get(rows, 'data', {});
+      return {
+        isExist: true,
+        id: _.get(source, 'id') as unknown as number,
+        full_name: _.get(source, 'path_with_namespace',''),
+        url: _.get(source, 'web_url','')
+      };
+    } catch (error) {
+      return {
+        isExist: false,
+      };
+    }
+  }
+
+  //判断一个repo是否为空: https://docs.gitlab.com/ee/api/commits.html#list-repository-commits
+  async checkRepoEmpty(params: ICheckRepoEmpty): Promise<ICheckRepoEmptyOutput> {
+    super.validateRepoEmptyParams(params);
+    const { owner, repo } = params as IHasRepo;
+    const id = encodeURIComponent(`${owner}/${repo}`);
+    const rows = await this.request(`api/v4/projects/${id}/repository/commits`,'GET',params);
     const source = _.get(rows, 'data', {});
     return {
-      id: _.get(source, 'id') as unknown as number,
-      full_name: _.get(source, 'path_with_namespace',''),
-      url: _.get(source, 'web_url','')
-    };
+      isEmpty: source.length === 0,
+    }
   }
+
+  
 
   //设置保护分支: https://docs.gitlab.com/ee/api/protected_branches.html#protect-repository-branches
   async setProtectionBranch(params: ISetProtectBranch): Promise<void> {

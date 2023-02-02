@@ -154,7 +154,7 @@ test('delete a repo', async () => {
   console.log('expect delete successfully');
 });
 
-test.only('create a protection branch', async () => {
+test('create a protection branch', async () => {
   const prioverd = git('gitee', { access_token });
   const branch = 'master'
   await prioverd.setProtectionBranch({ 
@@ -169,4 +169,23 @@ test.only('create a protection branch', async () => {
   });
   expect(_.get(res, 'protected')).toBeTruthy();
   console.log('expect set branch protection successfully');  
+});
+
+test('check a repo whether exists', async () => {
+  const prioverd = git('gitee', { access_token });
+  const res = await prioverd.hasRepo({ 
+    owner: OWNER,
+    repo: REPO,
+  });
+  console.log(res)
+  expect(_.has(res,'isExist')).toBeTruthy();
+});
+
+test.only('check whether a repo is empty', async () => {
+  const prioverd = git('gitee', { access_token });
+  const res = await prioverd.checkRepoEmpty({ 
+    owner: OWNER,
+    repo: REPO,
+  });
+  console.log(res);
 });

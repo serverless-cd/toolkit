@@ -67,6 +67,11 @@ export interface IUnprotectBranch {
   branch: string,
 }
 
+export interface ICheckRepoEmpty {
+  owner: string;
+  repo: string;
+}
+
 export interface IGetRefCommit {
   owner: string;
   repo: string;

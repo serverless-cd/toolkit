@@ -1,8 +1,8 @@
 import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo, IGetProtectBranch, ISetProtectBranch } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
+import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo, IGetProtectBranch, ISetProtectBranch, ICheckRepoEmpty } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput, ICheckRepoEmptyOutput } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 
 const V5 = 'https://gitee.com/api/v5';
@@ -212,12 +212,36 @@ async deleteRepo(params: IDeleteRepo): Promise<any> {
  async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
   super.validateHasRepoParams(params);
   const { owner, repo } = params as IHasRepo;
-  const rows = await this.requestV5(`/repos/${owner}/${repo}`,'GET',params);
-  const source = _.get(rows, 'data', {});
-  return {
-    id: source.id,
-    full_name: source.full_name,
-    url: source.html_url,
+  try {
+    const rows = await this.requestV5(`/repos/${owner}/${repo}`,'GET',params);
+    const source = _.get(rows, 'data', {});
+    return {
+      isExist: true,
+      id: source.id,
+      full_name: source.full_name,
+      url: source.html_url,
+    }
+  } catch (error) {
+    return {
+      isExist: false,
+    }
+  }
+}
+
+//判断一个repo是否为空: https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepo
+async checkRepoEmpty(params: ICheckRepoEmpty): Promise<ICheckRepoEmptyOutput> {
+  super.validateHasRepoParams(params);
+  const { owner, repo } = params as IHasRepo;
+  try {
+    const rows = await this.requestV5(`/repos/${owner}/${repo}/commits`,'GET',params);
+    const source = _.get(rows, 'data', {});
+    return {
+      isEmpty:false
+    };
+  } catch(error){
+    return {
+      isEmpty: true,
+    }
   }
 }
 

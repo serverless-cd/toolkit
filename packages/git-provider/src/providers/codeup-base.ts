@@ -68,6 +68,15 @@ export default abstract class CodeupBase {
     }
   }
 
+  validateRepoEmptyParams(params: unknown) {
+    if (!_.has(params, 'project_id')) {
+      throw new Error('You must specify project_identity');
+    }
+    if (!_.has(params, 'organization_id')) {
+      throw new Error('You must specify organization_id');
+    }
+  }
+
   validateCreateRepoParams(params: unknown) {
     if (!_.has(params, 'organization_id')) {
         throw new Error('You must specify organization_id');

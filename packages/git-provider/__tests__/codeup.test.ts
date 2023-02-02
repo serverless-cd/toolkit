@@ -90,7 +90,16 @@ test('delete a repo', async () => {
   console.log('expect delete successfully');
 })
 
-test.only('set a branch protection', async () => {
+test('set a branch protection', async () => {
+  const prioverd = git('codeup', config);
+  await prioverd.setProtectionBranch({ project_id: project_id, organization_id: organization_id, branch:'master' });
+  const project = await prioverd.getProtectionBranch({ project_id: project_id, organization_id: organization_id, branch:'master' });
+
+  expect(_.get(project, 'protected')).toBeTruthy();
+  console.log('set branch protection successfully');
+})
+
+test('get a branch protection', async () => {
   const prioverd = git('codeup', config);
   await prioverd.setProtectionBranch({ project_id: project_id, organization_id: organization_id, branch:'master' });
   const project = await prioverd.getProtectionBranch({ project_id: project_id, organization_id: organization_id, branch:'master' });
@@ -99,3 +108,15 @@ test.only('set a branch protection', async () => {
   console.log('set branch protection successfully');
 
 })
+
+test('check a repo whether exists', async () => {
+  const prioverd = git('codeup', config);
+  const res = await prioverd.hasRepo({ project_id: project_id, organization_id: organization_id, branch:'master' });
+  console.log(res)
+});
+
+test.only('check whether a repo is empty', async () => {
+  const prioverd = git('codeup', config);
+  const res = await prioverd.checkRepoEmpty({ project_id: project_id, organization_id: organization_id, branch:'master' });
+  console.log(res)
+});

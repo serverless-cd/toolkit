@@ -2,8 +2,8 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById, IGithubFork, IGithubCreateRepo, IGithubDeleteRepo, IGithubHasRepo, IGithubSetProtectBranch, IGithubGetProtectBranch } from '../types/github';
-import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
+import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById, IGithubFork, IGithubCreateRepo, IGithubDeleteRepo, IGithubHasRepo, IGithubSetProtectBranch, IGithubGetProtectBranch, IGithubCheckRepoEmpty } from '../types/github';
+import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput, ICheckRepoEmptyOutput } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 
 export default class Github extends Base {
@@ -82,13 +82,29 @@ export default class Github extends Base {
   //获取一个repo: https://docs.github.com/zh/rest/repos/repos#get-a-repository
   async hasRepo(params: IGithubHasRepo): Promise<IHasRepoOutput> {
     super.validateHasRepoParams(params);
-    const rows = await this.octokit.request('GET /repos/{owner}/{repo}',params);
-    const source = _.get(rows, 'data', {});
+    try { 
+      const rows = await this.octokit.request('GET /repos/{owner}/{repo}',params);
+      const source = _.get(rows, 'data', {});
+      return {
+        isExist: true,
+        id: _.get(source, 'id') as unknown as number,
+        full_name: _.get(source, 'full_name',''),
+        url: _.get(source, 'html_url','')
+      };
+    } catch (error) {
+      return {
+        isExist: false,
+      }
+    }
+  }
+
+  //查看仓库是否为空: https://docs.github.com/zh/rest/repos/repos#list-repository-contributors
+  async checkRepoEmpty(params: IGithubCheckRepoEmpty): Promise<ICheckRepoEmptyOutput> {
+    super.validateRepoEmptyParams(params);
+    const rows = await this.octokit.request('GET /repos/{owner}/{repo}/contributors',params);
     return {
-      id: _.get(source, 'id') as unknown as number,
-      full_name: _.get(source, 'full_name',''),
-      url: _.get(source, 'html_url','')
-    };
+      isEmpty: Number(_.get(rows, 'status')) === 204,
+    }
   }
 
   //设置保护分支: https://docs.github.com/zh/rest/branches/branch-protection#update-branch-protection

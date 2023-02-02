@@ -1,7 +1,7 @@
 import _, { map } from 'lodash';
-import { IGetCommitById, IListBranch, IListRepo, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch } from '../types/codeup';
+import { IGetCommitById, IListBranch, IListRepo, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch, ICheckRepoEmpty } from '../types/codeup';
 import { IAliConfig } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput } from '../types/output';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput, ICheckRepoEmptyOutput } from '../types/output';
 import CodeupBase from './codeup-base';
 
 const { ROAClient } = require('@alicloud/pop-core');
@@ -124,12 +124,32 @@ export default class Codeup extends CodeupBase {
     const { project_id: identity, organization_id: organizationId } = params as IHasRepo;
 
     const url='/repository/get'
-    const rows = await this.request({ url, params : { identity, organizationId } });
-    const source = _.get(rows, 'repository', {});
+    try {
+      const rows = await this.request({ url, params : { identity, organizationId } });
+      const source = _.get(rows, 'repository', {});
+      return {
+        isExist: true,
+        id: _.get(source, 'id') as unknown as number,
+        full_name: _.get(source, 'name',''),
+        url: _.get(source, 'webUrl','')
+      };
+    } catch(error) {
+      return {
+        isExist: false,
+      }
+    }
+  }
+
+  //判断一个repo是否为空: https://help.aliyun.com/document_detail/463001.html
+  async checkRepoEmpty(params: ICheckRepoEmpty): Promise<ICheckRepoEmptyOutput> {
+    super.validateRepoEmptyParams(params);
+    const { project_id: project_id, organization_id: organizationId } = params as ICheckRepoEmpty;
+
+    const url=`/repository/${project_id}/files/tree`
+    const rows = await this.request({ url, params : { project_id, organizationId } });
+    const result = _.get(rows, 'result', []);
     return {
-      id: _.get(source, 'id') as unknown as number,
-      full_name: _.get(source, 'name',''),
-      url: _.get(source, 'webUrl','')
+      isEmpty: result.length === 0,
     };
   }
 

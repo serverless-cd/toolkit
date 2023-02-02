@@ -29,9 +29,10 @@ export interface ICreateRepoOutput {
 }
 
 export interface IHasRepoOutput {
-  id: number;
-  full_name: string;
-  url: string;
+  isExist: boolean;
+  id?: number;
+  full_name?: string;
+  url?: string;
 }
 
 export interface IBranchOutput {
@@ -59,4 +60,8 @@ export interface IGetWebhookOutput {
 
 export interface IGetProtectBranchOutput {
   protected: boolean;
+}
+
+export interface ICheckRepoEmptyOutput {
+  isEmpty: boolean;
 }

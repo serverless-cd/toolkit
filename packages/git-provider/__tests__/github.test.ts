@@ -180,14 +180,21 @@ test('delete a repo', async () => {
   expect(_.has(repo, 'id')).toBeTruthy();
   console.log('has repo successfully');
 
-  await prioverd.deleteRepo({ owner: OWNER, repo: REPO })
-  await expect(async () => {
-    await prioverd.hasRepo({ owner: OWNER, repo: REPO });
-  }).rejects.toThrow('Not Found');
+  await prioverd.deleteRepo({ owner: OWNER, repo: REPO });
+  const repoExist = await prioverd.hasRepo({owner: OWNER, repo: REPO});
+  expect(_.get(repoExist, 'isExist')).toBeFalsy();
   console.log('expect delete successfully');
 });
 
-test.only('update a branch protection', async () => {
+test('check if has a repo', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const repo = await prioverd.hasRepo({ owner: OWNER, repo: REPO });
+  console.log(repo);
+})
+
+test('update a branch protection', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -204,4 +211,12 @@ test.only('update a branch protection', async () => {
   });
   expect(_.has(getProtectBranch, 'protected')).toBeTruthy();
   console.log('expect set branch protection successfully')
+});
+
+test.only('check a repo whether is empty', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const repo = await prioverd.checkRepoEmpty({ owner: OWNER, repo: REPO });
+  console.log(repo);
 });
