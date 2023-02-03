@@ -1,5 +1,5 @@
 import { baseTracker } from './baseTracker';
-import { each } from 'lodash';
+import { each, get } from 'lodash';
 
 interface IConfig {
   appId?: string;
@@ -14,7 +14,12 @@ export async function aliyunFcTracker(config: IConfig) {
   const { type, data, appId } = config;
   const aliyunFc = [] as Record<string, any>[];
   each(data, (item) => {
-    aliyunFc.push(item.output);
+    aliyunFc.push({
+      region: get(item, 'output.region'),
+      service: get(item, 'output.service.name'),
+      function: get(item, 'output.function.name'),
+      url: get(item, 'output.url'),
+    });
   });
   await baseTracker({
     type,
