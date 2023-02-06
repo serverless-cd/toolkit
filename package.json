@@ -10,6 +10,7 @@
     "format": "prettier --write packages/**/*.ts",
     "format-check": "prettier --check packages/**/*.ts",
     "test": "jest --testTimeout 10000",
+    "test:tracker": "jest --testTimeout 10000 packages/tracker --watchAll",
     "test:engine": "jest --testTimeout 10000 packages/engine --watchAll",
     "test:core": "jest --testTimeout 10000 packages/core --watchAll",
     "test:trigger": "jest --testTimeout 10000 packages/trigger --watchAll",
@@ -24,7 +25,7 @@
     "test:checkout-coverage": "jest --testTimeout 10000 packages/core --coverage --coverageDirectory coverage/checkout"
   },
   "workspaces": [
-    "packages/engine"
+    "packages/tracker"
   ],
   "devDependencies": {
     "@types/jest": "^28.1.6",
