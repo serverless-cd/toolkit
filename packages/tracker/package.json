@@ -4,19 +4,23 @@
   "description": "sevrerless-cd tracker 日志上报",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "watch": "tsc -w"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/lodash": "^4.14.182",
+    "@serverless-devs/core": "^0.1.52",
     "abort-controller": "^3.0.0",
-    "nanoid": "^4.0.0",
-    "node-fetch": "^3.3.0"
+    "lodash": "^4.17.21",
+    "nanoid": "^3.3.4",
+    "node-fetch": "^2.6.9"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.191",
+    "@types/node-fetch": "^2.6.2"
   }
 }
