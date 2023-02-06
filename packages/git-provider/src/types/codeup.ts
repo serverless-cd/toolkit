@@ -49,3 +49,8 @@ export interface ICheckRepoEmpty {
   project_id: string;
   organization_id: string;
 }
+
+export interface IEnsureEmptyRepo {
+  name: string;
+  organization_id: string;
+}

@@ -1,7 +1,29 @@
 import _, { map } from 'lodash';
-import { IGetCommitById, IListBranch, IListRepo, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch, ICheckRepoEmpty } from '../types/codeup';
+import {
+  IGetCommitById,
+  IListBranch,
+  IListRepo,
+  IDeleteRepo,
+  ICreateRepo,
+  IHasRepo,
+  ISetProtectBranch,
+  IGetProtectBranch,
+  ICheckRepoEmpty,
+  IEnsureEmptyRepo,
+} from '../types/codeup';
 import { IAliConfig } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput, ICheckRepoEmptyOutput } from '../types/output';
+import {
+  IRepoOutput,
+  IBranchOutput,
+  ICommitOutput,
+  IGetWebhookOutput,
+  ICreateWebhookOutput,
+  ICreateRepoOutput,
+  IHasRepoOutput,
+  IGetProtectBranchOutput,
+  ICheckRepoEmptyOutput,
+  IEnsureRepoOutput,
+} from '../types/output';
 import CodeupBase from './codeup-base';
 
 const { ROAClient } = require('@alicloud/pop-core');
@@ -40,7 +62,7 @@ export default class Codeup extends CodeupBase {
     });
     // this._test_debug_log(rows, 'list_repos');
 
-    return _.map(rows, row => ({
+    return _.map(rows, (row) => ({
       id: _.get(row, 'Id', _.get(row, 'id')) as unknown as number,
       name: _.get(row, 'name', ''),
       url: _.get(row, 'webUrl', ''),
@@ -50,7 +72,7 @@ export default class Codeup extends CodeupBase {
       description: _.get(row, 'description', ''),
       default_branch: _.get(row, 'default_branch', 'master'),
       source: row,
-    }))
+    }));
   }
 
   // https://help.aliyun.com/document_detail/461641.html
@@ -70,14 +92,18 @@ export default class Codeup extends CodeupBase {
       commit_sha: _.get(row, 'commit.id'),
       // commit_message: _.get(row, 'commit.message'),
       source: row,
-    }));;
+    }));
   }
 
   // https://help.aliyun.com/document_detail/463000.html
   async getCommitById(params: IGetCommitById): Promise<ICommitOutput> {
     super.validateGetCommitByIdParams(params);
-    const { organization_id: organizationId, project_id: projectId, sha } = params as IGetCommitById;
-  
+    const {
+      organization_id: organizationId,
+      project_id: projectId,
+      sha,
+    } = params as IGetCommitById;
+
     const url = `/repository/${projectId}/commits/${sha}`;
     const result = await this.request({ url, params: { organizationId } });
     const source = _.get(result, 'result', {});
@@ -96,26 +122,36 @@ export default class Codeup extends CodeupBase {
     super.validateCreateRepoParams(params);
     const { name, organization_id: organizationId } = params as ICreateRepo;
     const visibilityLevel = _.get(params, 'visibility_level') || '10';
-    const description =  _.get(params, 'description') || '';
-    
-    const url ='/repository/create';
-    const result = await this.request({ url, method: 'POST' , params: { organizationId }, data: { name , visibilityLevel , description  }});
+    const description = _.get(params, 'description') || '';
+
+    const url = '/repository/create';
+    const result = await this.request({
+      url,
+      method: 'POST',
+      params: { organizationId },
+      data: { name, visibilityLevel, description },
+    });
     const source = _.get(result, 'result', {});
     return {
-        id: _.get(source, 'id') as unknown as number,
-        full_name: _.get(source, 'name',''),
-        url: _.get(source, 'webUrl','')
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'name', ''),
+      url: _.get(source, 'webUrl', ''),
     };
   }
 
   //删除一个repo: https://help.aliyun.com/document_detail/460705.html
   async deleteRepo(params: IDeleteRepo): Promise<any> {
     super.validateDeleteRepoParams(params);
-    const { project_id: repositoryId, organization_id: organizationId } = params as IDeleteRepo
+    const { project_id: repositoryId, organization_id: organizationId } = params as IDeleteRepo;
 
     const reason = _.get(params, 'repositoryId') || 'git-provider删除代码库';
-    const url = `/repository/${repositoryId}/remove`
-    await this.request({ url, method: 'POST' , params: { organizationId, repositoryId }, data: { reason }});
+    const url = `/repository/${repositoryId}/remove`;
+    await this.request({
+      url,
+      method: 'POST',
+      params: { organizationId, repositoryId },
+      data: { reason },
+    });
   }
 
   //获取一个repo: https://help.aliyun.com/document_detail/460466.html
@@ -123,20 +159,20 @@ export default class Codeup extends CodeupBase {
     super.validateHasRepoParams(params);
     const { project_id: identity, organization_id: organizationId } = params as IHasRepo;
 
-    const url='/repository/get'
+    const url = '/repository/get';
     try {
-      const rows = await this.request({ url, params : { identity, organizationId } });
+      const rows = await this.request({ url, params: { identity, organizationId } });
       const source = _.get(rows, 'repository', {});
       return {
         isExist: true,
         id: _.get(source, 'id') as unknown as number,
-        full_name: _.get(source, 'name',''),
-        url: _.get(source, 'webUrl','')
+        full_name: _.get(source, 'name', ''),
+        url: _.get(source, 'webUrl', ''),
       };
-    } catch(error) {
+    } catch (error) {
       return {
         isExist: false,
-      }
+      };
     }
   }
 
@@ -145,8 +181,8 @@ export default class Codeup extends CodeupBase {
     super.validateRepoEmptyParams(params);
     const { project_id: project_id, organization_id: organizationId } = params as ICheckRepoEmpty;
 
-    const url=`/repository/${project_id}/files/tree`
-    const rows = await this.request({ url, params : { project_id, organizationId } });
+    const url = `/repository/${project_id}/files/tree`;
+    const rows = await this.request({ url, params: { project_id, organizationId } });
     const result = _.get(rows, 'result', []);
     return {
       isEmpty: result.length === 0,
@@ -156,34 +192,77 @@ export default class Codeup extends CodeupBase {
   //设置一个保护分支: https://help.aliyun.com/document_detail/463003.html
   async setProtectionBranch(params: ISetProtectBranch): Promise<void> {
     super.validateProtectBranchParams(params);
-    const { project_id: repositoryId, organization_id: organizationId, branch} = params as ISetProtectBranch;
+    const {
+      project_id: repositoryId,
+      organization_id: organizationId,
+      branch,
+    } = params as ISetProtectBranch;
 
-    const url =`/repository/${repositoryId}/protect_branches`;
-    await this.request({ 
+    const url = `/repository/${repositoryId}/protect_branches`;
+    await this.request({
       url,
-      method: 'POST' ,
-      params: { organizationId, repositoryId }, 
-      data: { branch ,
-              allowPushRoles: [ 40 ] ,
-              allowMergeRoles: [ 40 ] 
-            }
+      method: 'POST',
+      params: { organizationId, repositoryId },
+      data: { branch, allowPushRoles: [40], allowMergeRoles: [40] },
     });
   }
 
   //获取一个保护分支: https://help.aliyun.com/document_detail/215681.html
   async getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput> {
     super.validateProtectBranchParams(params);
-    const { project_id: repositoryId, organization_id: organizationId, branch} = params as ISetProtectBranch;
+    const {
+      project_id: repositoryId,
+      organization_id: organizationId,
+      branch,
+    } = params as ISetProtectBranch;
 
-    const url =`/repository/${repositoryId}/protect_branches`;
-    const rows = await this.request({ url, params : { organizationId, repositoryId } });
+    const url = `/repository/${repositoryId}/protect_branches`;
+    const rows = await this.request({ url, params: { organizationId, repositoryId } });
     const array = _.get(rows, 'result', {});
-    array.filter( ( item:any ) => {
-      return item.branch === branch
-    },[])
+    array.filter((item: any) => {
+      return item.branch === branch;
+    }, []);
     return {
-      protected: !_.isEmpty(array)
+      protected: !_.isEmpty(array),
     };
+  }
+
+  // 保证远程存在空的特定名称repo，返回其url
+  async ensureEmptyRepo(params: IEnsureEmptyRepo): Promise<any> {
+    //存在repo
+    const { name: name, organization_id: organizationId } = params as IEnsureEmptyRepo;
+    const identity = organizationId + '/' + name;
+    const res = await this.hasRepo({
+      project_id: organizationId + '/' + name,
+      organization_id: organizationId,
+    });
+    const id = '' + _.get(res, 'id');
+    let existing = true;
+    res && res.isExist === false && (existing = false);
+    if (existing) {
+      //存在同名repo，检查是否为空
+      let resEmpty = await this.checkRepoEmpty({
+        project_id: id,
+        organization_id: organizationId,
+      });
+      const isEmpty = _.get(resEmpty, 'isEmpty');
+      if (isEmpty) {
+        //同名repo为空，则直接返回该repo的url
+        const url = _.get(res, 'url') || '';
+        return { isNewCreated: false, url: url };
+      } else {
+        //同名repo非空，抛出错误
+        throw new Error(`There is a repo called ${identity}, which is not empty`);
+      }
+    } else {
+      //不存在同名repo,直接创建
+      const rows = await this.createRepo({
+        name: name,
+        organization_id: organizationId,
+      });
+      const url = _.get(rows, 'url') || '';
+      return { isNewCreated: true, url: url };
+    }
   }
 
   private async requestList(url: string, params: { [key: string]: any }): Promise<any[]> {
@@ -194,7 +273,7 @@ export default class Codeup extends CodeupBase {
       const { result: data } = res;
       rows = _.concat(rows, data);
       rowLength = _.size(data);
-      params.page = params.page as number + 1;
+      params.page = (params.page as number) + 1;
     } while (rowLength === params.pageSize);
 
     return rows;
@@ -254,7 +333,10 @@ export default class Codeup extends CodeupBase {
 
   private _test_debug_log(data: any, log: string = 'test') {
     try {
-      require('fs').writeFileSync(`packages/git-provider/__tests__/logs_codeup_${log}.log`, JSON.stringify(data, null, 2));
+      require('fs').writeFileSync(
+        `packages/git-provider/__tests__/logs_codeup_${log}.log`,
+        JSON.stringify(data, null, 2),
+      );
     } catch (e: any) {
       console.log(`${log}.log error: ${e.message}`);
     }

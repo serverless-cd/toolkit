@@ -1,5 +1,22 @@
 import { RequestParameters } from '@octokit/core/dist-types/types';
-import { IListBranchs, ICreateFork, IDeleteRepo, IHasRepo, ICreateRepo, IGetRefCommit, ICreateWebhook, IUpdateWebhook, IGetWebhook, IDeleteWebhook, IPutFile, IGetCommitById, IGetProtectBranch, ISetProtectBranch, ICheckRepoEmpty } from './input';
+import {
+  IListBranchs,
+  ICreateFork,
+  IDeleteRepo,
+  IHasRepo,
+  ICreateRepo,
+  IGetRefCommit,
+  ICreateWebhook,
+  IUpdateWebhook,
+  IGetWebhook,
+  IDeleteWebhook,
+  IPutFile,
+  IGetCommitById,
+  IGetProtectBranch,
+  ISetProtectBranch,
+  ICheckRepoEmpty,
+  IEnsureEmptyRepo,
+} from './input';
 
 interface _IWebhookParams {
   name?: string;
@@ -12,7 +29,7 @@ interface _IWebhookParams {
     insecure_ssl?: string | number;
     token?: string;
     digest?: string;
-  }
+  };
 }
 
 export interface IGithubListBranchs extends IListBranchs, RequestParameters {}
@@ -25,6 +42,7 @@ export interface IGithubGetProtectBranch extends IGetProtectBranch, RequestParam
 export interface IGithubGetCommitById extends IGetCommitById, RequestParameters {}
 export interface IGithubGetConfig extends IGetRefCommit, RequestParameters {}
 export interface IGithubCheckRepoEmpty extends ICheckRepoEmpty, RequestParameters {}
+export interface IGithubEnsureRepo extends IEnsureEmptyRepo, RequestParameters {}
 
 
 

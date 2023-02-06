@@ -65,3 +65,8 @@ export interface IGetProtectBranchOutput {
 export interface ICheckRepoEmptyOutput {
   isEmpty: boolean;
 }
+
+export interface IEnsureRepoOutput {
+  isNewCreated: boolean;
+  url: string;
+}
