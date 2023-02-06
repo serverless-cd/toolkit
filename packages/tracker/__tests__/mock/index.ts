@@ -1,3 +1,5 @@
+import path from 'path';
+
 export const data = {
   credentials: {
     Alias: 'default',
@@ -8,7 +10,7 @@ export const data = {
   access: 'default',
   appName: 'hello-world-app',
   path: {
-    configPath: '/Users/shihuali/workspace/core/test/fixtures/start-fc-http-nodejs14/a.yaml',
+    configPath: path.join(__dirname, 's.yaml'),
   },
   command: 'deploy',
   args: '-y --use-local -t a.yaml',

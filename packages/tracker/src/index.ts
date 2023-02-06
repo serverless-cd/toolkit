@@ -13,6 +13,7 @@ const tracker = async (data: Record<string, any> = {}) => {
   if (command === 'deploy' && !isEmpty(fcService)) {
     await aliyunFcTracker({
       type: command,
+      yamlPath: get(data, 'path.configPath'),
       data: fcService,
     });
   }
