@@ -96,7 +96,7 @@ export default class Codeup {
     }
   
     const url = `/repository/${projectId}/commits/${sha}`;
-    const result = await this.request({ url, params: { organizationId } });
+    const result = await this.request({ url, params: { organizationId, accessToken: this.access_token } });
     const source = _.get(result, 'result', {});
 
     // this._test_debug_log(result, 'get_commit_by_id');
@@ -104,6 +104,8 @@ export default class Codeup {
     return {
       sha: _.get(source, 'id'),
       message: _.get(source, 'message'),
+      author: _.get(source, 'author.name'),
+      email: _.get(source, 'author.email'),
       source,
     };
   }
