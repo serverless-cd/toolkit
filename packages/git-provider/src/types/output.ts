@@ -44,6 +44,8 @@ export interface IBranchOutput {
 export interface ICommitOutput {
   sha: string;
   message: string;
+  author?: string;
+  email?: string;
   source: any;
 }
 

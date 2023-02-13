@@ -244,6 +244,8 @@ export default class Gitlab extends Base {
     return {
       sha: _.get(source, 'id'),
       message: _.get(source, 'message'),
+      author: _.get(source, 'author_name'),
+      email: _.get(source, 'author_email'),
       source,
     };
   }

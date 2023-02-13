@@ -118,6 +118,8 @@ export default class Gitee extends Base {
     return {
       sha: _.get(source, 'sha'),
       message: _.get(source, 'commit.message'),
+      author: _.get(source, 'commit.author.name'),
+      email: _.get(source, "commit.author.email"),
       source,
     };
   }
