@@ -164,9 +164,5 @@ test.only('get a repo id', async () => {
     name: name,
     organization_id: organization_id,
   });
-  const repo = _.get(res, 'repository', '');
-  const id = _.get(repo, 'id');
-  return {
-    id: id,
-  };
+  console.log(res);
 });

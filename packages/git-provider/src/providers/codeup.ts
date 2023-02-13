@@ -267,14 +267,18 @@ export default class Codeup extends CodeupBase {
     }
   }
 
-  // 根据repo name获取id
+  // 根据repo name获取id: https://help.aliyun.com/document_detail/460466.html
   async getRepoId(params: IGetRepoId): Promise<IGetRepoIdOutput> {
     super.validateGetRepoId(params);
     const { name: identity, organization_id: organizationId } = params as IGetRepoId;
 
     const url = `/repository/get`;
     const rows = await this.request({ url, params: { organizationId, identity } });
-    return rows;
+    const repo = _.get(rows, 'repository', '');
+    const id = _.get(repo, 'id');
+    return {
+      id: id,
+    };
   }
 
   private async requestList(url: string, params: { [key: string]: any }): Promise<any[]> {
