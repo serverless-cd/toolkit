@@ -10,6 +10,7 @@ import {
   IGetProtectBranch,
   ICheckRepoEmpty,
   IEnsureEmptyRepo,
+  IGetRepoId,
 } from '../types/codeup';
 import { IAliConfig } from '../types/input';
 import {
@@ -23,6 +24,7 @@ import {
   IGetProtectBranchOutput,
   ICheckRepoEmptyOutput,
   IEnsureRepoOutput,
+  IGetRepoIdOutput,
 } from '../types/output';
 import CodeupBase from './codeup-base';
 
@@ -228,7 +230,7 @@ export default class Codeup extends CodeupBase {
   }
 
   // 保证远程存在空的特定名称repo，返回其url
-  async ensureEmptyRepo(params: IEnsureEmptyRepo): Promise<any> {
+  async ensureEmptyRepo(params: IEnsureEmptyRepo): Promise<IEnsureRepoOutput> {
     //存在repo
     const { name: name, organization_id: organizationId } = params as IEnsureEmptyRepo;
     const identity = organizationId + '/' + name;
@@ -263,6 +265,16 @@ export default class Codeup extends CodeupBase {
       const url = _.get(rows, 'url') || '';
       return { isNewCreated: true, url: url };
     }
+  }
+
+  // 根据repo name获取id
+  async getRepoId(params: IGetRepoId): Promise<IGetRepoIdOutput> {
+    super.validateGetRepoId(params);
+    const { name: identity, organization_id: organizationId } = params as IGetRepoId;
+
+    const url = `/repository/get`;
+    const rows = await this.request({ url, params: { organizationId, identity } });
+    return rows;
   }
 
   private async requestList(url: string, params: { [key: string]: any }): Promise<any[]> {

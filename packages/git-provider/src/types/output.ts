@@ -70,3 +70,7 @@ export interface IEnsureRepoOutput {
   isNewCreated: boolean;
   url: string;
 }
+
+export interface IGetRepoIdOutput {
+  id: number;
+}

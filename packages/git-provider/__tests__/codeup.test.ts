@@ -147,7 +147,7 @@ test('check whether a repo is empty', async () => {
   console.log(res);
 });
 
-test.only('ensure an empty repo', async () => {
+test('ensure an empty repo', async () => {
   const prioverd = git('codeup', config);
   const name = 'testCreateRepo5';
   const res = await prioverd.ensureEmptyRepo({
@@ -155,4 +155,18 @@ test.only('ensure an empty repo', async () => {
     organization_id: organization_id,
   });
   expect(_.get(res, 'isNewCreated')).toBeTruthy();
+});
+
+test.only('get a repo id', async () => {
+  const prioverd = git('codeup', config);
+  const name = organization_id + '/' + 'test123';
+  const res = await prioverd.getRepoId({
+    name: name,
+    organization_id: organization_id,
+  });
+  const repo = _.get(res, 'repository', '');
+  const id = _.get(repo, 'id');
+  return {
+    id: id,
+  };
 });

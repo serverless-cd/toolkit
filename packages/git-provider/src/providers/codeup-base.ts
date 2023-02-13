@@ -4,7 +4,7 @@ import { IListRepo, IListBranch, IGetCommitById, IDeleteRepo, ICreateRepo, IHasR
 import { IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput  } from '../types/output';
 
 export default abstract class CodeupBase {
-  constructor(_config: any) { }
+  constructor(_config: any) {}
   abstract listRepos(params: IListRepo): Promise<IRepoOutput[]>;
   abstract listBranches(params: IListBranch): Promise<IBranchOutput[]>;
   abstract getRefCommit(params: any): Promise<ICommitOutput>;
@@ -21,7 +21,6 @@ export default abstract class CodeupBase {
   abstract hasRepo(params: IHasRepo): Promise<IHasRepoOutput>;
   abstract setProtectionBranch(params: ISetProtectBranch): Promise<void>;
   abstract getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput>;
-
 
   validateListReposParams(params: unknown) {
     if (!_.has(params, 'organization_id')) {
@@ -40,11 +39,11 @@ export default abstract class CodeupBase {
 
   validateGetCommitByIdParams(params: unknown) {
     if (!_.has(params, 'project_id')) {
-        throw new Error('You must specify project_id');
-      }
-      if (!_.has(params, 'organization_id')) {
-        throw new Error('You must specify organization_id');
-      }
+      throw new Error('You must specify project_id');
+    }
+    if (!_.has(params, 'organization_id')) {
+      throw new Error('You must specify organization_id');
+    }
     if (!_.has(params, 'sha')) {
       throw new Error('You must specify sha');
     }
@@ -79,7 +78,7 @@ export default abstract class CodeupBase {
 
   validateCreateRepoParams(params: unknown) {
     if (!_.has(params, 'organization_id')) {
-        throw new Error('You must specify organization_id');
+      throw new Error('You must specify organization_id');
     }
     if (!_.has(params, 'name')) {
       throw new Error('You must specify the name of the repository');
@@ -100,14 +99,22 @@ export default abstract class CodeupBase {
 
   validateGetProtectBranchParams(params: unknown) {
     if (!_.has(params, 'project_id')) {
-        throw new Error('You must specify project_id');
-      }
-      if (!_.has(params, 'organization_id')) {
-        throw new Error('You must specify organization_id');
-      }
-      if (!_.has(params, 'branch')) {
-        throw new Error('You must specify branch');
-      }
+      throw new Error('You must specify project_id');
+    }
+    if (!_.has(params, 'organization_id')) {
+      throw new Error('You must specify organization_id');
+    }
+    if (!_.has(params, 'branch')) {
+      throw new Error('You must specify branch');
+    }
   }
 
+  validateGetRepoId(params: unknown) {
+    if (!_.has(params, 'name')) {
+      throw new Error('You must specify repo name');
+    }
+    if (!_.has(params, 'organization_id')) {
+      throw new Error('You must specify organization_id');
+    }
+  }
 }

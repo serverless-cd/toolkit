@@ -54,3 +54,8 @@ export interface IEnsureEmptyRepo {
   name: string;
   organization_id: string;
 }
+
+export interface IGetRepoId {
+  name: string;
+  organization_id: string;
+}
