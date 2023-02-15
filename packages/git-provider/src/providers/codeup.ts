@@ -241,9 +241,15 @@ export default class Codeup extends CodeupBase {
       organization_id: organizationId,
     });
     const id = '' + _.get(res, 'id');
-    let existing = true;
-    res && res.isExist === false && (existing = false);
-    if (existing) {
+    if (res && res.isExist === false) {
+      //不存在同名repo,直接创建
+      const rows = await this.createRepo({
+        name: name,
+        organization_id: organizationId,
+      });
+      const url = _.get(rows, 'url') || '';
+      return url;
+    } else {
       //存在同名repo，检查是否为空
       let resEmpty = await this.checkRepoEmpty({
         project_id: id,
@@ -253,19 +259,11 @@ export default class Codeup extends CodeupBase {
       if (isEmpty) {
         //同名repo为空，则直接返回该repo的url
         const url = _.get(res, 'url') || '';
-        return { isNewCreated: false, url: url };
+        return url;
       } else {
         //同名repo非空，抛出错误
         throw new Error(`There is a repo called ${identity}, which is not empty`);
       }
-    } else {
-      //不存在同名repo,直接创建
-      const rows = await this.createRepo({
-        name: name,
-        organization_id: organizationId,
-      });
-      const url = _.get(rows, 'url') || '';
-      return { isNewCreated: true, url: url };
     }
   }
 

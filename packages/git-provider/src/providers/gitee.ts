@@ -119,7 +119,7 @@ export default class Gitee extends Base {
       sha: _.get(source, 'sha'),
       message: _.get(source, 'commit.message'),
       author: _.get(source, 'commit.author.name'),
-      email: _.get(source, "commit.author.email"),
+      email: _.get(source, 'commit.author.email'),
       source,
     };
   }
@@ -327,28 +327,23 @@ export default class Gitee extends Base {
     //存在repo
     const { owner, repo } = params;
     const res = await this.hasRepo({ owner: owner, repo: repo });
-    let existing = true;
-    res && res.isExist === false && (existing = false);
-    if (existing) {
+    if (res && res.isExist === false) {
+      //不存在同名repo,直接创建
+      const rows = await this.createRepo({
+        name: repo,
+      });
+      return _.get(rows, 'url') || '';
+    } else {
       //存在同名repo，检查是否为空
       let resEmpty = await this.checkRepoEmpty({ owner: owner, repo: repo });
       const isEmpty = _.get(resEmpty, 'isEmpty');
       if (isEmpty) {
         //同名repo为空，则直接返回该repo的url
-        const url = _.get(res, 'url') || '';
-        return { isNewCreated: false, url: url };
+        return _.get(res, 'url', '') || '';
       } else {
         //同名repo非空，抛出错误
         throw new Error(`There is a repo called ${repo}, which is not empty`);
       }
-    } else {
-      //不存在同名repo,直接创建
-      const rows = await this.createRepo({
-        name: repo,
-        private: true,
-      });
-      const url = _.get(rows, 'url') || '';
-      return { isNewCreated: true, url: url };
     }
   }
 

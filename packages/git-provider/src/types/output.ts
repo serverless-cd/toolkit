@@ -68,10 +68,7 @@ export interface ICheckRepoEmptyOutput {
   isEmpty: boolean;
 }
 
-export interface IEnsureRepoOutput {
-  isNewCreated: boolean;
-  url: string;
-}
+export type IEnsureRepoOutput = string;
 
 export interface IGetRepoIdOutput {
   id: number;
