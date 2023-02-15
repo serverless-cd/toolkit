@@ -27,9 +27,12 @@ import {
   IGetRepoIdOutput,
 } from '../types/output';
 import CodeupBase from './codeup-base';
+import makeDebug from 'debug';
 
 const { ROAClient } = require('@alicloud/pop-core');
 const PARAMS = { page: 1, pageSize: 100 };
+const debug = makeDebug('serverless-cd/git-provider');
+debug.enabled = true;
 
 export default class Codeup extends CodeupBase {
   readonly client: any;
@@ -62,6 +65,7 @@ export default class Codeup extends CodeupBase {
       ...PARAMS,
       organizationId,
     });
+    debug('get repos list successfully');
     // this._test_debug_log(rows, 'list_repos');
 
     return _.map(rows, (row) => ({
@@ -87,6 +91,7 @@ export default class Codeup extends CodeupBase {
       ...PARAMS,
       organizationId,
     });
+    debug('get branches list successfully');
     // this._test_debug_log(rows, 'list_branches');
 
     return _.map(rows, (row) => ({
@@ -107,7 +112,11 @@ export default class Codeup extends CodeupBase {
     } = params as IGetCommitById;
 
     const url = `/repository/${projectId}/commits/${sha}`;
-    const result = await this.request({ url, params: { organizationId, accessToken: this.access_token } });
+    const result = await this.request({
+      url,
+      params: { organizationId, accessToken: this.access_token },
+    });
+    debug('get commit by id successfully');
     const source = _.get(result, 'result', {});
 
     // this._test_debug_log(result, 'get_commit_by_id');
@@ -135,6 +144,7 @@ export default class Codeup extends CodeupBase {
       params: { organizationId },
       data: { name, visibilityLevel, description },
     });
+    debug('create repo successfully');
     const source = _.get(result, 'result', {});
     return {
       id: _.get(source, 'id') as unknown as number,
@@ -156,6 +166,7 @@ export default class Codeup extends CodeupBase {
       params: { organizationId, repositoryId },
       data: { reason },
     });
+    debug('delete repo successfully');
   }
 
   //获取一个repo: https://help.aliyun.com/document_detail/460466.html
@@ -166,6 +177,7 @@ export default class Codeup extends CodeupBase {
     const url = '/repository/get';
     try {
       const rows = await this.request({ url, params: { identity, organizationId } });
+      debug('check whether has repo successfully');
       const source = _.get(rows, 'repository', {});
       return {
         isExist: true,
@@ -187,6 +199,7 @@ export default class Codeup extends CodeupBase {
 
     const url = `/repository/${project_id}/files/tree`;
     const rows = await this.request({ url, params: { project_id, organizationId } });
+    debug('check repo empty successfully');
     const result = _.get(rows, 'result', []);
     return {
       isEmpty: result.length === 0,
@@ -209,6 +222,7 @@ export default class Codeup extends CodeupBase {
       params: { organizationId, repositoryId },
       data: { branch, allowPushRoles: [40], allowMergeRoles: [40] },
     });
+    debug('set protection branch successfully');
   }
 
   //获取一个保护分支: https://help.aliyun.com/document_detail/215681.html
@@ -222,6 +236,7 @@ export default class Codeup extends CodeupBase {
 
     const url = `/repository/${repositoryId}/protect_branches`;
     const rows = await this.request({ url, params: { organizationId, repositoryId } });
+    debug('get protection branch successfully');
     const array = _.get(rows, 'result', {});
     array.filter((item: any) => {
       return item.branch === branch;
@@ -247,6 +262,7 @@ export default class Codeup extends CodeupBase {
         name: name,
         organization_id: organizationId,
       });
+      debug('ensure an empty repo successfully, which is new created');
       const url = _.get(rows, 'url') || '';
       return url;
     } else {
@@ -259,6 +275,7 @@ export default class Codeup extends CodeupBase {
       if (isEmpty) {
         //同名repo为空，则直接返回该repo的url
         const url = _.get(res, 'url') || '';
+        debug('ensure an empty repo successfully, which is not new created');
         return url;
       } else {
         //同名repo非空，抛出错误
@@ -274,6 +291,7 @@ export default class Codeup extends CodeupBase {
 
     const url = `/repository/get`;
     const rows = await this.request({ url, params: { organizationId, identity } });
+    debug('get repo id successfully');
     const repo = _.get(rows, 'repository', '');
     const id = _.get(repo, 'id');
     return {

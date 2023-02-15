@@ -36,8 +36,12 @@ import {
   IEnsureRepoOutput,
 } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
+import CodeupBase from './codeup-base';
+import makeDebug from 'debug';
 
 const V5 = 'https://gitee.com/api/v5';
+const debug = makeDebug('serverless-cd/git-provider');
+debug.enabled = true;
 
 export default class Gitee extends Base {
   putFile(params: IPutFile): Promise<void> {
@@ -62,6 +66,7 @@ export default class Gitee extends Base {
 
   async listOrgs(): Promise<IOrgsOutput[]> {
     const rows = await this.requestList('/user/orgs', this.getDefaultParame());
+    debug('get orgs successfully');
 
     return _.map(rows, (row) => ({
       id: row.id,
@@ -76,6 +81,7 @@ export default class Gitee extends Base {
       '/user/repos',
       _.defaults(this.getDefaultParame(), { affiliation: 'owner' }),
     );
+    debug('get repo branch successfully');
 
     return _.map(rows, (row) => ({
       id: row.id,
@@ -99,6 +105,7 @@ export default class Gitee extends Base {
       `/repos/${owner}/${repo}/branches`,
       _.defaults(params, this.getDefaultParame()),
     );
+    debug('get repo branch successfully');
 
     return _.map(rows, (row) => ({
       name: row.name,
@@ -113,6 +120,7 @@ export default class Gitee extends Base {
 
     const { owner, repo, sha } = params;
     const result = await this.requestV5(`/repos/${owner}/${repo}/commits/${sha}`, 'GET', {});
+    debug('get commit by id successfully');
     const source = _.get(result, 'data', {});
 
     return {
@@ -138,6 +146,7 @@ export default class Gitee extends Base {
         'GET',
         {},
       );
+      debug('get ref commit successfully');
       const source = _.get(result, 'data', {});
 
       return {
@@ -166,6 +175,7 @@ export default class Gitee extends Base {
       `/repos/${owner}/${repo}/hooks`,
       _.defaults(params, this.getDefaultParame()),
     );
+    debug('get webhook list successfully');
 
     return _.map(rows, (row) => ({
       id: _.get(row, 'id'),
@@ -182,6 +192,7 @@ export default class Gitee extends Base {
     const p: IWebhookParams = this.getWebHookEvents(params);
 
     const result = await this.requestV5(`/repos/${owner}/${repo}/hooks`, 'POST', p);
+    debug('create webhook successfully');
     const source = _.get(result, 'data', {});
 
     return {
@@ -197,6 +208,7 @@ export default class Gitee extends Base {
     const { owner, repo, hook_id } = params;
     const p: IWebhookParams = this.getWebHookEvents(params);
     await this.requestV5(`/repos/${owner}/${repo}/hooks/${hook_id}`, 'PATCH', p);
+    debug('update webhook successfully');
   }
 
   // https://gitee.com/wss-gitee/git-action-test/hooks/1202839/edit#hook-logs
@@ -205,6 +217,7 @@ export default class Gitee extends Base {
 
     const { owner, repo, hook_id } = params;
     const result = await this.requestV5(`/repos/${owner}/${repo}/hooks/${hook_id}`, 'GET', params);
+    debug('get webhook successfully');
     const source = _.get(result, 'data', {});
 
     return {
@@ -220,6 +233,7 @@ export default class Gitee extends Base {
 
     const { owner, repo, hook_id } = params;
     await this.requestV5(`/repos/${owner}/${repo}/hooks/${hook_id}`, 'DELETE', {});
+    debug('delete webhook successfully');
   }
 
   // https://gitee.com/api/v5/swagger#/postV5ReposOwnerRepoForks
@@ -228,6 +242,7 @@ export default class Gitee extends Base {
 
     const { owner, repo } = params;
     const result = await this.requestV5(`/repos/${owner}/${repo}/forks`, 'POST', params);
+    debug('create fork successfully');
     const source = _.get(result, 'data', {});
     return {
       id: source.id,
@@ -240,6 +255,7 @@ export default class Gitee extends Base {
   async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
     super.validateCreateRepoParams(params);
     const result = await this.requestV5('/user/repos', 'POST', params);
+    debug('create repo successfully');
     const source = _.get(result, 'data', {});
     return {
       id: source.id,
@@ -253,6 +269,7 @@ export default class Gitee extends Base {
     super.validateDeleteRepoParams(params);
     const { owner, repo } = params as IDeleteRepo;
     await this.requestV5(`/repos/${owner}/${repo}`, 'DELETE', params);
+    debug('delete repo successfully');
   }
 
   //获取一个repo: https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepo
@@ -261,6 +278,7 @@ export default class Gitee extends Base {
     const { owner, repo } = params as IHasRepo;
     try {
       const rows = await this.requestV5(`/repos/${owner}/${repo}`, 'GET', params);
+      debug('check whether has repo successfully');
       const source = _.get(rows, 'data', {});
       return {
         isExist: true,
@@ -281,6 +299,7 @@ export default class Gitee extends Base {
     const { owner, repo } = params as IHasRepo;
     try {
       const rows = await this.requestV5(`/repos/${owner}/${repo}/commits`, 'GET', params);
+      debug('check repo empty successfully');
       const source = _.get(rows, 'data', {});
       return {
         isEmpty: false,
@@ -309,6 +328,7 @@ export default class Gitee extends Base {
       branch,
     });
     await this.requestV5(`/repos/${owner}/${repo}/branches/${branch}/setting`, 'PUT', parameters);
+    debug('set protection branch successfully');
   }
 
   //获取保护分支信息: https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranchesBranch
@@ -316,6 +336,7 @@ export default class Gitee extends Base {
     super.validateGetProtectBranchParams(params);
     const { owner, repo, branch } = params;
     const res = await this.requestV5(`/repos/${owner}/${repo}/branches/${branch}`, 'GET', params);
+    debug('get protection branch successfully');
     const source = _.get(res, 'data', {});
     return {
       protected: source.protected,
@@ -332,6 +353,7 @@ export default class Gitee extends Base {
       const rows = await this.createRepo({
         name: repo,
       });
+      debug('ensure an empty repo successfully, which is new created');
       return _.get(rows, 'url') || '';
     } else {
       //存在同名repo，检查是否为空
@@ -339,6 +361,7 @@ export default class Gitee extends Base {
       const isEmpty = _.get(resEmpty, 'isEmpty');
       if (isEmpty) {
         //同名repo为空，则直接返回该repo的url
+        debug('ensure an empty repo successfully, which is not new created');
         return _.get(res, 'url', '') || '';
       } else {
         //同名repo非空，抛出错误

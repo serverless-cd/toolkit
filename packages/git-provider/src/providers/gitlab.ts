@@ -35,11 +35,14 @@ import {
   IEnsureRepoOutput,
 } from '../types/output';
 import Base from './base';
+import makeDebug from 'debug';
 
 const PARAMS = {
   pagination: 1,
   per_page: 100,
 };
+const debug = makeDebug('serverless-cd/git-provider');
+debug.enabled = true;
 
 export default class Gitlab extends Base {
   private access_token: string;
@@ -74,6 +77,7 @@ export default class Gitlab extends Base {
       PARAMS,
       'GET',
     );
+    debug('get repo branch successfully');
     return _.map(rows, (row) => ({
       name: row.name,
       commit_sha: _.get(row, 'commit.id'),
@@ -87,6 +91,7 @@ export default class Gitlab extends Base {
     const { owner, repo } = params as ICreateFork;
     const id = encodeURIComponent(`${owner}/${repo}`);
     const rows = await this.request(`/api/v4/projects/${id}/fork`, 'POST', params);
+    debug('create fork successfully');
     const source = _.get(rows, 'data', {});
     return {
       id: _.get(source, 'id') as unknown as number,
@@ -100,6 +105,7 @@ export default class Gitlab extends Base {
     super.validateCreateRepoParams(params);
 
     const rows = await this.request(`api/v4/projects`, 'POST', params);
+    debug('create repo successfully');
     const source = _.get(rows, 'data', {});
     return {
       id: _.get(source, 'id') as unknown as number,
@@ -114,6 +120,7 @@ export default class Gitlab extends Base {
     const { owner, repo } = params as IDeleteRepo;
     const id = encodeURIComponent(`${owner}/${repo}`);
     await this.request(`api/v4/projects/${id}`, 'DELETE', params);
+    debug('delete repo successfully');
   }
 
   //获取一个repo: https://docs.gitlab.com/ee/api/projects.html#get-single-project
@@ -123,6 +130,7 @@ export default class Gitlab extends Base {
     const id = encodeURIComponent(`${owner}/${repo}`);
     try {
       const rows = await this.request(`api/v4/projects/${id}`, 'GET', params);
+      debug('check whether has repo successfully');
       const source = _.get(rows, 'data', {});
       return {
         isExist: true,
@@ -143,6 +151,7 @@ export default class Gitlab extends Base {
     const { owner, repo } = params as IHasRepo;
     const id = encodeURIComponent(`${owner}/${repo}`);
     const rows = await this.request(`api/v4/projects/${id}/repository/commits`, 'GET', params);
+    debug('check repo empty successfully');
     const source = _.get(rows, 'data', {});
     return {
       isEmpty: source.length === 0,
@@ -159,6 +168,7 @@ export default class Gitlab extends Base {
       name: params.branch,
       ...params,
     });
+    debug('set protection branch successfully');
   }
 
   //删除保护分支: https://docs.gitlab.com/ee/api/protected_branches.html#unprotect-repository-branches
@@ -174,6 +184,7 @@ export default class Gitlab extends Base {
       'DELETE',
       parameters,
     );
+    debug('delete protection branch successfully');
     return res;
   }
 
@@ -187,6 +198,7 @@ export default class Gitlab extends Base {
       'GET',
       params,
     );
+    debug('get protection branch successfully');
     const source = _.get(res, 'data', {});
     return {
       protected: _.isObject(source),
@@ -203,6 +215,7 @@ export default class Gitlab extends Base {
       const rows = await this.createRepo({
         name: repo,
       });
+      debug('ensure an empty repo successfully, which is new created');
       const url = _.get(rows, 'url') || '';
       return url;
     } else {
@@ -212,6 +225,7 @@ export default class Gitlab extends Base {
       if (isEmpty) {
         //同名repo为空，则直接返回该repo的url
         const url = _.get(res, 'url') || '';
+        debug('ensure an empty repo successfully, which is not new created');
         return url;
       } else {
         //同名repo非空，抛出错误
@@ -235,6 +249,7 @@ export default class Gitlab extends Base {
       'GET',
       {},
     );
+    debug('get commit by id successfully');
     const source = _.get(result, 'data', {});
 
     return {

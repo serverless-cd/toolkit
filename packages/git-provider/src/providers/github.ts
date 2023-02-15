@@ -35,6 +35,10 @@ import {
   IEnsureRepoOutput,
 } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
+import makeDebug from 'debug';
+
+const debug = makeDebug('serverless-cd/git-provider');
+debug.enabled = true;
 
 export default class Github extends Base {
   private getDefaultParame = (): RequestParameters => ({
@@ -59,6 +63,7 @@ export default class Github extends Base {
     super.validatePutFileParams(params);
     params.content = Buffer.from(params.content).toString('base64');
     await this.octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', params);
+    debug('put file successfully');
   }
 
   async listRepos(): Promise<IRepoOutput[]> {
@@ -68,6 +73,7 @@ export default class Github extends Base {
       'GET /user/repos',
       _.defaults(this.getDefaultParame(), { affiliation: 'owner' }),
     );
+    debug('get repos list successfully');
     console.log('\tlist repo length: ', userRepos.length);
     return _.map(userRepos, (row) => ({
       id: row.id,
@@ -86,6 +92,7 @@ export default class Github extends Base {
   async createFork(params: IGithubFork): Promise<IForkOutput> {
     super.validateCreateForkParams(params);
     const rows = await this.octokit.request('POST /repos/{owner}/{repo}/forks', params);
+    debug('create fork successfully');
     const source = _.get(rows, 'data', {});
     return {
       id: _.get(source, 'id') as unknown as number,
@@ -98,6 +105,7 @@ export default class Github extends Base {
   async createRepo(params: IGithubCreateRepo): Promise<ICreateRepoOutput> {
     super.validateCreateRepoParams(params);
     const rows = await this.octokit.request('POST /user/repos', params);
+    debug('create repo successfully');
     const source = _.get(rows, 'data', {});
     return {
       id: _.get(source, 'id') as unknown as number,
@@ -110,6 +118,7 @@ export default class Github extends Base {
   async deleteRepo(params: IGithubDeleteRepo): Promise<any> {
     super.validateDeleteRepoParams(params);
     await this.octokit.request('DELETE /repos/{owner}/{repo}', params);
+    debug('delete repo successfully');
   }
 
   //获取一个repo: https://docs.github.com/zh/rest/repos/repos#get-a-repository
@@ -117,6 +126,7 @@ export default class Github extends Base {
     super.validateHasRepoParams(params);
     try {
       const rows = await this.octokit.request('GET /repos/{owner}/{repo}', params);
+      debug('check whether has repo successfully');
       const source = _.get(rows, 'data', {});
       return {
         isExist: true,
@@ -135,6 +145,7 @@ export default class Github extends Base {
   async checkRepoEmpty(params: IGithubCheckRepoEmpty): Promise<ICheckRepoEmptyOutput> {
     super.validateRepoEmptyParams(params);
     const rows = await this.octokit.request('GET /repos/{owner}/{repo}/contributors', params);
+    debug('check repo empty successfully');
     return {
       isEmpty: Number(_.get(rows, 'status')) === 204,
     };
@@ -156,6 +167,7 @@ export default class Github extends Base {
       'PUT /repos/{owner}/{repo}/branches/{branch}/protection',
       parameters,
     );
+    debug('set protection branch successfully');
   }
 
   //获取保护分支信息: https://docs.github.com/zh/rest/branches/branch-protection#get-branch-protection
@@ -165,6 +177,7 @@ export default class Github extends Base {
       'GET /repos/{owner}/{repo}/branches/{branch}/protection',
       params,
     );
+    debug('get protection branch successfully');
     const source = _.get(res, 'data', {});
     const required_pull_request_reviews = _.get(source, 'required_pull_request_reviews', {});
     return {
@@ -179,6 +192,7 @@ export default class Github extends Base {
       'GET /orgs/{org}/repos',
       _.defaults(this.getDefaultParame(), { org }),
     );
+    debug('get org repos successfully');
     const rows = orgRepos.filter((orgRepo) => orgRepo.permissions.admin);
     console.log('orgRepos length: ', orgRepos.length, '; admin length: ', rows.length);
     return _.map(rows, (row) => ({
@@ -197,6 +211,7 @@ export default class Github extends Base {
   async listOrgs(): Promise<IOrgsOutput[]> {
     // 获取用户组织：https://docs.github.com/en/rest/orgs/orgs#list-organizations-for-the-authenticated-user
     const orgs = await this.requestList('GET /user/orgs', this.getDefaultParame());
+    debug('get orgs successfully');
     return _.map(orgs, (row) => ({
       org: row.login,
       id: row.id,
@@ -212,6 +227,8 @@ export default class Github extends Base {
       'GET /repos/{owner}/{repo}/branches',
       _.defaults(params, this.getDefaultParame()),
     );
+
+    debug('get repo branch successfully');
 
     return _.map(rows, (row) => ({
       name: row.name,
@@ -230,6 +247,7 @@ export default class Github extends Base {
       const rows = await this.createRepo({
         name: repo,
       });
+      debug('ensure an empty repo successfully, which is new created');
       const url = _.get(rows, 'url') || '';
       return url;
     } else {
@@ -239,6 +257,7 @@ export default class Github extends Base {
       if (isEmpty) {
         //同名repo为空，则直接返回该repo的url
         const url = _.get(res, 'url') || '';
+        debug('ensure an empty repo successfully, which is not new created');
         return url;
       } else {
         //同名repo非空，抛出错误
@@ -252,6 +271,7 @@ export default class Github extends Base {
   async getCommitById(params: IGithubGetCommitById): Promise<ICommitOutput> {
     super.validatGetCommitByIdParams(params);
     const result = await this.octokit.request('GET /repos/{owner}/{repo}/commits/{sha}', params);
+    debug('get commit by id successfully');
     const source = _.get(result, 'data', {});
 
     return {
@@ -268,6 +288,7 @@ export default class Github extends Base {
     super.validateGetRefCommitParams(params);
 
     const result = await this.octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', params);
+    debug('get ref commit successfully');
     const source = _.get(result, 'data', {});
 
     return {
@@ -287,6 +308,7 @@ export default class Github extends Base {
       'GET /repos/{owner}/{repo}/hooks',
       _.defaults(params, this.getDefaultParame()),
     );
+    debug('get webhook list successfully');
     return _.map(rows, (row) => ({
       id: row.id,
       url: _.get(row, 'config.url'),
@@ -311,6 +333,7 @@ export default class Github extends Base {
     };
 
     const result = await this.octokit.request('POST /repos/{owner}/{repo}/hooks', p);
+    debug('create webhook successfully');
     const source = _.get(result, 'data', {});
 
     return { id: _.get(source, 'id') as unknown as number, source };
@@ -334,6 +357,7 @@ export default class Github extends Base {
     };
 
     await this.octokit.request('PATCH /repos/{owner}/{repo}/hooks/{hook_id}', p);
+    debug('update webhook successfully');
   }
 
   async getWebhook(params: IGithubGetWebhook): Promise<IGetWebhookOutput> {
@@ -343,6 +367,7 @@ export default class Github extends Base {
       'GET /repos/{owner}/{repo}/hooks/{hook_id}/config',
       params,
     );
+    debug('get webhook successfully');
     const source = _.get(result, 'data', {});
 
     return {
@@ -356,6 +381,7 @@ export default class Github extends Base {
     super.validateDeleteWebhookParams(params);
 
     await this.octokit.request('DELETE /repos/{owner}/{repo}/hooks/{hook_id}', params);
+    debug('delete webhook successfully');
   }
 
   async request(path: string, _method: string, params: RequestParameters) {
