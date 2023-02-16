@@ -27,12 +27,10 @@ import {
   IGetRepoIdOutput,
 } from '../types/output';
 import CodeupBase from './codeup-base';
-import makeDebug from 'debug';
 
+const debug = require('debug')('serverless-cd:git-provider');
 const { ROAClient } = require('@alicloud/pop-core');
 const PARAMS = { page: 1, pageSize: 100 };
-const debug = makeDebug('serverless-cd/git-provider');
-debug.enabled = true;
 
 export default class Codeup extends CodeupBase {
   readonly client: any;

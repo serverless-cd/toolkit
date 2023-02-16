@@ -35,10 +35,8 @@ import {
   IEnsureRepoOutput,
 } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
-import makeDebug from 'debug';
 
-const debug = makeDebug('serverless-cd/git-provider');
-debug.enabled = true;
+const debug = require('debug')('serverless-cd:git-provider');
 
 export default class Github extends Base {
   private getDefaultParame = (): RequestParameters => ({

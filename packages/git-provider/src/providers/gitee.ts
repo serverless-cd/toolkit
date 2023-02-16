@@ -37,11 +37,9 @@ import {
 } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 import CodeupBase from './codeup-base';
-import makeDebug from 'debug';
 
+const debug = require('debug')('serverless-cd:git-provider');
 const V5 = 'https://gitee.com/api/v5';
-const debug = makeDebug('serverless-cd/git-provider');
-debug.enabled = true;
 
 export default class Gitee extends Base {
   putFile(params: IPutFile): Promise<void> {

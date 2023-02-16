@@ -35,14 +35,12 @@ import {
   IEnsureRepoOutput,
 } from '../types/output';
 import Base from './base';
-import makeDebug from 'debug';
 
+const debug = require('debug')('serverless-cd:git-provider');
 const PARAMS = {
   pagination: 1,
   per_page: 100,
 };
-const debug = makeDebug('serverless-cd/git-provider');
-debug.enabled = true;
 
 export default class Gitlab extends Base {
   private access_token: string;
