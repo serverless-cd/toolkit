@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/engine",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@serverless-cd/core": "^0.0.13",
+    "@serverless-cd/core": "^0.0.15",
     "execa": "^5.1.1",
     "xstate": "^4.33.0"
   },

@@ -63,13 +63,12 @@ class OssLogger {
     console.log('upload finished');
   }
   async updateRegion() {
-    const { accessKeyId, accessKeySecret, bucket } = this.config;
+    const { bucket } = this.config;
     const location = await this.client.getBucketLocation(bucket);
     this.client = new OssClient({
+      ...this.config,
       bucket,
       region: location.location,
-      accessKeyId,
-      accessKeySecret,
     });
   }
   async getOrCreateBucket() {
