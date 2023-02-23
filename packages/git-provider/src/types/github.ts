@@ -1,5 +1,22 @@
 import { RequestParameters } from '@octokit/core/dist-types/types';
-import { IListBranches, ICreateFork, IDeleteRepo, IHasRepo, ICreateRepo, IGetRefCommit, ICreateWebhook, IUpdateWebhook, IGetWebhook, IDeleteWebhook, IPutFile, IGetCommitById } from './input';
+import {
+  IListBranches,
+  ICreateFork,
+  IDeleteRepo,
+  IHasRepo,
+  ICreateRepo,
+  IGetRefCommit,
+  ICreateWebhook,
+  IUpdateWebhook,
+  IGetWebhook,
+  IDeleteWebhook,
+  IPutFile,
+  IGetCommitById,
+  IGetProtectBranch,
+  ISetProtectBranch,
+  ICheckRepoEmpty,
+  IEnsureEmptyRepo,
+} from './input';
 
 interface _IWebhookParams {
   name?: string;
@@ -12,16 +29,20 @@ interface _IWebhookParams {
     insecure_ssl?: string | number;
     token?: string;
     digest?: string;
-  }
+  };
 }
 
-export interface IGithubListBranches extends IListBranches, RequestParameters { }
-export interface IGithubFork extends ICreateFork, RequestParameters { }
-export interface IGithubCreateRepo extends ICreateRepo, RequestParameters { }
-export interface IGithubDeleteRepo extends IDeleteRepo, RequestParameters { }
-export interface IGithubHasRepo extends IHasRepo, RequestParameters { }
-export interface IGithubGetCommitById extends IGetCommitById, RequestParameters { }
-export interface IGithubGetConfig extends IGetRefCommit, RequestParameters { }
+export interface IGithubListBranchs extends IListBranches, RequestParameters {}
+export interface IGithubFork extends ICreateFork, RequestParameters {}
+export interface IGithubCreateRepo extends ICreateRepo, RequestParameters {}
+export interface IGithubDeleteRepo extends IDeleteRepo, RequestParameters {}
+export interface IGithubHasRepo extends IHasRepo, RequestParameters {}
+export interface IGithubSetProtectBranch extends ISetProtectBranch, RequestParameters {}
+export interface IGithubGetProtectBranch extends IGetProtectBranch, RequestParameters {}
+export interface IGithubGetCommitById extends IGetCommitById, RequestParameters {}
+export interface IGithubGetConfig extends IGetRefCommit, RequestParameters {}
+export interface IGithubCheckRepoEmpty extends ICheckRepoEmpty, RequestParameters {}
+export interface IGithubEnsureRepo extends IEnsureEmptyRepo, RequestParameters {}
 
 
 

@@ -18,6 +18,7 @@ export interface IListRepo {
 
 export interface ICreateRepo {
   name: string;
+  organization_id: string;
   visibility_level?: string;
   description?: string;
 }
@@ -29,5 +30,32 @@ export interface IDeleteRepo {
 
 export interface IHasRepo {
   project_id: string;
+  organization_id: string;
+}
+
+export interface ISetProtectBranch {
+  project_id: string;
+  organization_id: string;
+  branch: string;
+}
+
+export interface IGetProtectBranch {
+  project_id: string;
+  organization_id: string;
+  branch: string,
+}
+
+export interface ICheckRepoEmpty {
+  project_id: string;
+  organization_id: string;
+}
+
+export interface IEnsureEmptyRepo {
+  name: string;
+  organization_id: string;
+}
+
+export interface IGetRepoId {
+  name: string;
   organization_id: string;
 }

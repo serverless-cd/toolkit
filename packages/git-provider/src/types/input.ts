@@ -49,6 +49,34 @@ export interface IHasRepo {
   repo: string;
 }
 
+export interface ISetProtectBranch {
+  owner: string;
+  repo: string;
+  branch: string;
+}
+
+export interface IGetProtectBranch {
+  owner: string;
+  repo: string;
+  branch: string,
+}
+
+export interface IUnprotectBranch {
+  owner: string;
+  repo: string;
+  branch: string,
+}
+
+export interface ICheckRepoEmpty {
+  owner: string;
+  repo: string;
+}
+
+export interface IEnsureEmptyRepo {
+  owner: string;
+  repo: string;
+}
+
 export interface IGetRefCommit {
   owner: string;
   repo: string;

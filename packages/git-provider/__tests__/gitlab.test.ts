@@ -14,7 +14,7 @@ const id = 'gitlab-instance-c434bdc1%2Ftest-wss';
 
 test('list branch', async () => {
   const prioverd = git('gitlab', config);
-  
+
   try {
     await prioverd.listBranches({
       // id: 3,
@@ -54,24 +54,72 @@ test('create fork', async () => {
 
 test('create a repo', async () => {
   const prioverd = git('gitlab', config);
-  const res = await prioverd.createRepo({ name: 'testCreateRepo', visibility: 'private', description: 'testtest'});
-  console.log(res)
+  const res = await prioverd.createRepo({
+    name: 'testCreateRepo',
+    visibility: 'private',
+    description: 'testtest',
+  });
+  console.log(res);
   expect(_.has(res, 'id')).toBeTruthy();
   expect(_.has(res, 'full_name')).toBeTruthy();
   expect(_.has(res, 'url')).toBeTruthy();
 });
 
-
-test.only('delete a repo', async () => {
+test('delete a repo', async () => {
   const prioverd = git('gitlab', config);
   const project = await prioverd.hasRepo({ owner: owner, repo: repo });
   console.log(project);
   expect(_.has(project, 'id')).toBeTruthy();
   console.log('has repo successfully');
 
-  await prioverd.deleteRepo({ owner: owner, repo: repo })
+  await prioverd.deleteRepo({ owner: owner, repo: repo });
   await expect(async () => {
     await prioverd.hasRepo({ owner: owner, repo: repo });
   }).rejects.toThrow('Request failed with status code 404');
   console.log('expect delete successfully');
+});
+
+test('set branch protection', async () => {
+  const prioverd = git('gitlab', config);
+  const branch = 'test';
+  await prioverd.setProtectionBranch({
+    owner: owner,
+    repo: repo,
+    branch: branch,
+  });
+  const res = await prioverd.getProtectionBranch({
+    owner: owner,
+    repo: repo,
+    branch: branch,
+  });
+  expect(_.get(res, 'protected')).toBeTruthy();
+  console.log('expect set branch protection successfully');
+});
+
+test('check whether a repo exists', async () => {
+  const prioverd = git('gitlab', config);
+  const res = await prioverd.hasRepo({
+    owner: owner,
+    repo: repo,
+  });
+  console.log(res);
+});
+
+test('check whether a repo is empty', async () => {
+  const prioverd = git('gitlab', config);
+  const res = await prioverd.checkRepoEmpty({
+    owner: owner,
+    repo: repo,
+  });
+  console.log(res);
+  expect(_.has(res, 'isEmpty')).toBeTruthy();
+});
+
+test.only('ensure an empty repo', async () => {
+  const prioverd = git('gitlab', config);
+  const res = await prioverd.ensureEmptyRepo({
+    owner: owner,
+    repo: repo,
+  });
+  console.log(res);
 });

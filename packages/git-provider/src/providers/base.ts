@@ -1,7 +1,7 @@
 
 import _ from 'lodash';
-import { IListBranches, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile, IGetCommitById } from '../types/input';
-import { IBranchOutput, IRepoOutput, IUserOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
+import { IListBranches, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo, ISetProtectBranch, IGetProtectBranch } from '../types/input';
+import { IUserOutput, IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IGetProtectBranchOutput  } from '../types/output';
 
 export default abstract class Base {
   constructor(_config: any) { }
@@ -16,6 +16,12 @@ export default abstract class Base {
   abstract deleteWebhook(params: IDeleteWebhook): Promise<void>;
   abstract getWebhook(params: IGetWebhook): Promise<IGetWebhookOutput>;
   abstract putFile(params: IPutFile): Promise<void>;
+  abstract createFork(params: ICreateFork): Promise<IForkOutput>;
+  abstract createRepo(params: ICreateRepo): Promise<ICreateRepoOutput>;
+  abstract deleteRepo(params: IDeleteRepo): Promise<void>;
+  abstract hasRepo(params: IHasRepo): Promise<IHasRepoOutput>;
+  abstract setProtectionBranch(params: ISetProtectBranch): Promise<void>;
+  abstract getProtectionBranch(params: IGetProtectBranch): Promise<IGetProtectBranchOutput>;
 
   getWebhookDefaults(params: any): IWebhookEvent[] {
     return _.get(params, 'events', ['push', 'release']);
@@ -75,9 +81,42 @@ export default abstract class Base {
     }
   }
 
+  validateRepoEmptyParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+  }
+
   validateCreateRepoParams(params: unknown) {
     if (!_.has(params, 'name')) {
       throw new Error('You must specify the name of the repository');
+    }
+  }
+
+  validateProtectBranchParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+    if (!_.has(params, 'branch')) {
+      throw new Error('You must specify branch');
+    }
+  }
+
+  validateGetProtectBranchParams(params: unknown) {
+    if (!_.has(params, 'owner')) {
+      throw new Error('You must specify owner');
+    }
+    if (!_.has(params, 'repo')) {
+      throw new Error('You must specify repo');
+    }
+    if (!_.has(params, 'branch')) {
+      throw new Error('You must specify branch');
     }
   }
 

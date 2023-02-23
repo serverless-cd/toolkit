@@ -4,8 +4,8 @@ import Gitee from '../src/providers/gitee';
 
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const access_token: string = process.env.GITEE_ACCESS_TOKEN || '';
-const OWNER = 'wss-gitee';
-const REPO = 'git-action-test';
+const OWNER = 'hazel928';
+const REPO = 'test1234';
 
 test('list repo', async () => {
   const provider = git('gitee', { access_token });
@@ -159,4 +159,49 @@ test('delete a repo', async () => {
     await provider.hasRepo({ owner: OWNER, repo: REPO });
   }).rejects.toThrow('Request failed with status code 404');
   console.log('expect delete successfully');
+});
+
+test('create a protection branch', async () => {
+  const provider = git('gitee', { access_token });
+  const branch = 'master';
+  await provider.setProtectionBranch({
+    owner: OWNER,
+    repo: REPO,
+    branch: branch,
+  });
+  const res = await provider.getProtectionBranch({
+    owner: OWNER,
+    repo: REPO,
+    branch: branch,
+  });
+  expect(_.get(res, 'protected')).toBeTruthy();
+  console.log('expect set branch protection successfully');
+});
+
+test('check a repo whether exists', async () => {
+  const provider = git('gitee', { access_token });
+  const res = await provider.hasRepo({
+    owner: OWNER,
+    repo: REPO,
+  });
+  console.log(res);
+  expect(_.has(res, 'isExist')).toBeTruthy();
+});
+
+test('check whether a repo is empty', async () => {
+  const provider = git('gitee', { access_token });
+  const res = await provider.checkRepoEmpty({
+    owner: OWNER,
+    repo: REPO,
+  });
+  console.log(res);
+});
+
+test.only('ensure an empty repo', async () => {
+  const provider = git('gitee', { access_token });
+  const res = await provider.ensureEmptyRepo({
+    owner: OWNER,
+    repo: REPO,
+  });
+  console.log(res);
 });

@@ -8,7 +8,7 @@ const config = {
   accessKeySecret: process.env.ACCESS_KEY_SECRET || '',
 };
 
-const project_id = 1843120;
+const project_id = 3101315;
 const organization_id = '60b045b52c5969c370c5a63e';
 
 test('list repo', async () => {
@@ -54,38 +54,115 @@ test('get commit by id', async () => {
 });
 
 test('create a repo', async () => {
-  const name="testCreateRepo";
+  const name = 'testCreateRepo';
   const prioverd = git('codeup', config);
   const res = await prioverd.createRepo({
     name,
-    organization_id: organization_id
+    organization_id: organization_id,
   });
   expect(res.id).toBeTruthy();
   expect(res.full_name).toBeTruthy();
   expect(res.url).toBeTruthy();
-})
+});
 
 test('get a repo', async () => {
   const prioverd = git('codeup', config);
   const res = await prioverd.hasRepo({
     project_id: project_id,
-    organization_id: organization_id
+    organization_id: organization_id,
   });
   expect(res.id).toBeTruthy();
   expect(res.full_name).toBeTruthy();
   expect(res.url).toBeTruthy();
-})
+});
 
-test.only('delete a repo', async () => {
+test('delete a repo', async () => {
   const prioverd = git('codeup', config);
-  const project = await prioverd.hasRepo({ project_id: project_id, organization_id: organization_id });
+  const project = await prioverd.hasRepo({
+    project_id: project_id,
+    organization_id: organization_id,
+  });
   console.log(project);
   expect(_.has(project, 'id')).toBeTruthy();
   console.log('has repo successfully');
 
-  await prioverd.deleteRepo({ project_id: project_id, organization_id: organization_id })
+  await prioverd.deleteRepo({ project_id: project_id, organization_id: organization_id });
   await expect(async () => {
     await prioverd.hasRepo({ project_id: project_id, organization_id: organization_id });
   }).rejects.toThrow('code: 403, 访问的资源无权限!');
   console.log('expect delete successfully');
-})
+});
+
+test('set a branch protection', async () => {
+  const prioverd = git('codeup', config);
+  await prioverd.setProtectionBranch({
+    project_id: project_id,
+    organization_id: organization_id,
+    branch: 'master',
+  });
+  const project = await prioverd.getProtectionBranch({
+    project_id: project_id,
+    organization_id: organization_id,
+    branch: 'master',
+  });
+
+  expect(_.get(project, 'protected')).toBeTruthy();
+  console.log('set branch protection successfully');
+});
+
+test('get a branch protection', async () => {
+  const prioverd = git('codeup', config);
+  await prioverd.setProtectionBranch({
+    project_id: project_id,
+    organization_id: organization_id,
+    branch: 'master',
+  });
+  const project = await prioverd.getProtectionBranch({
+    project_id: project_id,
+    organization_id: organization_id,
+    branch: 'master',
+  });
+
+  expect(_.get(project, 'protected')).toBeTruthy();
+  console.log('set branch protection successfully');
+});
+
+test('check a repo whether exists', async () => {
+  const prioverd = git('codeup', config);
+  const res = await prioverd.hasRepo({
+    project_id: project_id,
+    organization_id: organization_id,
+    branch: 'master',
+  });
+  console.log(res);
+});
+
+test('check whether a repo is empty', async () => {
+  const prioverd = git('codeup', config);
+  const res = await prioverd.checkRepoEmpty({
+    project_id: project_id,
+    organization_id: organization_id,
+    branch: 'master',
+  });
+  console.log(res);
+});
+
+test('ensure an empty repo', async () => {
+  const prioverd = git('codeup', config);
+  const name = 'testCreateRepo5';
+  const res = await prioverd.ensureEmptyRepo({
+    name: name,
+    organization_id: organization_id,
+  });
+  expect(_.get(res, 'isNewCreated')).toBeTruthy();
+});
+
+test.only('get a repo id', async () => {
+  const prioverd = git('codeup', config);
+  const name = organization_id + '/' + 'test123';
+  const res = await prioverd.getRepoId({
+    name: name,
+    organization_id: organization_id,
+  });
+  console.log(res);
+});
