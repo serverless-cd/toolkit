@@ -1,12 +1,13 @@
 
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile, IGetCommitById } from '../types/input';
-import { IBranchOutput, IRepoOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
+import { IListBranches, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IWebhookEvent, IPutFile, IGetCommitById } from '../types/input';
+import { IBranchOutput, IRepoOutput, IUserOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput } from '../types/output';
 
 export default abstract class Base {
   constructor(_config: any) { }
+  abstract user(): Promise<IUserOutput>;
   abstract listRepos(): Promise<IRepoOutput[]>;
-  abstract listBranches(params: IListBranchs): Promise<IBranchOutput[]>;
+  abstract listBranches(params: IListBranches): Promise<IBranchOutput[]>;
   abstract getRefCommit(params: IGetRefCommit): Promise<ICommitOutput>;
   abstract getCommitById(params: IGetCommitById): Promise<ICommitOutput>;
   abstract listWebhook(params: IListWebhook): Promise<IGetWebhookOutput[]>;
@@ -112,7 +113,7 @@ export default abstract class Base {
       throw new Error('You must specify repo');
     }
   }
-  
+
   validateCreateWebhookParams(params: unknown) {
     if (!_.has(params, 'owner')) {
       throw new Error('You must specify owner');
@@ -166,7 +167,7 @@ export default abstract class Base {
       throw new Error('You must specify hook_id');
     }
   }
-    
+
   _test_debug_log(data: any, log: string = 'test') {
     try {
       require('fs').writeFileSync(`packages/git-provider/__tests__/logs_${log}.log`, JSON.stringify(data, null, 2));

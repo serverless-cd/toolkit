@@ -10,6 +10,12 @@ export interface IRepoOutput {
   source: any;
 }
 
+export interface IUserOutput {
+  login: string;
+  id: number | string;
+  source: any;
+}
+
 export interface IOrgsOutput {
   org: string;
   id: number;
