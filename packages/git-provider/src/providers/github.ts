@@ -31,6 +31,7 @@ export default class Github extends Base {
     return {
       login: _.get(source, 'login', ''),
       id: _.get(source, 'id', ''),
+      avatar: _.get(source, 'avatar_url', ''),
       source,
     };
   }

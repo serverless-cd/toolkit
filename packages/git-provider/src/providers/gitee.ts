@@ -44,6 +44,7 @@ export default class Gitee extends Base {
     return {
       login: _.get(source, 'login', ''),
       id: _.get(source, 'id', ''),
+      avatar: _.get(source, 'avatar_url', ''),
       source,
     };
   }

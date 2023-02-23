@@ -13,6 +13,7 @@ export interface IRepoOutput {
 export interface IUserOutput {
   login: string;
   id: number | string;
+  avatar: string;
   source: any;
 }
 
