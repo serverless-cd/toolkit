@@ -8,8 +8,8 @@ const OWNER = 'hazel928';
 const REPO = 'test1234';
 
 test('list repo', async () => {
-  const prioverd = git('gitee', { access_token });
-  const rows = await prioverd.listRepos();
+  const provider = git('gitee', { access_token });
+  const rows = await provider.listRepos();
 
   expect(_.isArray(rows)).toBeTruthy();
   for (const row of rows) {
@@ -20,9 +20,9 @@ test('list repo', async () => {
   }
 });
 
-test('list branchs', async () => {
-  const prioverd = git('gitee', { access_token });
-  const rows = await prioverd.listBranches({ owner: OWNER, repo: REPO });
+test.only('list branches', async () => {
+  const provider = git('gitee', { access_token });
+  const rows = await provider.listBranches({ owner: OWNER, repo: REPO });
 
   expect(_.isArray(rows)).toBeTruthy();
 
@@ -33,10 +33,17 @@ test('list branchs', async () => {
   }
 });
 
+test.only('get user', async () => {
+  const provider = git('gitee', { access_token });
+  const result = await provider.user();
+  console.log('result: ', result);
+  expect(_.isString(result.login)).toBeTruthy();
+});
+
 test('get commit by id', async () => {
-  const prioverd = git('gitee', { access_token });
+  const provider = git('gitee', { access_token });
   const sha = '1816c284614dede42d0e0c7eaace00166adc79f0';
-  const config = await prioverd.getCommitById({
+  const config = await provider.getCommitById({
     owner: OWNER,
     repo: REPO,
     sha,
@@ -48,10 +55,9 @@ test('get commit by id', async () => {
 });
 
 test('get branch commit', async () => {
-  const prioverd = git('gitee', { access_token });
-  const config = await prioverd.getRefCommit({
-    owner: OWNER,
-    repo: REPO,
+  const provider = git('gitee', { access_token });
+  const config = await provider.getRefCommit({
+    owner: OWNER, repo: REPO,
     // ref: 'tes',
     ref: 'refs/heads/tes',
   });
@@ -62,10 +68,9 @@ test('get branch commit', async () => {
 });
 
 test('get tag commit', async () => {
-  const prioverd = git('gitee', { access_token });
-  const config = await prioverd.getRefCommit({
-    owner: OWNER,
-    repo: REPO,
+  const provider = git('gitee', { access_token });
+  const config = await provider.getRefCommit({
+    owner: OWNER, repo: REPO,
     ref: 'refs/tags/0.0.1',
   });
 
@@ -76,10 +81,10 @@ test('get tag commit', async () => {
 
 test('webhook', async () => {
   const url = 'http://test.abc';
-  const prioverd = git('gitee', { access_token }) as Gitee;
+  const provider = git('gitee', { access_token }) as Gitee;
 
   console.log('expect list');
-  const rows = await prioverd.listWebhook({ owner: OWNER, repo: REPO });
+  const rows = await provider.listWebhook({ owner: OWNER, repo: REPO });
   console.log(rows);
   expect(_.isArray(rows)).toBeTruthy();
   for (const row of rows) {
@@ -90,10 +95,8 @@ test('webhook', async () => {
   console.log('expect list successfully');
 
   console.log('expect create');
-  const createConfig = await prioverd.createWebhook({
-    owner: OWNER,
-    repo: REPO,
-    url,
+  const createConfig = await provider.createWebhook({
+    owner: OWNER, repo: REPO, url,
   });
   expect(_.has(createConfig, 'id')).toBeTruthy();
   expect(_.has(createConfig, 'source')).toBeTruthy();
@@ -103,14 +106,13 @@ test('webhook', async () => {
   console.log('expect create successfully');
 
   const hook_id: number = _.get(createConfig, 'id');
-  await prioverd.updateWebhook({
-    owner: OWNER,
-    repo: REPO,
+  await provider.updateWebhook({
+    owner: OWNER, repo: REPO,
     url,
     hook_id,
     events: ['release'],
   });
-  const updateConfig = await prioverd.getWebhook({ owner: OWNER, repo: REPO, hook_id });
+  const updateConfig = await provider.getWebhook({ owner: OWNER, repo: REPO, hook_id });
   expect(updateConfig.id).toBe(hook_id);
   expect(_.has(updateConfig, 'source')).toBeTruthy();
   expect(_.get(updateConfig, 'source.push_events')).toBeFalsy();
@@ -118,17 +120,17 @@ test('webhook', async () => {
   console.log('expect update successfully');
 
   console.log('expect delete');
-  await prioverd.deleteWebhook({ owner: OWNER, repo: REPO, hook_id });
+  await provider.deleteWebhook({ owner: OWNER, repo: REPO, hook_id, });
   await expect(async () => {
-    await prioverd.getWebhook({ owner: OWNER, repo: REPO, hook_id });
+    await provider.getWebhook({ owner: OWNER, repo: REPO, hook_id });
   }).rejects.toThrow('Request failed with status code 404');
   console.log('expect delete successfully');
 });
 
 test('create fork', async () => {
-  const prioverd = git('gitee', { access_token });
-  const createFork = await prioverd.createFork({ owner: OWNER, repo: REPO });
-  console.log(createFork);
+  const provider = git('gitee', { access_token });
+  const createFork = await provider.createFork({ owner: OWNER, repo: REPO });
+  console.log(createFork)
   expect(_.has(createFork, 'id')).toBeTruthy();
   expect(_.has(createFork, 'full_name')).toBeTruthy();
   expect(_.has(createFork, 'url')).toBeTruthy();
@@ -136,9 +138,9 @@ test('create fork', async () => {
 });
 
 test('create a  repo', async () => {
-  const prioverd = git('gitee', { access_token });
-  const createFork = await prioverd.createRepo({ name: 'testCreateRepo1' });
-  console.log(createFork);
+  const provider = git('gitee', { access_token });
+  const createFork = await provider.createRepo({ name: 'testCreateRepo1' });
+  console.log(createFork)
   expect(_.has(createFork, 'id')).toBeTruthy();
   expect(_.has(createFork, 'full_name')).toBeTruthy();
   expect(_.has(createFork, 'url')).toBeTruthy();
@@ -146,28 +148,28 @@ test('create a  repo', async () => {
 });
 
 test('delete a repo', async () => {
-  const prioverd = git('gitee', { access_token });
-  const repo = await prioverd.hasRepo({ owner: OWNER, repo: REPO });
+  const provider = git('gitee', { access_token });
+  const repo = await provider.hasRepo({ owner: OWNER, repo: REPO });
   console.log(repo);
   expect(_.has(repo, 'id')).toBeTruthy();
   console.log('has repo successfully');
 
-  await prioverd.deleteRepo({ owner: OWNER, repo: REPO });
+  await provider.deleteRepo({ owner: OWNER, repo: REPO })
   await expect(async () => {
-    await prioverd.hasRepo({ owner: OWNER, repo: REPO });
+    await provider.hasRepo({ owner: OWNER, repo: REPO });
   }).rejects.toThrow('Request failed with status code 404');
   console.log('expect delete successfully');
 });
 
 test('create a protection branch', async () => {
-  const prioverd = git('gitee', { access_token });
+  const provider = git('gitee', { access_token });
   const branch = 'master';
-  await prioverd.setProtectionBranch({
+  await provider.setProtectionBranch({
     owner: OWNER,
     repo: REPO,
     branch: branch,
   });
-  const res = await prioverd.getProtectionBranch({
+  const res = await provider.getProtectionBranch({
     owner: OWNER,
     repo: REPO,
     branch: branch,
@@ -177,8 +179,8 @@ test('create a protection branch', async () => {
 });
 
 test('check a repo whether exists', async () => {
-  const prioverd = git('gitee', { access_token });
-  const res = await prioverd.hasRepo({
+  const provider = git('gitee', { access_token });
+  const res = await provider.hasRepo({
     owner: OWNER,
     repo: REPO,
   });
@@ -187,8 +189,8 @@ test('check a repo whether exists', async () => {
 });
 
 test('check whether a repo is empty', async () => {
-  const prioverd = git('gitee', { access_token });
-  const res = await prioverd.checkRepoEmpty({
+  const provider = git('gitee', { access_token });
+  const res = await provider.checkRepoEmpty({
     owner: OWNER,
     repo: REPO,
   });
@@ -196,8 +198,8 @@ test('check whether a repo is empty', async () => {
 });
 
 test.only('ensure an empty repo', async () => {
-  const prioverd = git('gitee', { access_token });
-  const res = await prioverd.ensureEmptyRepo({
+  const provider = git('gitee', { access_token });
+  const res = await provider.ensureEmptyRepo({
     owner: OWNER,
     repo: REPO,
   });

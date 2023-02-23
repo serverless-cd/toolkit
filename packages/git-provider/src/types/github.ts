@@ -1,6 +1,6 @@
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import {
-  IListBranchs,
+  IListBranches,
   ICreateFork,
   IDeleteRepo,
   IHasRepo,
@@ -32,7 +32,7 @@ interface _IWebhookParams {
   };
 }
 
-export interface IGithubListBranchs extends IListBranchs, RequestParameters {}
+export interface IGithubListBranchs extends IListBranches, RequestParameters {}
 export interface IGithubFork extends ICreateFork, RequestParameters {}
 export interface IGithubCreateRepo extends ICreateRepo, RequestParameters {}
 export interface IGithubDeleteRepo extends IDeleteRepo, RequestParameters {}
@@ -48,6 +48,6 @@ export interface IGithubEnsureRepo extends IEnsureEmptyRepo, RequestParameters {
 
 export interface IGithubCreateWebhook extends ICreateWebhook, RequestParameters { }
 export interface IGithubUpdateWebhook extends IUpdateWebhook, RequestParameters { }
-export interface IGithubGetWebhook extends IGetWebhook, RequestParameters {}
-export interface IGithubDeleteWebhook extends IDeleteWebhook, RequestParameters {}
-export interface IGIThubPutFile extends IPutFile, RequestParameters {}
+export interface IGithubGetWebhook extends IGetWebhook, RequestParameters { }
+export interface IGithubDeleteWebhook extends IDeleteWebhook, RequestParameters { }
+export interface IGithubPutFile extends IPutFile, RequestParameters { }

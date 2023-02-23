@@ -22,7 +22,7 @@ export interface IAliConfig {
   endpoint?: string;
 }
 
-export interface IListBranchs {
+export interface IListBranches {
   owner: string;
   repo: string;
 }
@@ -102,7 +102,7 @@ export interface ICreateWebhook {
   events?: IWebhookEvent[],
 }
 
-export interface IUpdateWebhook extends ICreateWebhook{
+export interface IUpdateWebhook extends ICreateWebhook {
   hook_id: number;
 }
 

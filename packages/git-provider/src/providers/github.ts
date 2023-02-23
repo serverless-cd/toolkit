@@ -3,13 +3,12 @@ import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
 import {
-  IGithubListBranchs,
+  IGithubListBranches,
   IGithubGetConfig,
   IGithubCreateWebhook,
   IGithubUpdateWebhook,
   IGithubGetWebhook,
   IGithubDeleteWebhook,
-  IGIThubPutFile,
   IGithubGetCommitById,
   IGithubFork,
   IGithubCreateRepo,
@@ -19,8 +18,10 @@ import {
   IGithubGetProtectBranch,
   IGithubCheckRepoEmpty,
   IGithubEnsureRepo,
+  IGithubPutFile,
 } from '../types/github';
 import {
+  IUserOutput,
   IRepoOutput,
   IBranchOutput,
   ICommitOutput,
@@ -39,7 +40,7 @@ import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 const debug = require('debug')('serverless-cd:git-provider');
 
 export default class Github extends Base {
-  private getDefaultParame = (): RequestParameters => ({
+  private getDefaultParams = (): RequestParameters => ({
     per_page: 100,
     page: 1,
     sort: 'updated',
@@ -56,8 +57,20 @@ export default class Github extends Base {
     this.octokit = new Octokit({ auth: access_token });
   }
 
+  // https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28
+  async user(): Promise<IUserOutput> {
+    const result = await this.octokit.request('GET /user');
+    const source = _.get(result, 'data', {});
+    return {
+      login: _.get(source, 'login', ''),
+      id: _.get(source, 'id', ''),
+      avatar: _.get(source, 'avatar_url', ''),
+      source,
+    };
+  }
+
   // https://docs.github.com/en/rest/repos/contents#create-or-update-file-contents
-  async putFile(params: IGIThubPutFile): Promise<void> {
+  async putFile(params: IGithubPutFile): Promise<void> {
     super.validatePutFileParams(params);
     params.content = Buffer.from(params.content).toString('base64');
     await this.octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', params);
@@ -69,7 +82,7 @@ export default class Github extends Base {
     // 获取用户的仓库：https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user
     const userRepos = await this.requestList(
       'GET /user/repos',
-      _.defaults(this.getDefaultParame(), { affiliation: 'owner' }),
+      _.defaults(this.getDefaultParams(), { affiliation: 'owner' }),
     );
     debug('get repos list successfully');
     console.log('\tlist repo length: ', userRepos.length);
@@ -188,7 +201,7 @@ export default class Github extends Base {
     console.log('get org repository: ', org);
     const orgRepos = await this.requestList(
       'GET /orgs/{org}/repos',
-      _.defaults(this.getDefaultParame(), { org }),
+      _.defaults(this.getDefaultParams(), { org }),
     );
     debug('get org repos successfully');
     const rows = orgRepos.filter((orgRepo) => orgRepo.permissions.admin);
@@ -208,7 +221,7 @@ export default class Github extends Base {
 
   async listOrgs(): Promise<IOrgsOutput[]> {
     // 获取用户组织：https://docs.github.com/en/rest/orgs/orgs#list-organizations-for-the-authenticated-user
-    const orgs = await this.requestList('GET /user/orgs', this.getDefaultParame());
+    const orgs = await this.requestList('GET /user/orgs', this.getDefaultParams());
     debug('get orgs successfully');
     return _.map(orgs, (row) => ({
       org: row.login,
@@ -218,12 +231,12 @@ export default class Github extends Base {
   }
 
   // https://docs.github.com/en/rest/branches/branches#list-branches
-  async listBranches(params: IGithubListBranchs): Promise<IBranchOutput[]> {
+  async listBranches(params: IGithubListBranches): Promise<IBranchOutput[]> {
     super.validateListBranchsParams(params);
 
     const rows = await this.requestList(
       'GET /repos/{owner}/{repo}/branches',
-      _.defaults(params, this.getDefaultParame()),
+      _.defaults(params, this.getDefaultParams()),
     );
 
     debug('get repo branch successfully');
@@ -304,7 +317,7 @@ export default class Github extends Base {
 
     const rows = await this.requestList(
       'GET /repos/{owner}/{repo}/hooks',
-      _.defaults(params, this.getDefaultParame()),
+      _.defaults(params, this.getDefaultParams()),
     );
     debug('get webhook list successfully');
     return _.map(rows, (row) => ({

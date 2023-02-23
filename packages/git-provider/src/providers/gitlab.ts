@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
 import {
-  IListBranchs,
+  IListBranches,
   IGetRefCommit,
   IListWebhook,
   ICreateWebhook,
@@ -33,6 +33,7 @@ import {
   IGetProtectBranchOutput,
   ICheckRepoEmptyOutput,
   IEnsureRepoOutput,
+  IUserOutput
 } from '../types/output';
 import Base from './base';
 
@@ -61,12 +62,17 @@ export default class Gitlab extends Base {
     this.endpoint = endpoint as string;
   }
 
+
+  async user(): Promise<IUserOutput> {
+    throw new Error('Method not implemented.');
+  }
+
   // https://www.bookstack.cn/read/gitlab-doc-zh/docs-296.md#7tkudr
-  async listBranches(params: IListBranchs | { id: string }): Promise<IBranchOutput[]> {
+  async listBranches(params: IListBranches | { id: string }): Promise<IBranchOutput[]> {
     let id: string | undefined = _.get(params, 'id');
     if (_.isNil(id)) {
       super.validateListBranchsParams(params);
-      const { owner, repo } = params as IListBranchs;
+      const { owner, repo } = params as IListBranches;
       id = encodeURIComponent(`${owner}/${repo}`);
     }
 

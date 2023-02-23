@@ -3,7 +3,7 @@ import _ from 'lodash';
 import Base from './base';
 import {
   IGitConfig,
-  IListBranchs,
+  IListBranches,
   IGetRefCommit,
   IListWebhook,
   IDeleteWebhook,
@@ -22,6 +22,7 @@ import {
   IEnsureEmptyRepo,
 } from '../types/input';
 import {
+  IUserOutput,
   IRepoOutput,
   IBranchOutput,
   ICommitOutput,
@@ -73,6 +74,17 @@ export default class Gitee extends Base {
     }));
   }
 
+  async user(): Promise<IUserOutput> {
+    const result = await this.requestV5('/user', 'GET', {});
+    const source = _.get(result, 'data', {});
+    return {
+      login: _.get(source, 'login', ''),
+      id: _.get(source, 'id', ''),
+      avatar: _.get(source, 'avatar_url', ''),
+      source,
+    };
+  }
+
   // https://gitee.com/api/v5/swagger#/getV5UserRepos
   async listRepos(): Promise<IRepoOutput[]> {
     const rows = await this.requestList(
@@ -95,7 +107,7 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranches
-  async listBranches(params: IListBranchs): Promise<IBranchOutput[]> {
+  async listBranches(params: IListBranches): Promise<IBranchOutput[]> {
     super.validateListBranchsParams(params);
 
     const { owner, repo } = params;
