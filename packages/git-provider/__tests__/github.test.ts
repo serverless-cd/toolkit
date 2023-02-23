@@ -54,7 +54,7 @@ test('create or update file', async () => {
   })()).resolves.not.toThrow();
 });
 
-test('list branchs', async () => {
+test.only('list branches', async () => {
   const prioverd = git('github', {
     access_token,
   });
@@ -66,6 +66,15 @@ test('list branchs', async () => {
     expect(_.isString(row.commit_sha)).toBeTruthy();
     expect(_.has(row, 'source')).toBeTruthy();
   }
+});
+
+test.only('get user', async () => {
+  const prioverd = git('github', {
+    access_token,
+  });
+  const result = await prioverd.user();
+  console.log('result: ', result);
+  expect(_.isString(result.login)).toBeTruthy();
 });
 
 test('get commit by id', async () => {
@@ -112,7 +121,7 @@ test('webhook', async () => {
   const prioverd = git('github', { access_token });
 
   console.log('expect list');
-  const rows = await prioverd.listWebhook({ owner: OWNER, repo: REPO  });
+  const rows = await prioverd.listWebhook({ owner: OWNER, repo: REPO });
   expect(_.isArray(rows)).toBeTruthy();
   for (const row of rows) {
     expect(_.isString(row.url)).toBeTruthy();
@@ -165,13 +174,13 @@ test('create a repo', async () => {
   const prioverd = git('github', {
     access_token,
   });
-  const rows = await prioverd.createRepo({ name: 'testCreateRepo5' , private:true , description: 'testetest'});
+  const rows = await prioverd.createRepo({ name: 'testCreateRepo5', private: true, description: 'testetest' });
   expect(_.has(rows, 'id')).toBeTruthy();
   expect(_.has(rows, 'full_name')).toBeTruthy();
   expect(_.has(rows, 'url')).toBeTruthy();
 });
 
-test.only('delete a repo', async () => {
+test('delete a repo', async () => {
   const prioverd = git('github', {
     access_token,
   });

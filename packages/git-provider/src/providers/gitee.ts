@@ -1,8 +1,8 @@
 import axios from 'axios';
 import _ from 'lodash';
 import Base from './base';
-import { IGitConfig, IListBranchs, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
+import { IGitConfig, IListBranches, IGetRefCommit, IListWebhook, IDeleteWebhook, IGetWebhook, ICreateWebhook, IUpdateWebhook, IPutFile, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IUserOutput } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 
 const V5 = 'https://gitee.com/api/v5';
@@ -38,6 +38,17 @@ export default class Gitee extends Base {
     }));
   }
 
+  async user(): Promise<IUserOutput> {
+    const result = await this.requestV5('/user', 'GET', {});
+    const source = _.get(result, 'data', {});
+    return {
+      login: _.get(source, 'login', ''),
+      id: _.get(source, 'id', ''),
+      avatar: _.get(source, 'avatar_url', ''),
+      source,
+    };
+  }
+
   // https://gitee.com/api/v5/swagger#/getV5UserRepos
   async listRepos(): Promise<IRepoOutput[]> {
     const rows = await this.requestList('/user/repos', _.defaults(this.getDefaultParame(), { affiliation: 'owner' }));
@@ -56,7 +67,7 @@ export default class Gitee extends Base {
   }
 
   // https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepoBranches
-  async listBranches(params: IListBranchs): Promise<IBranchOutput[]> {
+  async listBranches(params: IListBranches): Promise<IBranchOutput[]> {
     super.validateListBranchsParams(params);
 
     const { owner, repo } = params;
@@ -120,7 +131,7 @@ export default class Gitee extends Base {
 
     const { owner, repo } = params;
     const rows = await this.requestList(`/repos/${owner}/${repo}/hooks`, _.defaults(params, this.getDefaultParame()));
-    
+
     return _.map(rows, (row) => ({
       id: _.get(row, 'id'),
       url: _.get(row, 'url'),
@@ -182,7 +193,7 @@ export default class Gitee extends Base {
     super.validateCreateForkParams(params);
 
     const { owner, repo } = params;
-    const result = await this.requestV5(`/repos/${owner}/${repo}/forks`,  'POST', params);
+    const result = await this.requestV5(`/repos/${owner}/${repo}/forks`, 'POST', params);
     const source = _.get(result, 'data', {});
     return {
       id: source.id,
@@ -191,37 +202,37 @@ export default class Gitee extends Base {
     }
   }
 
- //创建一个repo: https://gitee.com/api/v5/swagger#/postV5UserRepos
- async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
-  super.validateCreateRepoParams(params);
-  const result = await this.requestV5('/user/repos',  'POST', params);
-  const source = _.get(result, 'data', {});
-  return {
-    id: source.id,
-    full_name: source.full_name,
-    url: source.url,
+  //创建一个repo: https://gitee.com/api/v5/swagger#/postV5UserRepos
+  async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
+    super.validateCreateRepoParams(params);
+    const result = await this.requestV5('/user/repos', 'POST', params);
+    const source = _.get(result, 'data', {});
+    return {
+      id: source.id,
+      full_name: source.full_name,
+      url: source.url,
+    }
   }
-}
 
-//删除一个repo: https://gitee.com/api/v5/swagger#/deleteV5ReposOwnerRepo
-async deleteRepo(params: IDeleteRepo): Promise<any> {
-  super.validateDeleteRepoParams(params);
-  const { owner, repo } = params as IDeleteRepo;
-  await this.requestV5(`/repos/${owner}/${repo}`,  'DELETE', params);
-}
-
-//获取一个repo: https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepo
- async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
-  super.validateHasRepoParams(params);
-  const { owner, repo } = params as IHasRepo;
-  const rows = await this.requestV5(`/repos/${owner}/${repo}`,'GET',params);
-  const source = _.get(rows, 'data', {});
-  return {
-    id: source.id,
-    full_name: source.full_name,
-    url: source.url,
+  //删除一个repo: https://gitee.com/api/v5/swagger#/deleteV5ReposOwnerRepo
+  async deleteRepo(params: IDeleteRepo): Promise<any> {
+    super.validateDeleteRepoParams(params);
+    const { owner, repo } = params as IDeleteRepo;
+    await this.requestV5(`/repos/${owner}/${repo}`, 'DELETE', params);
   }
-}
+
+  //获取一个repo: https://gitee.com/api/v5/swagger#/getV5ReposOwnerRepo
+  async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
+    super.validateHasRepoParams(params);
+    const { owner, repo } = params as IHasRepo;
+    const rows = await this.requestV5(`/repos/${owner}/${repo}`, 'GET', params);
+    const source = _.get(rows, 'data', {});
+    return {
+      id: source.id,
+      full_name: source.full_name,
+      url: source.url,
+    }
+  }
 
   async requestV5(path: string, method: string, params: Object): Promise<any> {
     const p = _.defaults(params, { access_token: this.access_token });

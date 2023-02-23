@@ -2,12 +2,12 @@ import _ from 'lodash';
 import { Octokit } from '@octokit/core';
 import { RequestParameters } from '@octokit/core/dist-types/types';
 import Base from './base';
-import { IGithubListBranchs, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGIThubPutFile, IGithubGetCommitById, IGithubFork, IGithubCreateRepo, IGithubDeleteRepo, IGithubHasRepo } from '../types/github';
-import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
+import { IGithubListBranches, IGithubGetConfig, IGithubCreateWebhook, IGithubUpdateWebhook, IGithubGetWebhook, IGithubDeleteWebhook, IGithubPutFile, IGithubGetCommitById, IGithubFork, IGithubCreateRepo, IGithubDeleteRepo, IGithubHasRepo } from '../types/github';
+import { IRepoOutput, IBranchOutput, ICommitOutput, ICreateWebhookOutput, IGetWebhookOutput, IOrgsOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IUserOutput } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 
 export default class Github extends Base {
-  private getDefaultParame = (): RequestParameters => ({
+  private getDefaultParams = (): RequestParameters => ({
     per_page: 100,
     page: 1,
     sort: 'updated',
@@ -24,8 +24,20 @@ export default class Github extends Base {
     this.octokit = new Octokit({ auth: access_token });
   }
 
+  // https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28
+  async user(): Promise<IUserOutput> {
+    const result = await this.octokit.request('GET /user');
+    const source = _.get(result, 'data', {});
+    return {
+      login: _.get(source, 'login', ''),
+      id: _.get(source, 'id', ''),
+      avatar: _.get(source, 'avatar_url', ''),
+      source,
+    };
+  }
+
   // https://docs.github.com/en/rest/repos/contents#create-or-update-file-contents
-  async putFile(params: IGIThubPutFile): Promise<void> {
+  async putFile(params: IGithubPutFile): Promise<void> {
     super.validatePutFileParams(params);
     params.content = Buffer.from(params.content).toString('base64');
     await this.octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', params);
@@ -34,7 +46,7 @@ export default class Github extends Base {
   async listRepos(): Promise<IRepoOutput[]> {
     let rows: any[] = [];
     // 获取用户的仓库：https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user
-    const userRepos = await this.requestList('GET /user/repos', _.defaults(this.getDefaultParame(), { affiliation: 'owner' }));
+    const userRepos = await this.requestList('GET /user/repos', _.defaults(this.getDefaultParams(), { affiliation: 'owner' }));
     console.log('\tlist repo length: ', userRepos.length);
     return _.map(userRepos, (row) => ({
       id: row.id,
@@ -52,49 +64,49 @@ export default class Github extends Base {
   //创建一个fork: https://docs.github.com/en/rest/repos/forks#create-a-fork
   async createFork(params: IGithubFork): Promise<IForkOutput> {
     super.validateCreateForkParams(params);
-    const rows = await this.octokit.request('POST /repos/{owner}/{repo}/forks',params);
+    const rows = await this.octokit.request('POST /repos/{owner}/{repo}/forks', params);
     const source = _.get(rows, 'data', {});
     return {
-        id: _.get(source, 'id') as unknown as number,
-        full_name: _.get(source, 'full_name',''),
-        url: _.get(source, 'html_url','')
-      };
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'full_name', ''),
+      url: _.get(source, 'html_url', '')
+    };
   }
 
   //创建一个repo: https://docs.github.com/zh/rest/repos/repos#create-an-organization-repository
   async createRepo(params: IGithubCreateRepo): Promise<ICreateRepoOutput> {
     super.validateCreateRepoParams(params);
-    const rows = await this.octokit.request('POST /user/repos',params);
+    const rows = await this.octokit.request('POST /user/repos', params);
     const source = _.get(rows, 'data', {});
     return {
-        id: _.get(source, 'id') as unknown as number,
-        full_name: _.get(source, 'full_name',''),
-        url: _.get(source, 'url','')
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'full_name', ''),
+      url: _.get(source, 'url', '')
     };
   }
 
   //删除一个repo: https://docs.github.com/zh/rest/repos/repos#delete-a-repository
   async deleteRepo(params: IGithubDeleteRepo): Promise<any> {
     super.validateDeleteRepoParams(params);
-    await this.octokit.request('DELETE /repos/{owner}/{repo}',params);
+    await this.octokit.request('DELETE /repos/{owner}/{repo}', params);
   }
 
   //获取一个repo: https://docs.github.com/zh/rest/repos/repos#get-a-repository
   async hasRepo(params: IGithubHasRepo): Promise<IHasRepoOutput> {
     super.validateHasRepoParams(params);
-    const rows = await this.octokit.request('GET /repos/{owner}/{repo}',params);
+    const rows = await this.octokit.request('GET /repos/{owner}/{repo}', params);
     const source = _.get(rows, 'data', {});
     return {
       id: _.get(source, 'id') as unknown as number,
-      full_name: _.get(source, 'full_name',''),
-      url: _.get(source, 'html_url','')
+      full_name: _.get(source, 'full_name', ''),
+      url: _.get(source, 'html_url', '')
     };
   }
 
   // 获取组织的仓库: https://docs.github.com/cn/rest/repos/repos#list-organization-repositories
-  async listOrgRepos (org: string): Promise<IRepoOutput[]> {
+  async listOrgRepos(org: string): Promise<IRepoOutput[]> {
     console.log('get org repository: ', org);
-    const orgRepos = await this.requestList('GET /orgs/{org}/repos', _.defaults(this.getDefaultParame(),  { org }));
+    const orgRepos = await this.requestList('GET /orgs/{org}/repos', _.defaults(this.getDefaultParams(), { org }));
     const rows = orgRepos.filter(orgRepo => orgRepo.permissions.admin);
     console.log('orgRepos length: ', orgRepos.length, '; admin length: ', rows.length);
     return _.map(rows, (row) => ({
@@ -112,7 +124,7 @@ export default class Github extends Base {
 
   async listOrgs(): Promise<IOrgsOutput[]> {
     // 获取用户组织：https://docs.github.com/en/rest/orgs/orgs#list-organizations-for-the-authenticated-user
-    const orgs = await this.requestList('GET /user/orgs', this.getDefaultParame());
+    const orgs = await this.requestList('GET /user/orgs', this.getDefaultParams());
     return _.map(orgs, row => ({
       org: row.login,
       id: row.id,
@@ -121,10 +133,10 @@ export default class Github extends Base {
   }
 
   // https://docs.github.com/en/rest/branches/branches#list-branches
-  async listBranches(params: IGithubListBranchs): Promise<IBranchOutput[]> {
+  async listBranches(params: IGithubListBranches): Promise<IBranchOutput[]> {
     super.validateListBranchsParams(params);
 
-    const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.getDefaultParame()));
+    const rows = await this.requestList('GET /repos/{owner}/{repo}/branches', _.defaults(params, this.getDefaultParams()));
 
     return _.map(rows, (row) => ({
       name: row.name, commit_sha: _.get(row, 'commit.sha'), source: row,
@@ -167,7 +179,7 @@ export default class Github extends Base {
   async listWebhook(params: IListWebhook): Promise<IGetWebhookOutput[]> {
     super.validateListWebhookParams(params);
 
-    const rows = await this.requestList('GET /repos/{owner}/{repo}/hooks', _.defaults(params, this.getDefaultParame()))
+    const rows = await this.requestList('GET /repos/{owner}/{repo}/hooks', _.defaults(params, this.getDefaultParams()))
     return _.map(rows, (row) => ({
       id: row.id, url: _.get(row, 'config.url'), source: row,
     }));
@@ -191,7 +203,7 @@ export default class Github extends Base {
 
     const result = await this.octokit.request('POST /repos/{owner}/{repo}/hooks', p);
     const source = _.get(result, 'data', {});
-    
+
     return { id: _.get(source, 'id') as unknown as number, source };
   }
 

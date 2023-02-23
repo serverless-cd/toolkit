@@ -1,7 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { IListBranchs, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/input';
-import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput } from '../types/output';
+import { IListBranches, IGetRefCommit, IListWebhook, ICreateWebhook, IUpdateWebhook, IDeleteWebhook, IGetWebhook, IPutFile, IGitConfig, IGetCommitById, ICreateFork, IDeleteRepo, ICreateRepo, IHasRepo } from '../types/input';
+import { IRepoOutput, IBranchOutput, ICommitOutput, IGetWebhookOutput, ICreateWebhookOutput, IForkOutput, ICreateRepoOutput, IHasRepoOutput, IUserOutput } from '../types/output';
 import Base from './base';
 
 const PARAMS = {
@@ -29,12 +29,17 @@ export default class Gitlab extends Base {
     this.endpoint = endpoint as string;
   }
 
+
+  async user(): Promise<IUserOutput> {
+    throw new Error('Method not implemented.');
+  }
+
   // https://www.bookstack.cn/read/gitlab-doc-zh/docs-296.md#7tkudr
-  async listBranches(params: IListBranchs | { id: string }): Promise<IBranchOutput[]> {
+  async listBranches(params: IListBranches | { id: string }): Promise<IBranchOutput[]> {
     let id: string | undefined = _.get(params, 'id');
     if (_.isNil(id)) {
       super.validateListBranchsParams(params);
-      const { owner, repo } = params as IListBranchs;
+      const { owner, repo } = params as IListBranches;
       id = encodeURIComponent(`${owner}/${repo}`);
     }
 
@@ -53,21 +58,21 @@ export default class Gitlab extends Base {
     const source = _.get(rows, 'data', {});
     return {
       id: _.get(source, 'id') as unknown as number,
-      full_name: _.get(source, 'path_with_namespace',''),
-      url: _.get(source, 'web_url','')
+      full_name: _.get(source, 'path_with_namespace', ''),
+      url: _.get(source, 'web_url', '')
     };
   }
 
-   //创建一个repo: https://docs.gitlab.com/ee/api/projects.html#create-project
-   async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
+  //创建一个repo: https://docs.gitlab.com/ee/api/projects.html#create-project
+  async createRepo(params: ICreateRepo): Promise<ICreateRepoOutput> {
     super.validateCreateRepoParams(params);
 
-    const rows = await this.request(`api/v4/projects`,'POST',params);
+    const rows = await this.request(`api/v4/projects`, 'POST', params);
     const source = _.get(rows, 'data', {});
     return {
-        id: _.get(source, 'id') as unknown as number,
-        full_name: _.get(source, 'path_with_namespace',''),
-        url: _.get(source, 'web_url','')
+      id: _.get(source, 'id') as unknown as number,
+      full_name: _.get(source, 'path_with_namespace', ''),
+      url: _.get(source, 'web_url', '')
     };
   }
 
@@ -76,20 +81,20 @@ export default class Gitlab extends Base {
     super.validateDeleteRepoParams(params);
     const { owner, repo } = params as IDeleteRepo;
     const id = encodeURIComponent(`${owner}/${repo}`);
-    await this.request(`api/v4/projects/${id}`,'DELETE',params);
+    await this.request(`api/v4/projects/${id}`, 'DELETE', params);
   }
 
-   //获取一个repo: https://docs.gitlab.com/ee/api/projects.html#get-single-project
-   async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
+  //获取一个repo: https://docs.gitlab.com/ee/api/projects.html#get-single-project
+  async hasRepo(params: IHasRepo): Promise<IHasRepoOutput> {
     super.validateHasRepoParams(params);
     const { owner, repo } = params as IHasRepo;
     const id = encodeURIComponent(`${owner}/${repo}`);
-    const rows = await this.request(`api/v4/projects/${id}`,'GET',params);
+    const rows = await this.request(`api/v4/projects/${id}`, 'GET', params);
     const source = _.get(rows, 'data', {});
     return {
       id: _.get(source, 'id') as unknown as number,
-      full_name: _.get(source, 'path_with_namespace',''),
-      url: _.get(source, 'web_url','')
+      full_name: _.get(source, 'path_with_namespace', ''),
+      url: _.get(source, 'web_url', '')
     };
   }
 
@@ -100,7 +105,7 @@ export default class Gitlab extends Base {
       const { owner, repo } = params as IGetCommitById;
       id = encodeURIComponent(`${owner}/${repo}`);
     }
-  
+
     const result = await this.request(`/api/v4/projects/${id}/repository/commits/${params.sha}`, 'GET', {});
     const source = _.get(result, 'data', {});
 
@@ -118,7 +123,7 @@ export default class Gitlab extends Base {
     let rows: any[] = [];
     let rowLength = 0;
     do {
-      const { data } = await this.request(path, method , params);
+      const { data } = await this.request(path, method, params);
       rows = _.concat(rows, data);
       rowLength = _.size(data);
       params.pagination = params.pagination as number + 1;
