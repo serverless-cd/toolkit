@@ -4,11 +4,9 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs-extra';
 import { ISetRemoteConfig } from './types';
-import makeDebug from 'debug';
+const debug = require('debug')('serverless-cd:git/set-remotes');
 
 export default async function setRemote(config: ISetRemoteConfig) {
-  const debug = makeDebug('serverless-cd/set-remotes');
-  debug.enabled = true;
   const { provider_platform: provider } = config;
   let { repoUrl } = config;
   const git: SimpleGit = simpleGit(config.execDir);

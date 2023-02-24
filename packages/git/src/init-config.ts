@@ -3,11 +3,9 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs-extra';
 import { IInitConfig } from './types';
-import makeDebug from 'debug';
+const debug = require('debug')('serverless-cd:git/init-config');
 
 export default async function initConfig(config: IInitConfig) {
-  const debug = makeDebug('serverless-cd:git/init-config');
-  debug.enabled = true;
   const { userName, userEmail } = config;
   const execDir = config.execDir || os.tmpdir();
   const configExecDir: any = path.isAbsolute(execDir) ? execDir : path.join(process.cwd(), execDir);
