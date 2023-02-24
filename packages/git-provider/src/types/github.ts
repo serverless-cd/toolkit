@@ -32,7 +32,7 @@ interface _IWebhookParams {
   };
 }
 
-export interface IGithubListBranchs extends IListBranches, RequestParameters {}
+export interface IGithubListBranches extends IListBranches, RequestParameters {}
 export interface IGithubFork extends ICreateFork, RequestParameters {}
 export interface IGithubCreateRepo extends ICreateRepo, RequestParameters {}
 export interface IGithubDeleteRepo extends IDeleteRepo, RequestParameters {}
