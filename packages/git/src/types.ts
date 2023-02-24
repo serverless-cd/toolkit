@@ -12,3 +12,21 @@ export interface IConfig {
   ref?: string;
   commit?: string;
 }
+
+export interface ISetRemoteConfig {
+  provider_platform: IProvider;
+  execDir: string;
+  repoUrl: string;
+}
+
+export interface IInitConfig {
+  execDir: string;
+  userName: string;
+  userEmail: string;
+}
+
+export interface IAddCommit {
+  execDir: string;
+  branch?: string;
+  commit?: string;
+}
