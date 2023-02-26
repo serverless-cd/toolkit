@@ -247,11 +247,3 @@ test('check a repo whether is empty', async () => {
   console.log(repo);
 });
 
-test('ensure an empty repo', async () => {
-  const provider = git('github', {
-    access_token,
-  });
-  const res = await provider.ensureEmptyRepo({ owner: OWNER, repo: REPO });
-  console.log(res);
-  expect(_.get(res, 'url')).toBeTruthy();
-});

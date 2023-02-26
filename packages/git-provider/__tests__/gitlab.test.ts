@@ -114,12 +114,3 @@ test('check whether a repo is empty', async () => {
   console.log(res);
   expect(_.has(res, 'isEmpty')).toBeTruthy();
 });
-
-test.only('ensure an empty repo', async () => {
-  const prioverd = git('gitlab', config);
-  const res = await prioverd.ensureEmptyRepo({
-    owner: owner,
-    repo: repo,
-  });
-  console.log(res);
-});

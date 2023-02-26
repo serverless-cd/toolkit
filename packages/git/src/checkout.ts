@@ -5,7 +5,6 @@ import * as os from 'os';
 import * as fs from 'fs-extra';
 import { replace, get, isEmpty } from 'lodash';
 import { IConfig } from './types';
-
 class Checkout {
   private logger: Logger;
   private git: SimpleGit;

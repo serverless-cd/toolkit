@@ -17,7 +17,6 @@ import {
   IGithubSetProtectBranch,
   IGithubGetProtectBranch,
   IGithubCheckRepoEmpty,
-  IGithubEnsureRepo,
   IGithubPutFile,
 } from '../types/github';
 import {
@@ -33,7 +32,6 @@ import {
   IHasRepoOutput,
   IGetProtectBranchOutput,
   ICheckRepoEmptyOutput,
-  IEnsureRepoOutput,
 } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 
@@ -248,34 +246,6 @@ export default class Github extends Base {
     }));
   }
 
-  // 保证远程存在空的特定名称repo，返回其url
-  async ensureEmptyRepo(params: IGithubEnsureRepo): Promise<IEnsureRepoOutput> {
-    //存在repo
-    const { owner, repo } = params;
-    const res = await this.hasRepo({ owner: owner, repo: repo });
-    if (res && res.isExist === false) {
-      //不存在同名repo,直接创建
-      const rows = await this.createRepo({
-        name: repo,
-      });
-      debug('ensure an empty repo successfully, which is new created');
-      const url = _.get(rows, 'url') || '';
-      return url;
-    } else {
-      //存在同名repo，检查是否为空
-      let resEmpty = await this.checkRepoEmpty({ owner: owner, repo: repo });
-      const isEmpty = _.get(resEmpty, 'isEmpty');
-      if (isEmpty) {
-        //同名repo为空，则直接返回该repo的url
-        const url = _.get(res, 'url') || '';
-        debug('ensure an empty repo successfully, which is not new created');
-        return url;
-      } else {
-        //同名repo非空，抛出错误
-        throw new Error(`There is a repo called ${repo}, which is not empty`);
-      }
-    }
-  }
 
   // https://docs.github.com/en/rest/commits/comments#get-a-commit-comment
   // GET /repos/{owner}/{repo}/comments/{sha}  => GET /repos/{owner}/{repo}/commits/{sha}

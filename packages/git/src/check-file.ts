@@ -5,6 +5,8 @@ import * as fs from 'fs-extra';
 import { replace } from 'lodash';
 import { IProvider } from './types';
 import { parseRef } from '@serverless-cd/core';
+const debug = require('debug')('toolkit:check-file');
+
 interface IConfig {
   token: string;
   provider: IProvider;
@@ -17,10 +19,10 @@ interface IConfig {
 async function checkFile(config: IConfig) {
   const { file, clone_url, ref } = config;
   const baseDir = path.join(os.tmpdir(), path.basename(clone_url, '.git'));
-  console.log('baseDir', baseDir);
+  debug('baseDir', baseDir);
   let git = {} as SimpleGit;
   if (fs.existsSync(baseDir)) {
-    console.log(`baseDir ${baseDir} exists`);
+    debug(`baseDir ${baseDir} exists`);
     git = simpleGit(baseDir);
   } else {
     fs.ensureDirSync(baseDir);
@@ -38,8 +40,7 @@ async function checkFile(config: IConfig) {
         }
       }
     }
-
-    console.log('clone success');
+    debug('clone success');
   }
   const refInfo = parseRef(ref);
   let isExist = false;
@@ -47,11 +48,11 @@ async function checkFile(config: IConfig) {
     const cmd = refInfo.type === 'branch' ? `origin/${refInfo.value}:${file}` : `${ref}:${file}`;
     console.log(`git cat-file -e ${cmd}`);
     await git.raw(['cat-file', '-e', cmd]);
-    console.log('cat-file success');
+    debug('cat-file success');
     isExist = true;
   } catch (error) {
     isExist = false;
-    console.log('cat-file failure');
+    debug('cat-file failure');
   }
   if (isExist) return true;
 
@@ -65,9 +66,8 @@ async function checkFile(config: IConfig) {
       const cmd =
         refInfo?.type === 'branch' ? `origin/${refInfo.value}:${newFile}` : `${ref}:${newFile}`;
       console.log(`git cat-file -e ${cmd}`);
-
       await git.raw(['cat-file', '-e', cmd]);
-      console.log('cat-file success');
+      debug('cat-file success');
       isExist = true;
     } catch (error) {
       isExist = false;

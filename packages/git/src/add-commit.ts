@@ -1,13 +1,27 @@
 import simpleGit, { SimpleGit } from 'simple-git';
-import { IAddCommit } from './types';
 import { ensureDir } from './utils';
-const debug = require('debug')('serverless-cd:add-commits');
+const debug = require('debug')('toolkit:add-commits');
 
-export default async function addCommit(config: IAddCommit) {
+export interface IAddCommit {
+  execDir: string;
+  branch?: string;
+  commit?: string;
+}
+
+export default async function addCommit(config: IAddCommit, baseGit?: SimpleGit) {
   const { commit, branch } = config;
-  const configExecDir = ensureDir(config.execDir);
-  const git: SimpleGit = simpleGit(configExecDir);
-  await git.add('.').commit(commit || 'Initial Commit');
-  git.branch(['-M', branch || 'master']);
+  const git = baseGit || simpleGit(ensureDir(config.execDir));
+  try {
+    await git.add('.').commit(commit || 'Initial Commit');
+  } catch (error: any) {
+    if (error?.message?.indexOf('nothing to commit') > 0) {
+      // ignore error
+    } else {
+      // retry
+      await git.add('.').commit(commit || 'Initial Commit');
+    }
+  }
+  await git.branch(['-M', branch || 'master']);
   debug(`Git add and commit successfully on branch ${branch}`);
+  return git;
 }

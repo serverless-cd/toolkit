@@ -196,12 +196,3 @@ test('check whether a repo is empty', async () => {
   });
   console.log(res);
 });
-
-test.only('ensure an empty repo', async () => {
-  const provider = git('gitee', { access_token });
-  const res = await provider.ensureEmptyRepo({
-    owner: OWNER,
-    repo: REPO,
-  });
-  console.log(res);
-});

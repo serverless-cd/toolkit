@@ -50,10 +50,6 @@ export interface ICheckRepoEmpty {
   organization_id: string;
 }
 
-export interface IEnsureEmptyRepo {
-  name: string;
-  organization_id: string;
-}
 
 export interface IGetRepoId {
   name: string;
