@@ -75,8 +75,6 @@ export interface ICheckRepoEmptyOutput {
   isEmpty: boolean;
 }
 
-export type IEnsureRepoOutput = string;
-
 export interface IGetRepoIdOutput {
   id: number;
 }

@@ -9,7 +9,6 @@ import {
   ISetProtectBranch,
   IGetProtectBranch,
   ICheckRepoEmpty,
-  IEnsureEmptyRepo,
   IGetRepoId,
 } from '../types/codeup';
 import { IAliConfig } from '../types/input';
@@ -23,7 +22,6 @@ import {
   IHasRepoOutput,
   IGetProtectBranchOutput,
   ICheckRepoEmptyOutput,
-  IEnsureRepoOutput,
   IGetRepoIdOutput,
 } from '../types/output';
 import CodeupBase from './codeup-base';
@@ -244,43 +242,6 @@ export default class Codeup extends CodeupBase {
     };
   }
 
-  // 保证远程存在空的特定名称repo，返回其url
-  async ensureEmptyRepo(params: IEnsureEmptyRepo): Promise<IEnsureRepoOutput> {
-    //存在repo
-    const { name: name, organization_id: organizationId } = params as IEnsureEmptyRepo;
-    const identity = organizationId + '/' + name;
-    const res = await this.hasRepo({
-      project_id: organizationId + '/' + name,
-      organization_id: organizationId,
-    });
-    const id = '' + _.get(res, 'id');
-    if (res && res.isExist === false) {
-      //不存在同名repo,直接创建
-      const rows = await this.createRepo({
-        name: name,
-        organization_id: organizationId,
-      });
-      debug('ensure an empty repo successfully, which is new created');
-      const url = _.get(rows, 'url') || '';
-      return url;
-    } else {
-      //存在同名repo，检查是否为空
-      let resEmpty = await this.checkRepoEmpty({
-        project_id: id,
-        organization_id: organizationId,
-      });
-      const isEmpty = _.get(resEmpty, 'isEmpty');
-      if (isEmpty) {
-        //同名repo为空，则直接返回该repo的url
-        const url = _.get(res, 'url') || '';
-        debug('ensure an empty repo successfully, which is not new created');
-        return url;
-      } else {
-        //同名repo非空，抛出错误
-        throw new Error(`There is a repo called ${identity}, which is not empty`);
-      }
-    }
-  }
 
   // 根据repo name获取id: https://help.aliyun.com/document_detail/460466.html
   async getRepoId(params: IGetRepoId): Promise<IGetRepoIdOutput> {

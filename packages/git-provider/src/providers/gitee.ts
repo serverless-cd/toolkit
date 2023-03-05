@@ -19,7 +19,6 @@ import {
   IGetProtectBranch,
   ISetProtectBranch,
   ICheckRepoEmpty,
-  IEnsureEmptyRepo,
 } from '../types/input';
 import {
   IUserOutput,
@@ -34,7 +33,6 @@ import {
   IHasRepoOutput,
   IGetProtectBranchOutput,
   ICheckRepoEmptyOutput,
-  IEnsureRepoOutput,
 } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
 import CodeupBase from './codeup-base';
@@ -353,32 +351,6 @@ export default class Gitee extends Base {
     };
   }
 
-  // 保证远程存在空的特定名称repo，返回其url
-  async ensureEmptyRepo(params: IEnsureEmptyRepo): Promise<IEnsureRepoOutput> {
-    //存在repo
-    const { owner, repo } = params;
-    const res = await this.hasRepo({ owner: owner, repo: repo });
-    if (res && res.isExist === false) {
-      //不存在同名repo,直接创建
-      const rows = await this.createRepo({
-        name: repo,
-      });
-      debug('ensure an empty repo successfully, which is new created');
-      return _.get(rows, 'url') || '';
-    } else {
-      //存在同名repo，检查是否为空
-      let resEmpty = await this.checkRepoEmpty({ owner: owner, repo: repo });
-      const isEmpty = _.get(resEmpty, 'isEmpty');
-      if (isEmpty) {
-        //同名repo为空，则直接返回该repo的url
-        debug('ensure an empty repo successfully, which is not new created');
-        return _.get(res, 'url', '') || '';
-      } else {
-        //同名repo非空，抛出错误
-        throw new Error(`There is a repo called ${repo}, which is not empty`);
-      }
-    }
-  }
 
   async requestV5(path: string, method: string, params: Object): Promise<any> {
     const p = _.defaults(params, { access_token: this.access_token });

@@ -15,7 +15,6 @@ import {
   IGetProtectBranch,
   ISetProtectBranch,
   ICheckRepoEmpty,
-  IEnsureEmptyRepo,
 } from './input';
 
 interface _IWebhookParams {
@@ -42,8 +41,6 @@ export interface IGithubGetProtectBranch extends IGetProtectBranch, RequestParam
 export interface IGithubGetCommitById extends IGetCommitById, RequestParameters {}
 export interface IGithubGetConfig extends IGetRefCommit, RequestParameters {}
 export interface IGithubCheckRepoEmpty extends ICheckRepoEmpty, RequestParameters {}
-export interface IGithubEnsureRepo extends IEnsureEmptyRepo, RequestParameters {}
-
 
 
 export interface IGithubCreateWebhook extends ICreateWebhook, RequestParameters { }
