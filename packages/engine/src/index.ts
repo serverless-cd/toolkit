@@ -1,4 +1,4 @@
-import { EngineLogger, artTemplate, fs, lodash } from '@serverless-cd/core';
+import { EngineLogger, artTemplate, lodash } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import { command } from 'execa';
 import {
@@ -73,6 +73,9 @@ class Engine {
     artTemplate.defaults.imports.contains = includes;
     artTemplate.defaults.imports.startsWith = startsWith;
     artTemplate.defaults.imports.endsWith = endsWith;
+    artTemplate.defaults.imports.toJSON = (value: any) => {
+      return typeof value === 'object' ? `"${JSON.stringify(value, null, 2)}"` : value;
+    };
   }
   private async doInit() {
     const { events } = this.options;
@@ -223,10 +226,12 @@ class Engine {
     if (customLogger) {
       return (this.logger = customLogger);
     }
+    const secrets = inputs?.secrets ? values(inputs.secrets) : [];
+    const gitToken = get(inputs, 'git.token');
     return new EngineLogger({
       file: logPrefix && path.join(logPrefix, filePath),
       level: logLevel,
-      secrets: inputs?.secrets ? values(inputs.secrets) : undefined,
+      secrets: gitToken ? [...secrets, gitToken] : secrets,
     });
   }
   private async doOss(filePath: string) {
@@ -294,14 +299,16 @@ class Engine {
     });
   }
   private getFilterContext() {
-    const { inputs } = this.options;
+    const { inputs = {} } = this.options;
     const { env = {}, secrets = {} } = this.context;
     return {
       ...inputs,
       status: this.context.status,
       steps: this.record.steps,
-      env: { ...inputs?.env, ...env },
+      env: { ...inputs.env, ...env },
       secrets,
+      git: inputs.git,
+      inputs,
     };
   }
   private async doCompleted() {
