@@ -153,3 +153,95 @@ test('endsWith: if fail', async () => {
   const obj = find(res.steps, { id: 'endsWith' });
   expect(obj?.status).toEqual('skipped');
 });
+
+test('toJSON git', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { run: 'echo ${{toJSON(git)}}', id: 'toJSON' },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+    inputs: {
+      git: {
+        token: '1234567890123456789',
+        provider: 'gitee',
+        owner: 'shihuali',
+        cloneUrl: 'https://gitee.com/shihuali/checkout.git',
+        ref: 'refs/heads/test',
+      },
+    },
+  });
+  const res = await engine.start();
+  expect(res.status).toBe('success');
+});
+
+test('toJSON secrets', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    { run: 'echo ${{toJSON(secrets)}}', id: 'toJSON' },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+    inputs: {
+      secrets: {
+        token: '1234567890123456789',
+        provider: 'gitee',
+        owner: 'shihuali',
+        cloneUrl: 'https://gitee.com/shihuali/checkout.git',
+        ref: 'refs/heads/test',
+      },
+    },
+  });
+  const res = await engine.start();
+  expect(res.status).toBe('success');
+});
+
+test('toJSON env', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    {
+      run: 'echo ${{toJSON(env)}}',
+      id: 'toJSON',
+      env: {
+        token: '1234567890123456789',
+        provider: 'gitee',
+        owner: 'shihuali',
+        cloneUrl: 'https://gitee.com/shihuali/checkout.git',
+        ref: 'refs/heads/test',
+      },
+    },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+  });
+  const res = await engine.start();
+  expect(res.status).toBe('success');
+});
+
+test('toJSON inputs', async () => {
+  const steps = [
+    { run: 'echo "hello"', id: 'xhello' },
+    {
+      run: 'echo inputs is ${{toJSON(inputs)}}',
+      id: 'toJSON',
+    },
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+    inputs: {
+      secrets: {
+        token: '1234567890123456789',
+        provider: 'gitee',
+        owner: 'shihuali',
+        cloneUrl: 'https://gitee.com/shihuali/checkout.git',
+        ref: 'refs/heads/test',
+      },
+    },
+  });
+  const res = await engine.start();
+  expect(res.status).toBe('success');
+});

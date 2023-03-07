@@ -73,6 +73,9 @@ class Engine {
     artTemplate.defaults.imports.contains = includes;
     artTemplate.defaults.imports.startsWith = startsWith;
     artTemplate.defaults.imports.endsWith = endsWith;
+    artTemplate.defaults.imports.toJSON = (value: any) => {
+      return typeof value === 'object' ? `"${JSON.stringify(value, null, 2)}"` : value;
+    };
   }
   private async doInit() {
     const { events } = this.options;
@@ -296,14 +299,16 @@ class Engine {
     });
   }
   private getFilterContext() {
-    const { inputs } = this.options;
+    const { inputs = {} } = this.options;
     const { env = {}, secrets = {} } = this.context;
     return {
       ...inputs,
       status: this.context.status,
       steps: this.record.steps,
-      env: { ...inputs?.env, ...env },
+      env: { ...inputs.env, ...env },
       secrets,
+      git: inputs.git,
+      inputs,
     };
   }
   private async doCompleted() {
