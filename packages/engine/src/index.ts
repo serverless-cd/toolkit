@@ -1,4 +1,4 @@
-import { EngineLogger, artTemplate, fs, lodash } from '@serverless-cd/core';
+import { EngineLogger, artTemplate, lodash } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import { command } from 'execa';
 import {
@@ -223,10 +223,12 @@ class Engine {
     if (customLogger) {
       return (this.logger = customLogger);
     }
+    const secrets = inputs?.secrets ? values(inputs.secrets) : [];
+    const gitToken = get(inputs, 'git.token');
     return new EngineLogger({
       file: logPrefix && path.join(logPrefix, filePath),
       level: logLevel,
-      secrets: inputs?.secrets ? values(inputs.secrets) : undefined,
+      secrets: gitToken ? [...secrets, gitToken] : secrets,
     });
   }
   private async doOss(filePath: string) {
