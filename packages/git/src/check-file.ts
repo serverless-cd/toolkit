@@ -1,10 +1,9 @@
 import simpleGit, { SimpleGit } from 'simple-git';
 import * as path from 'path';
 import * as os from 'os';
-import * as fs from 'fs-extra';
-import { replace } from 'lodash';
 import { IProvider } from './types';
-import { parseRef } from '@serverless-cd/core';
+import { parseRef, lodash, fs } from '@serverless-cd/core';
+const  { replace } = lodash;
 const debug = require('debug')('toolkit:check-file');
 
 interface IConfig {
