@@ -1,5 +1,6 @@
 import { EngineLogger, artTemplate, lodash } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
+import { stringify } from 'flatted';
 import { command } from 'execa';
 import {
   IStepOptions,
@@ -402,7 +403,7 @@ class Engine {
       this.logName(item);
       // onInit时，会安装plugin依赖
       const app = require(getPluginRequirePath(pluginItem.plugin));
-      const newContext = { ...this.context, $variables: this.getFilterContext() };
+      const newContext = stringify({ ...this.context, $variables: this.getFilterContext() });
       return pluginItem.type === 'run'
         ? await app.run(get(pluginItem, 'inputs', {}), newContext, this.logger)
         : await app.postRun(get(pluginItem, 'inputs', {}), newContext, this.logger);
