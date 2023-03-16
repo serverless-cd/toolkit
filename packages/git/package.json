@@ -12,49 +12,14 @@
   "dependencies": {
     "@serverless-cd/core": "^0.0.15",
     "async-retry": "^1.3.3",
-    "fs-extra": "^10.1.0",
-    "lodash": "^4.17.21",
     "simple-git": "^3.14.1"
   },
   "devDependencies": {
-    "@types/async-retry": "^1.4.5",
-    "@types/fs-extra": "^9.0.13",
-    "@types/lodash": "^4.14.182"
+    "@types/async-retry": "^1.4.5"
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
-  },
-  "inputs": {
-    "token": {
-      "required": true,
-      "description": "personal token"
-    },
-    "provider": {
-      "required": true,
-      "description": "You can specify these values [github, gitee, gitlab, codeup]"
-    },
-    "username": {
-      "required": true,
-      "description": "username"
-    },
-    "url": {
-      "required": true,
-      "description": "repo url, example:https://github.com/serverless-cd/typescript-app-template.git"
-    },
-    "execDir": {
-      "required": false,
-      "description": "exec dir",
-      "default": "the operating system's default directory for temporary files"
-    },
-    "ref": {
-      "required": false,
-      "description": "ref"
-    },
-    "commit": {
-      "required": false,
-      "description": "commit id"
-    }
   },
   "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495"
 }

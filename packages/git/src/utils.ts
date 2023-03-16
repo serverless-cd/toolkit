@@ -1,4 +1,5 @@
-import * as fs from 'fs-extra';
+import { fs } from '@serverless-cd/core';
+
 import * as path from 'path';
 import * as os from 'os';
 const debug = require('debug')('toolkit:util');
