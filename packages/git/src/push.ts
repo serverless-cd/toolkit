@@ -19,7 +19,6 @@ export default async function push(config: IPush, baseGit?: SimpleGit) {
     },
     {
       retries: 3,
-      maxTimeout: 2000,
     },
   );
 }
