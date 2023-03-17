@@ -12,7 +12,7 @@ export interface IPush {
 export default async function push(config: IPush, baseGit?: SimpleGit) {
   const { branch } = config;
   const git = baseGit || simpleGit(ensureDir(config.execDir));
-  retry(
+  await retry(
     async () => {
       // @ts-ignore
       await git.push(['-f', '-u', 'origin', branch]);
