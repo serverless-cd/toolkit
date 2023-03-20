@@ -1,4 +1,5 @@
 import Engine, { IStepOptions, IContext } from '../src';
+import { SERVERLESS_CD_KEY, SERVERLESS_CD_VALUE } from '../src/constants';
 import { lodash } from '@serverless-cd/core';
 import * as path from 'path';
 const { get, find } = lodash;
@@ -36,4 +37,11 @@ test('shell 指令支持多个指令执行 >  ', async () => {
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(get(res, 'status')).toBe('success');
+});
+
+test.only('环境变量测试', async () => {
+  const steps = [{ run: `echo hello` }];
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res = await engine.start();
+  expect(process.env[SERVERLESS_CD_KEY]).toBe(SERVERLESS_CD_VALUE);
 });
