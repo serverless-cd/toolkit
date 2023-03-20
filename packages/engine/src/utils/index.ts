@@ -1,10 +1,11 @@
 import { IStepOptions, IPluginOptions } from '../types';
 import { fs, lodash } from '@serverless-cd/core';
-import { command, Options } from 'execa';
+import { command } from 'execa';
 import * as path from 'path';
 import { PLUGIN_INSTALL_PATH } from '../constants';
+import debug from 'debug';
 const pkg = require('../../package.json');
-const { uniqueId, filter, includes } = lodash;
+const { uniqueId } = lodash;
 
 export function getLogPath(filePath: string) {
   return `step_${filePath}.log`;
@@ -45,10 +46,9 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
         if (!fs.existsSync(packageJsonPath)) {
           fs.writeFileSync(packageJsonPath, JSON.stringify({ dependencies: {} }, null, 2));
         }
-        const cp = command(
-          `npm install ${pluginItem.plugin} --registry=https://registry.npmmirror.com`,
-          { cwd: pluginPrefixPath },
-        );
+        const cmd = `npm install ${pluginItem.plugin} --registry=https://registry.npmmirror.com`;
+        debug(`install plugin: ${cmd}`);
+        const cp = command(cmd, { cwd: pluginPrefixPath });
         that.childProcess.push(cp);
         await that.onFinish(cp);
         that.logger.info(`install plugin ${pluginItem.plugin} success`);

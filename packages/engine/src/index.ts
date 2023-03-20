@@ -49,12 +49,16 @@ const {
   endsWith,
 } = lodash;
 
+const debug = require('debug')('serverless-cd:engine');
+
 class Engine {
   private childProcess: any[] = [];
   public context = { status: STEP_STATUS.PENING, completed: false } as IContext;
   private record = { status: STEP_STATUS.PENING, editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
+    debug('engine start');
+    debug(`engine options: ${JSON.stringify(options, null, 2)}`);
     process.env[SERVERLESS_CD_KEY] = SERVERLESS_CD_VALUE;
     const { inputs, cwd = process.cwd(), logConfig = {} } = options;
     this.options.logConfig = logConfig;
@@ -147,6 +151,7 @@ class Engine {
                   : this.record.status;
               this.context.status = status;
               await this.doCompleted();
+              debug('engine end');
               resolve(this.context);
             },
           },
@@ -227,6 +232,7 @@ class Engine {
     const { customLogger, logPrefix, logLevel } = logConfig;
     const { inputs } = this.options;
     if (customLogger) {
+      debug('use custom logger');
       return (this.logger = customLogger);
     }
     const secrets = inputs?.secrets ? values(inputs.secrets) : [];
@@ -241,6 +247,7 @@ class Engine {
     const logConfig = this.options.logConfig as ILogConfig;
     const { logPrefix, ossConfig } = logConfig;
     if (ossConfig && logPrefix) {
+      debug('upload log to oss');
       await this.logger.oss({
         ...ossConfig,
         codeUri: path.join(logPrefix, filePath),
@@ -249,14 +256,24 @@ class Engine {
   }
   private async doPreRun(stepCount: string) {
     const { events } = this.options;
+    if (!isFunction(events?.onPreRun)) return;
     const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
+    debug(`onPreRun ${stepCount} start`);
+    debug(`onPreRun data: ${JSON.stringify(data)}`);
+    debug(`onPreRun context: ${JSON.stringify(this.context)}`);
     await events?.onPreRun?.(data as ISteps, this.context, this.logger);
+    debug(`onPreRun ${stepCount} end`);
   }
   private async doPostRun(item: IStepOptions) {
     const { events } = this.options;
+    if (!isFunction(events?.onPostRun)) return;
     const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
+    debug(`onPostRun ${item.stepCount} start`);
+    debug(`onPostRun data: ${JSON.stringify(data)}`);
+    debug(`onPostRun context: ${JSON.stringify(this.context)}`);
     try {
       await events?.onPostRun?.(data as ISteps, this.context, this.logger);
+      debug(`onPostRun ${item.stepCount} end`);
     } catch (error) {
       outputLog(this.logger, error);
     }
@@ -391,6 +408,7 @@ class Engine {
     const pluginItem = item as IPluginOptions;
     // run
     if (runItem.run) {
+      debug(`run: ${runItem.run}`);
       let execPath = runItem['working-directory'] || this.context.cwd;
       execPath = path.isAbsolute(execPath) ? execPath : path.join(this.context.cwd, execPath);
       this.logName(item);
@@ -402,13 +420,17 @@ class Engine {
     }
     // plugin
     if (pluginItem.plugin) {
+      debug(`plugin: ${pluginItem.plugin}`);
       this.logName(item);
       // onInit时，会安装plugin依赖
       const app = require(getPluginRequirePath(pluginItem.plugin));
       const newContext = { ...this.context, $variables: this.getFilterContext() };
+      const newInputs = get(pluginItem, 'inputs', {});
+      debug(`plugin inputs: ${JSON.stringify(newInputs)}`);
+      debug(`plugin context: ${JSON.stringify(newContext)}`);
       return pluginItem.type === 'run'
-        ? await app.run(get(pluginItem, 'inputs', {}), newContext, this.logger)
-        : await app.postRun(get(pluginItem, 'inputs', {}), newContext, this.logger);
+        ? await app.run(newInputs, newContext, this.logger)
+        : await app.postRun(newInputs, newContext, this.logger);
     }
   }
   private parseEnv(item: IRunOptions) {
