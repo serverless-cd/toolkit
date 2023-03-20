@@ -2,7 +2,7 @@ import simpleGit, { SimpleGit } from 'simple-git';
 import retry from 'async-retry';
 
 import { ensureDir } from './utils';
-const debug = require('debug')('toolkit:git-push');
+const debug = require('debug')('serverless-cd:git_git-push');
 
 export interface IPush {
   execDir: string;

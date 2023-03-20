@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/git",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "sevrerless-cd checkout lib",
   "main": "./lib/index.js",
   "scripts": {

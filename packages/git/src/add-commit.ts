@@ -1,6 +1,6 @@
 import simpleGit, { SimpleGit } from 'simple-git';
 import { ensureDir } from './utils';
-const debug = require('debug')('toolkit:add-commits');
+const debug = require('debug')('serverless-cd:git_add-commits');
 
 export interface IAddCommit {
   execDir: string;

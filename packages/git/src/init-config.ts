@@ -1,6 +1,6 @@
 import simpleGit, { SimpleGit } from 'simple-git';
 import { ensureDir } from './utils';
-const debug = require('debug')('toolkit:init-config');
+const debug = require('debug')('serverless-cd:git_init-config');
 
 export interface IInitConfig {
   execDir: string;
