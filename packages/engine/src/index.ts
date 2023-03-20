@@ -29,6 +29,8 @@ import {
   INIT_STEP_NAME,
   COMPLETED_STEP_COUNT,
   DEFAULT_COMPLETED_LOG,
+  SERVERLESS_CD_KEY,
+  SERVERLESS_CD_VALUE,
 } from './constants';
 export { IStepOptions, IContext } from './types';
 
@@ -54,6 +56,7 @@ class Engine {
   private record = { status: STEP_STATUS.PENING, editStatusAble: true } as IRecord;
   private logger: any;
   constructor(private options: IEngineOptions) {
+    process.env[SERVERLESS_CD_KEY] = SERVERLESS_CD_VALUE;
     const { inputs, cwd = process.cwd(), logConfig = {} } = options;
     this.options.logConfig = logConfig;
     this.context.cwd = cwd;
