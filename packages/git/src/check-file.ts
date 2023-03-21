@@ -3,8 +3,8 @@ import * as path from 'path';
 import * as os from 'os';
 import { IProvider } from './types';
 import { parseRef, lodash, fs } from '@serverless-cd/core';
-const  { replace } = lodash;
-const debug = require('debug')('serverless-cd:git_check-file');
+const { replace } = lodash;
+const debug = require('@serverless-cd/debug')('serverless-cd:git_check-file');
 
 interface IConfig {
   token: string;

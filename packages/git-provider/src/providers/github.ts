@@ -35,7 +35,7 @@ import {
 } from '../types/output';
 import { IGetRefCommit, IGitConfig, IListWebhook } from '../types/input';
 
-const debug = require('debug')('serverless-cd:git-provider');
+const debug = require('@serverless-cd/debug')('serverless-cd:git-provider');
 
 export default class Github extends Base {
   private getDefaultParams = (): RequestParameters => ({
@@ -245,7 +245,6 @@ export default class Github extends Base {
       source: row,
     }));
   }
-
 
   // https://docs.github.com/en/rest/commits/comments#get-a-commit-comment
   // GET /repos/{owner}/{repo}/comments/{sha}  => GET /repos/{owner}/{repo}/commits/{sha}

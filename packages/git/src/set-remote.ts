@@ -1,7 +1,7 @@
 import simpleGit, { SimpleGit } from 'simple-git';
 import { IProvider } from './types';
 import { ensureDir } from './utils';
-const debug = require('debug')('serverless-cd:git_set-remotes');
+const debug = require('@serverless-cd/debug')('serverless-cd:git_set-remotes');
 
 export interface ISetRemoteConfig {
   provider_platform: IProvider;

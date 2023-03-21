@@ -22,7 +22,7 @@
     "access": "public"
   },
   "dependencies": {
-    "debug": "^4.3.4",
+    "@serverless-cd/debug": "^4.3.4",
     "tablestore": "^5.2.2"
   },
   "repository": {

@@ -1,10 +1,13 @@
 import { IStepOptions, IPluginOptions } from '../types';
 import { fs, lodash } from '@serverless-cd/core';
-import { command, Options } from 'execa';
+import { command } from 'execa';
 import * as path from 'path';
 import { PLUGIN_INSTALL_PATH } from '../constants';
+import flatted from 'flatted';
 const pkg = require('../../package.json');
-const { uniqueId, filter, includes } = lodash;
+const { uniqueId, get, omit } = lodash;
+
+const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
 export function getLogPath(filePath: string) {
   return `step_${filePath}.log`;
@@ -45,10 +48,9 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
         if (!fs.existsSync(packageJsonPath)) {
           fs.writeFileSync(packageJsonPath, JSON.stringify({ dependencies: {} }, null, 2));
         }
-        const cp = command(
-          `npm install ${pluginItem.plugin} --registry=https://registry.npmmirror.com`,
-          { cwd: pluginPrefixPath },
-        );
+        const cmd = `npm install ${pluginItem.plugin} --registry=https://registry.npmmirror.com`;
+        debug(`install plugin: ${cmd}`);
+        const cp = command(cmd, { cwd: pluginPrefixPath });
         that.childProcess.push(cp);
         await that.onFinish(cp);
         that.logger.info(`install plugin ${pluginItem.plugin} success`);
@@ -77,3 +79,13 @@ export function getProcessTime(time: number) {
 export function outputLog(logger: any, message: any) {
   process.env['CLI_VERSION'] ? logger.debug(message) : logger.info(message);
 }
+
+export const stringify = (value: any) => {
+  try {
+    const removeKey = 'logConfig.customLogger';
+    const customLogger = get(value, removeKey);
+    return customLogger ? JSON.stringify(omit(value, [removeKey])) : JSON.stringify(value);
+  } catch (error) {
+    return flatted.stringify(value);
+  }
+};

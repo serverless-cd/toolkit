@@ -31,11 +31,11 @@ import {
   IHasRepoOutput,
   IGetProtectBranchOutput,
   ICheckRepoEmptyOutput,
-  IUserOutput
+  IUserOutput,
 } from '../types/output';
 import Base from './base';
 
-const debug = require('debug')('serverless-cd:git-provider');
+const debug = require('@serverless-cd/debug')('serverless-cd:git-provider');
 const PARAMS = {
   pagination: 1,
   per_page: 100,
@@ -59,7 +59,6 @@ export default class Gitlab extends Base {
     this.access_token = access_token;
     this.endpoint = endpoint as string;
   }
-
 
   async user(): Promise<IUserOutput> {
     throw new Error('Method not implemented.');
@@ -206,7 +205,6 @@ export default class Gitlab extends Base {
       protected: _.isObject(source),
     };
   }
-
 
   async getCommitById(
     params: IGetCommitById | { id: string; sha: string },
