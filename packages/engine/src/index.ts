@@ -49,7 +49,7 @@ const {
   endsWith,
 } = lodash;
 
-const debug = require('debug')('serverless-cd:engine');
+const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
 class Engine {
   private childProcess: any[] = [];

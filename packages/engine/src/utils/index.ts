@@ -3,9 +3,9 @@ import { fs, lodash } from '@serverless-cd/core';
 import { command } from 'execa';
 import * as path from 'path';
 import { PLUGIN_INSTALL_PATH } from '../constants';
-import debug from 'debug';
 const pkg = require('../../package.json');
 const { uniqueId } = lodash;
+const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
 export function getLogPath(filePath: string) {
   return `step_${filePath}.log`;
