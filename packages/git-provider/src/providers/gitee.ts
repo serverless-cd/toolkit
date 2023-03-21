@@ -37,7 +37,7 @@ import {
 import { IWebhookParams } from '../types/gitee';
 import CodeupBase from './codeup-base';
 
-const debug = require('debug')('serverless-cd:git-provider');
+const debug = require('@serverless-cd/debug')('serverless-cd:git-provider');
 const V5 = 'https://gitee.com/api/v5';
 
 export default class Gitee extends Base {
@@ -350,7 +350,6 @@ export default class Gitee extends Base {
       protected: source.protected,
     };
   }
-
 
   async requestV5(path: string, method: string, params: Object): Promise<any> {
     const p = _.defaults(params, { access_token: this.access_token });

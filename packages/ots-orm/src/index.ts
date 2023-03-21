@@ -18,7 +18,7 @@ import {
   INF_MIN,
   INF_MAX,
 } from 'tablestore';
-const debug = require('debug')("orm:ots");
+const debug = require('@serverless-cd/debug')('orm:ots');
 import { orderQuery, wrapAttributes, wrapRow, wrapRows } from './utils';
 
 interface IConfig {

@@ -26,7 +26,7 @@ import {
 } from '../types/output';
 import CodeupBase from './codeup-base';
 
-const debug = require('debug')('serverless-cd:git-provider');
+const debug = require('@serverless-cd/debug')('serverless-cd:git-provider');
 const { ROAClient } = require('@alicloud/pop-core');
 const PARAMS = { page: 1, pageSize: 100 };
 
@@ -241,7 +241,6 @@ export default class Codeup extends CodeupBase {
       protected: !_.isEmpty(array),
     };
   }
-
 
   // 根据repo name获取id: https://help.aliyun.com/document_detail/460466.html
   async getRepoId(params: IGetRepoId): Promise<IGetRepoIdOutput> {
