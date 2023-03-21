@@ -22,6 +22,7 @@ import {
   getLogPath,
   outputLog,
   getPluginRequirePath,
+  stringify,
 } from './utils';
 import {
   INIT_STEP_COUNT,
@@ -58,7 +59,8 @@ class Engine {
   private logger: any;
   constructor(private options: IEngineOptions) {
     debug('engine start');
-    debug(`engine options: ${JSON.stringify(options, null, 2)}`);
+    debug(`engine options: ${stringify(options)}`);
+
     process.env[SERVERLESS_CD_KEY] = SERVERLESS_CD_VALUE;
     const { inputs, cwd = process.cwd(), logConfig = {} } = options;
     this.options.logConfig = logConfig;
@@ -259,8 +261,8 @@ class Engine {
     if (!isFunction(events?.onPreRun)) return;
     const data = find(this.context.steps, (obj) => obj.stepCount === stepCount);
     debug(`onPreRun ${stepCount} start`);
-    debug(`onPreRun data: ${JSON.stringify(data)}`);
-    debug(`onPreRun context: ${JSON.stringify(this.context)}`);
+    debug(`onPreRun data: ${stringify(data)}`);
+    debug(`onPreRun context: ${stringify(this.context)}`);
     await events?.onPreRun?.(data as ISteps, this.context, this.logger);
     debug(`onPreRun ${stepCount} end`);
   }
@@ -269,8 +271,8 @@ class Engine {
     if (!isFunction(events?.onPostRun)) return;
     const data = find(this.context.steps, (obj) => obj.stepCount === item.stepCount);
     debug(`onPostRun ${item.stepCount} start`);
-    debug(`onPostRun data: ${JSON.stringify(data)}`);
-    debug(`onPostRun context: ${JSON.stringify(this.context)}`);
+    debug(`onPostRun data: ${stringify(data)}`);
+    debug(`onPostRun context: ${stringify(this.context)}`);
     try {
       await events?.onPostRun?.(data as ISteps, this.context, this.logger);
       debug(`onPostRun ${item.stepCount} end`);
@@ -426,8 +428,8 @@ class Engine {
       const app = require(getPluginRequirePath(pluginItem.plugin));
       const newContext = { ...this.context, $variables: this.getFilterContext() };
       const newInputs = get(pluginItem, 'inputs', {});
-      debug(`plugin inputs: ${JSON.stringify(newInputs)}`);
-      debug(`plugin context: ${JSON.stringify(newContext)}`);
+      debug(`plugin inputs: ${stringify(newInputs)}`);
+      debug(`plugin context: ${stringify(newContext)}`);
       return pluginItem.type === 'run'
         ? await app.run(newInputs, newContext, this.logger)
         : await app.postRun(newInputs, newContext, this.logger);

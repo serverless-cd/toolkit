@@ -3,8 +3,10 @@ import { fs, lodash } from '@serverless-cd/core';
 import { command } from 'execa';
 import * as path from 'path';
 import { PLUGIN_INSTALL_PATH } from '../constants';
+import flatted from 'flatted';
 const pkg = require('../../package.json');
-const { uniqueId } = lodash;
+const { uniqueId, get, omit } = lodash;
+
 const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
 export function getLogPath(filePath: string) {
@@ -77,3 +79,13 @@ export function getProcessTime(time: number) {
 export function outputLog(logger: any, message: any) {
   process.env['CLI_VERSION'] ? logger.debug(message) : logger.info(message);
 }
+
+export const stringify = (value: any) => {
+  try {
+    const removeKey = 'logConfig.customLogger';
+    const customLogger = get(value, removeKey);
+    return customLogger ? JSON.stringify(omit(value, [removeKey])) : JSON.stringify(value);
+  } catch (error) {
+    return flatted.stringify(value);
+  }
+};

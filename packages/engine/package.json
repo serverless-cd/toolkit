@@ -15,6 +15,7 @@
     "@serverless-cd/core": "^0.0.15",
     "@serverless-cd/debug": "^4.3.4",
     "execa": "^5.1.1",
+    "flatted": "^3.2.7",
     "xstate": "^4.33.0"
   },
   "publishConfig": {
