@@ -1,7 +1,51 @@
 import tracker from '../src/index';
-import { data } from './mock';
+import path from 'path';
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 test('tracker test', async () => {
-  const fn = async () => await tracker(data);
-  expect(fn).not.toThrow();
+  const data = {
+    source: 'darwin',
+    resource: {
+      fc: [
+        {
+          uid: '1740298130743624',
+          region: 'cn-hangzhou',
+          service: 'hello-world-service',
+          function: 'custom-cpp-event-function',
+        },
+        {
+          uid: '1740298130743624',
+          region: 'cn-hangzhou',
+          service: 'hello-world-service',
+          function: 'next-custom-cpp-event-function',
+        },
+      ],
+      // mock
+      'aliyun.fc': [
+        {
+          uid: '1740298130743624',
+          region: 'cn-hangzhou',
+          service: 'hello-world-service',
+          function: 'custom-cpp-event-function',
+        },
+        {
+          uid: '1740298130743624',
+          region: 'cn-hangzhou',
+          service: 'hello-world-service',
+          function: 'next-custom-cpp-event-function',
+        },
+      ],
+    },
+    org: 'shl',
+    name: 'hello-world-app',
+    env: 'pre',
+    orgName: 'shl',
+    // mock
+    appId: '2w0zosuee6016zlm',
+    envName: 'pre',
+    jwt: process.env.JWT,
+  };
+  const res = await tracker(data);
+
+  // expect(res?.success).toBe(true);
 });
