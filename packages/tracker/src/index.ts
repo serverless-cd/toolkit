@@ -1,21 +1,27 @@
-import { filter, get, includes, isEmpty } from 'lodash';
-import { aliyunFcTracker } from './aliyunFcTracker';
-
-export { baseTracker } from './baseTracker';
-export { aliyunFcTracker } from './aliyunFcTracker';
-export { aliyunFcResource } from './aliyunFcResource';
-
-const isFcComponent = (name: string) => includes(['fc', 'devsapp/fc'], name);
+import fetch from 'node-fetch';
+import AbortController from 'abort-controller';
 
 const tracker = async (data: Record<string, any> = {}) => {
-  const { command, services } = data;
-  const fcService = filter(services, (item) => isFcComponent(item.component));
-  if (command === 'deploy' && !isEmpty(fcService)) {
-    await aliyunFcTracker({
-      type: command,
-      yamlPath: get(data, 'path.configPath'),
-      data: fcService,
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 3500);
+
+  const { jwt, ...rest } = data;
+  try {
+    return await fetch('http://0.0.0.0:9000/api/common/tracker', {
+      headers: {
+        'content-type': 'application/json',
+        Cookie: `jwt=${jwt}`,
+      },
+      method: 'POST',
+      signal: controller.signal,
+      body: JSON.stringify(rest),
     });
+  } catch (error) {
+    console.log('request error');
+  } finally {
+    clearTimeout(timeout);
   }
 };
 
