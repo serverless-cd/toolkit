@@ -8,12 +8,47 @@ import {
   prWithReopened,
   prWithMerged,
   prWithMerged1,
+  DataWithNoUserAgent,
 } from './mock/gitlab';
 
 test('getProvider 测试', async () => {
   const provider = getProvider(pushWithBranch);
   console.log(provider);
   expect(provider).toBe('gitlab');
+});
+
+test.only('DataWithNoUserAgent', async () => {
+  const eventConfig = {
+    gitlab: {
+      secret: 'serverless-devs',
+      push: {
+        branches: {
+          precise: ['master'],
+        },
+      },
+    },
+  };
+  const res = await verifyLegitimacy(eventConfig, DataWithNoUserAgent);
+  console.log(res);
+  expect(res).toEqual({
+    success: true,
+    data: {
+      url: 'http://git.greedyint.com/amall-fc/amall-assistant.git',
+      provider: 'gitlab',
+      repo_id: 'http://git.greedyint.com/amall-fc/amall-assistant:2095',
+      pusher: {
+        avatar_url:
+          'https://www.gravatar.com/avatar/f3975a8978bcf7543bdd29cb9994a659?s=80&d=identicon',
+        name: 'amall-fc',
+        email: '',
+      },
+      push: { branch: 'master', tag: undefined, ref: 'refs/heads/master' },
+      commit: {
+        id: '505113a53f3e4f34bb92d88e81f2b44228b3d7f9',
+        message: 'Update s.yaml 指定镜像源',
+      },
+    },
+  });
 });
 
 test('gitlab webhook push with branch case', async () => {
@@ -353,7 +388,7 @@ test('gitlab webhook error with pr merged', async () => {
   expect(res?.success).toEqual(false);
 });
 
-test.only('gitlab new case webhook success with pr merged', async () => {
+test('gitlab new case webhook success with pr merged', async () => {
   const eventConfig = {
     gitlab: {
       secret: 'serverless-devs',
