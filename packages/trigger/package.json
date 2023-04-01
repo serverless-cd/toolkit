@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/trigger",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "校验webhook与触发条件是否匹配",
   "author": "wss-git <wssgryx@163.com>",
   "homepage": "https://github.com/serverless-cd/serverless-cd-toolkit#readme",
@@ -19,22 +19,21 @@
   },
   "scripts": {
     "watch": "tsc -w",
-    "start": "esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --outfile=example/lib/index.js --watch",
-    "build": "rm -rf lib && esbuild src/index.ts --bundle --log-level=error --minify --platform=node --format=cjs --target=node10.4 --outfile=lib/index.js"
+    "build": "tsc"
   },
   "dependencies": {
-    "@serverless-cd/core": "^0.0.14",
+    "@serverless-cd/core": "^0.0.15",
     "lodash": "^4.17.21",
     "micromatch": "^4.0.5"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.184",
     "@types/micromatch": "^4.0.2",
-    "@types/node": "^18.7.1",
-    "esbuild": "^0.14.54"
+    "@types/node": "^18.7.1"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "bugs": {
     "url": "https://github.com/serverless-cd/serverless-cd-toolkit/issues"

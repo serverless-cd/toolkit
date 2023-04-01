@@ -25,7 +25,8 @@
     "walk-sync": "^3.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495"
 }
