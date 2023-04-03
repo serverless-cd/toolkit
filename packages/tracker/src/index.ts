@@ -1,13 +1,9 @@
-import fetch from 'node-fetch';
-import AbortController from 'abort-controller';
 import { get } from 'lodash';
+import axios from 'axios';
 const debug = require('@serverless-cd/debug')('serverless-cd:tracker');
 
+
 const tracker = async (data: Record<string, any> = {}) => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, 30000);
   const { jwt = process.env.JWT, ...rest } = data;
   if (!jwt) {
     debug('jwt is empty');
@@ -17,23 +13,18 @@ const tracker = async (data: Record<string, any> = {}) => {
   debug(`tracker url: ${url}`);
   debug(`tracker data: ${JSON.stringify(rest)}`);
   try {
-    const res = await fetch(url, {
+    const res = await axios.post(url, rest, {
       headers: {
         'content-type': 'application/json',
         Cookie: `jwt=${jwt}`,
       },
-      method: 'POST',
-      signal: controller.signal,
-      body: JSON.stringify(rest),
+      timeout: 30000,
     });
-    const result = await res.json();
-    debug(`tracker result: ${JSON.stringify(result)}`);
-    return result;
+    debug(`tracker result: ${JSON.stringify(res)}`);
+    return res;
 
   } catch (error) {
     debug(`tracker error: ${error}`)
-  } finally {
-    clearTimeout(timeout);
   }
 };
 
