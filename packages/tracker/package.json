@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/tracker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "sevrerless-cd tracker 日志上报",
   "main": "./lib/index.js",
   "scripts": {
