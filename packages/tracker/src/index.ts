@@ -20,9 +20,8 @@ const tracker = async (data: Record<string, any> = {}) => {
       },
       timeout: 30000,
     });
-    debug(`tracker result: ${JSON.stringify(res)}`);
-    return res;
-
+    debug(`tracker result: ${JSON.stringify(res.data)}`);
+    return res.data;
   } catch (error) {
     debug(`tracker error: ${error}`)
   }
