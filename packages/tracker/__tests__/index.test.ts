@@ -20,29 +20,10 @@ test('tracker test', async () => {
           function: 'next-custom-cpp-event-function',
         },
       ],
-      // mock
-      'aliyun.fc': [
-        {
-          uid: '1740298130743624',
-          region: 'cn-hangzhou',
-          service: 'hello-world-service',
-          function: 'custom-cpp-event-function',
-        },
-        {
-          uid: '1740298130743624',
-          region: 'cn-hangzhou',
-          service: 'hello-world-service',
-          function: 'next-custom-cpp-event-function',
-        },
-      ],
     },
-    org: 'shl',
     name: 'hello-world-app',
     env: 'pre',
     orgName: 'shl',
-    // mock
-    appId: '2w0zosuee6016zlm',
-    envName: 'pre',
     jwt: process.env.JWT,
   };
   const res = await tracker(data);

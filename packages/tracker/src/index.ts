@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import AbortController from 'abort-controller';
-const debug = require('@serverless-cd/debug')('tracker');
+const debug = require('@serverless-cd/debug')('serverless-cd:tracker');
 
 const tracker = async (data: Record<string, any> = {}) => {
   const controller = new AbortController();
@@ -12,9 +12,9 @@ const tracker = async (data: Record<string, any> = {}) => {
     debug('jwt is empty');
     return;
   };
-  debug('tracker data',  JSON.stringify(rest));
+  debug(`tracker data: ${JSON.stringify(rest)}`);
   try {
-    return await fetch('https://app.serverless-cd.cn/api/common/tracker', {
+    const res = await fetch('https://app.serverless-cd.cn/api/common/tracker', {
       headers: {
         'content-type': 'application/json',
         Cookie: `jwt=${jwt}`,
@@ -23,6 +23,10 @@ const tracker = async (data: Record<string, any> = {}) => {
       signal: controller.signal,
       body: JSON.stringify(rest),
     });
+    const result = await res.json();
+    debug(`tracker result: ${JSON.stringify(result)}`);
+    return result;
+    
   } catch (error) {
     console.log('request error');
   } finally {
