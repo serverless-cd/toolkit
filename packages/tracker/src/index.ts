@@ -7,7 +7,7 @@ const tracker = async (data: Record<string, any> = {}) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => {
     controller.abort();
-  }, 3500);
+  }, 30000);
   const { jwt = process.env.JWT, ...rest } = data;
   if (!jwt) {
     debug('jwt is empty');
