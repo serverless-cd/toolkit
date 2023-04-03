@@ -31,7 +31,7 @@ const tracker = async (data: Record<string, any> = {}) => {
     return result;
 
   } catch (error) {
-    debug(`tracker error: ${JSON.stringify(error)}`)
+    debug(`tracker error: ${error}`)
   } finally {
     clearTimeout(timeout);
   }
