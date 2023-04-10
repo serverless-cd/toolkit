@@ -9,7 +9,7 @@ import {
 } from 'egg-logger';
 import chalk from 'chalk';
 import OssLogger, { IOssConfig } from './oss-logger';
-import { each, includes, isEmpty } from 'lodash';
+import { each, filter, includes, isEmpty } from 'lodash';
 
 const duartionRegexp = /([0-9]+ms)/g;
 const categoryRegexp = /(\[[\w\-_.:]+\])/g;
@@ -42,9 +42,10 @@ function mark(val: string) {
 const formatter = (meta?: object) => {
   const metaObj = meta as IMeta;
   const { secrets = [] } = metaObj;
+  const newSecrets = filter(secrets, secret => !isEmpty(secret))
   let msg = metaObj.message;
   secrets &&
-    each(secrets, (str) => {
+    each(newSecrets, (str) => {
       do {
         msg = msg.replace(str, mark(str));
       } while (includes(msg, str));
