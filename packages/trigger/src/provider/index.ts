@@ -36,13 +36,27 @@ const getTriggerEvent = (payload: any): IProvider => {
   if (_.startsWith(ua, 'okhttp')) {
     return IUserAgent.CODEUP;
   }
-
-  if (_.startsWith(ua, 'GitLab')) {
+  if (isGitlab(payload)) {
     return IUserAgent.GITLAB;
   }
 
   throw new Error('Unrecognized trigger type');
 };
+
+function isGitlab(payload: any) {
+  const ua: string = _.get(payload, 'headers[user-agent]', '');
+  if (_.startsWith(ua, 'GitLab')) {
+    return true;
+  }
+  const headers = _.get(payload, 'headers', {});
+  if (_.isPlainObject(headers)) {
+    for (const key in headers) {
+      if (_.startsWith(_.toLower(key), 'x-gitlab')) {
+        return true;
+      }
+    }
+  }
+}
 
 export default {
   github: Github,

@@ -1,21 +1,29 @@
-import { filter, get, includes, isEmpty } from 'lodash';
-import { aliyunFcTracker } from './aliyunFcTracker';
+import { get } from 'lodash';
+import axios from 'axios';
+const debug = require('@serverless-cd/debug')('serverless-cd:tracker');
 
-export { baseTracker } from './baseTracker';
-export { aliyunFcTracker } from './aliyunFcTracker';
-export { aliyunFcResource } from './aliyunFcResource';
-
-const isFcComponent = (name: string) => includes(['fc', 'devsapp/fc'], name);
 
 const tracker = async (data: Record<string, any> = {}) => {
-  const { command, services } = data;
-  const fcService = filter(services, (item) => isFcComponent(item.component));
-  if (command === 'deploy' && !isEmpty(fcService)) {
-    await aliyunFcTracker({
-      type: command,
-      yamlPath: get(data, 'path.configPath'),
-      data: fcService,
+  const { jwt = process.env.JWT, ...rest } = data;
+  if (!jwt) {
+    debug('jwt is empty');
+    return;
+  };
+  const url = get(process.env, 'SERVERLESS_CD_TRACKER_URL', 'https://app.serverless-cd.cn/api/common/tracker')
+  debug(`tracker url: ${url}`);
+  debug(`tracker data: ${JSON.stringify(rest)}`);
+  try {
+    const res = await axios.post(url, rest, {
+      headers: {
+        'content-type': 'application/json',
+        Cookie: `jwt=${jwt}`,
+      },
+      timeout: 30000,
     });
+    debug(`tracker result: ${JSON.stringify(res.data)}`);
+    return res.data;
+  } catch (error) {
+    debug(`tracker error: ${error}`)
   }
 };
 
