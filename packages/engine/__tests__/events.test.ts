@@ -437,3 +437,18 @@ test('测试context completed(task status)', async () => {
   await engine.start();
   expect(statusList).toEqual([false, true]);
 });
+
+test('自定义logger时，日志debug级别输出', async () => {
+  const steps = [{ run: 'echo "hello"', id: 'xhello' }, { run: 'echo "world"' }] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, customLogger: console },
+    events: {
+      onInit: async function (context) {
+        throw new Error('onInit error');
+      },
+    },
+  });
+  const res = await engine.start();
+  expect(res.status).toEqual('failure');
+});

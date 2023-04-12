@@ -76,10 +76,6 @@ export function getProcessTime(time: number) {
   return (Math.round((Date.now() - time) / 10) * 10) / 1000;
 }
 
-export function outputLog(logger: any, message: any) {
-  process.env['CLI_VERSION'] ? logger.debug(message) : logger.info(message);
-}
-
 export const stringify = (value: any) => {
   try {
     const removeKey = 'logConfig.customLogger';

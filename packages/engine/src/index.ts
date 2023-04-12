@@ -20,7 +20,6 @@ import {
   getProcessTime,
   getDefaultInitLog,
   getLogPath,
-  outputLog,
   getPluginRequirePath,
   stringify,
 } from './utils';
@@ -109,7 +108,7 @@ class Engine {
       await this.doOss(filePath);
       return { ...res, steps };
     } catch (error) {
-      outputLog(this.logger, error);
+      this.outputErrorLog(error as Error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
       const process_time = getProcessTime(startTime);
       this.record.initData = {
@@ -278,7 +277,7 @@ class Engine {
       await events?.onPostRun?.(data as ISteps, this.context, this.logger);
       debug(`onPostRun ${item.stepCount} end`);
     } catch (error) {
-      outputLog(this.logger, error);
+      this.outputErrorLog(error as Error);
     }
   }
   private recordContext(item: IStepOptions, options: Record<string, any>) {
@@ -344,7 +343,7 @@ class Engine {
       try {
         await events?.onCompleted?.(this.context, this.logger);
       } catch (error) {
-        outputLog(this.logger, error);
+        this.outputErrorLog(error as Error);
       }
     }
     await this.doOss(filePath);
@@ -400,11 +399,20 @@ class Engine {
         await this.doOss(logPath);
       } else {
         this.recordContext(item, { status, error, process_time });
-        outputLog(this.logger, error);
+        this.outputErrorLog(error as Error);
         await this.doOss(logPath);
         throw error;
       }
     }
+  }
+  private outputErrorLog(error: Error) {
+    const logConfig = this.options.logConfig as ILogConfig;
+    const { customLogger } = logConfig;
+    // 自定义logger, debug级别输出错误信息
+    if (!isEmpty(customLogger)) {
+      return this.logger.debug(error);
+    }
+    process.env['CLI_VERSION'] ? this.logger.debug(error) : this.logger.error(error)
   }
   private async doSrc(item: IStepOptions) {
     const runItem = item as IRunOptions;
