@@ -21,8 +21,8 @@ test('tracker test', async () => {
         },
       ],
     },
-    name: 'hello-world-app',
-    env: 'pre',
+    name: 'git-action-test-yntg',
+    env: 'default',
     orgName: 'shl',
     jwt: process.env.JWT,
   };

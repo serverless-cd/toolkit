@@ -27,7 +27,7 @@ test('Logger', () => {
 test.only('EngineLogger', async () => {
   const logger = new EngineLogger({
     file: path.join(__dirname, 'logs', 'engine.log'),
-    secrets: ['123'],
+    secrets: [''],
   });
   logger.debug('debug foo'); // only output to stdout
   logger.info('GET /foo/bar 200ms');
