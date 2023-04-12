@@ -1,5 +1,5 @@
-import { get } from 'lodash';
-import axios from 'axios';
+import get from 'lodash.get';
+import httpx from 'httpx';
 const debug = require('@serverless-cd/debug')('serverless-cd:tracker');
 
 
@@ -13,15 +13,17 @@ const tracker = async (data: Record<string, any> = {}) => {
   debug(`tracker url: ${url}`);
   debug(`tracker data: ${JSON.stringify(rest)}`);
   try {
-    const res = await axios.post(url, rest, {
+    const response = await httpx.request(url, {
+      method: 'POST',
       headers: {
         'content-type': 'application/json',
         Cookie: `jwt=${jwt}`,
       },
       timeout: 30000,
+      data: JSON.stringify(rest),
     });
-    debug(`tracker result: ${JSON.stringify(res.data)}`);
-    return res.data;
+    const result = await httpx.read(response, 'utf8');
+    debug(`tracker result: ${result}`);
   } catch (error) {
     debug(`tracker error: ${error}`)
   }
