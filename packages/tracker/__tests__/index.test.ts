@@ -1,5 +1,6 @@
 import tracker from '../src/index';
 import path from 'path';
+import get from 'lodash.get'
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 test('tracker test', async () => {
@@ -24,9 +25,7 @@ test('tracker test', async () => {
     name: 'git-action-test-yntg',
     env: 'default',
     orgName: 'shl',
-    jwt: process.env.JWT,
   };
   const res = await tracker(data);
-
-  // expect(res?.success).toBe(true);
+  expect(get(res, 'success')).toBe(true);
 });
