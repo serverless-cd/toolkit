@@ -1,7 +1,7 @@
 import { isEmpty, replace } from 'lodash';
 import artTemplate from './art-template';
 
-export function getInputs(inputs: Record<string, any>, context: Record<string, any>) {
+function getInputs(inputs: Record<string, any>, context: Record<string, any>) {
   if (isEmpty(inputs)) return;
   function deepCopy(obj: any) {
     let result: any = obj.constructor === Array ? [] : {};
@@ -22,3 +22,5 @@ export function getInputs(inputs: Record<string, any>, context: Record<string, a
   }
   return deepCopy(inputs);
 }
+
+export default getInputs;

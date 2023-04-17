@@ -1,6 +1,7 @@
 export * from './logger';
 export { default as parseSpec } from './parse-spec';
-export * from './get-inputs';
+export { default as getInputs } from './get-inputs';
+export { default as getAliyunSecret } from './get-aliyun-secret';
 export * from './ref';
 export * from './switch-node-version';
 export * from './variable';
