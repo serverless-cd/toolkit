@@ -67,8 +67,6 @@ class Engine {
     // 记录上下文信息
     this.context.cwd = cwd;
     this.context.inputs = inputs as {};
-    this.context.secrets = inputs?.secrets;
-    this.context.cloudSecrets = inputs?.cloudSecrets;
     this.doArtTemplateVariable();
     this.doUnsetEnvs();
   }

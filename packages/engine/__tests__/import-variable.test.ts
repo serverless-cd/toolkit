@@ -4,7 +4,7 @@ import * as path from 'path';
 const { find } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
 
-test.only('hashFile test', async () => {
+test('hashFile test', async () => {
   const steps = [
     {
       plugin: path.join(__dirname, 'fixtures', 'hash-file'),

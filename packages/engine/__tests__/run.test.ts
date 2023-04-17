@@ -39,7 +39,7 @@ test('shell 指令支持多个指令执行 >  ', async () => {
   expect(get(res, 'status')).toBe('success');
 });
 
-test.only('环境变量测试', async () => {
+test('环境变量测试', async () => {
   const steps = [{ run: `echo hello` }];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
