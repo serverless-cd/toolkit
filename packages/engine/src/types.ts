@@ -96,6 +96,7 @@ export interface IContext {
   steps: ISteps[];
   env: Record<string, any>; // 记录合并后的环境变量
   secrets: Record<string, any>;
+  cloudSecrets: Record<string, any>;
   status: IStatus; // 记录task的状态
   completed: boolean; // 记录task是否执行完成
   inputs: Record<string, any>; // 记录inputs的输入(魔法变量)
