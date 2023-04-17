@@ -22,11 +22,8 @@ test('sts 存在', () => {
     {
       inputs: {
         sts: {
-          name: '${{secret.name}}',
+          name: 'xiaohong',
         }
-      },
-      $variables: {
-        secret: { name: 'xiaohong' },
       },
     },
   );
@@ -41,11 +38,8 @@ test('cloudSecrets 存在', () => {
     {
       inputs: {
         cloudSecrets: {
-          name: '${{secret.name}}',
+          name: 'xiaohong',
         }
-      },
-      $variables: {
-        secret: { name: 'xiaohong' },
       },
     },
   );
