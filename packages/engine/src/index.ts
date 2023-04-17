@@ -22,6 +22,7 @@ import {
   getLogPath,
   getPluginRequirePath,
   stringify,
+  hashFile
 } from './utils';
 import {
   INIT_STEP_COUNT,
@@ -84,6 +85,7 @@ class Engine {
     artTemplate.defaults.imports.toJSON = (value: any) => {
       return typeof value === 'object' ? `"${JSON.stringify(value, null, 2)}"` : value;
     };
+    artTemplate.defaults.imports.hashFile = hashFile;
   }
   private async doInit() {
     const { events } = this.options;

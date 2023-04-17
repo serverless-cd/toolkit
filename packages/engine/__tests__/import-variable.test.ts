@@ -4,6 +4,30 @@ import * as path from 'path';
 const { find } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
 
+test.only('hashFile test', async () => {
+  const steps = [
+    {
+      plugin: path.join(__dirname, 'fixtures', 'hash-file'),
+      id: 'xuse',
+      inputs: {
+        key: '${{env.name}}-${{hashFile("package-lock.json")}}',
+      }
+    }
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+    inputs: {
+      env: {
+        name: 'test'
+      }
+    }
+  });
+  const res = await engine.start();
+  console.log(res);
+  expect(res?.status).toEqual('success');
+});
+
 test('contains: if success', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
