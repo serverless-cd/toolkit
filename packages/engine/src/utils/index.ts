@@ -4,6 +4,7 @@ import { command } from 'execa';
 import * as path from 'path';
 import { PLUGIN_INSTALL_PATH } from '../constants';
 import flatted from 'flatted';
+import crypto from 'crypto'
 const pkg = require('../../package.json');
 const { uniqueId, get, omit } = lodash;
 
@@ -31,6 +32,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
   const postArray = [] as IPluginOptions[];
   const runArray = [] as IStepOptions[];
   for (const item of steps) {
+    item.stepCount = uniqueId()
     const pluginItem = item as IPluginOptions;
     if (pluginItem.plugin) {
       const originPlugin = pluginItem.plugin;
@@ -64,12 +66,14 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
           ...pluginItem,
           type: 'postRun',
           name: `Post Run ${originPlugin}`,
+          stepCount: uniqueId(),
+          runStepCount: item.stepCount,
         } as IPluginOptions);
       }
     }
     runArray.push(item);
   }
-  return [...runArray, ...postArray].map((item) => ({ ...item, stepCount: uniqueId() }));
+  return [...runArray, ...postArray]
 }
 
 export function getProcessTime(time: number) {
@@ -85,3 +89,11 @@ export const stringify = (value: any) => {
     return flatted.stringify(value);
   }
 };
+
+export const hashFile = (filename: string) => {
+  const data = fs.readFileSync(filename);
+  const hash = crypto.createHash('sha1');
+  hash.update(data);
+  const sha1 = hash.digest('hex');
+  return sha1;
+}

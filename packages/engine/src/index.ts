@@ -22,6 +22,7 @@ import {
   getLogPath,
   getPluginRequirePath,
   stringify,
+  hashFile
 } from './utils';
 import {
   INIT_STEP_COUNT,
@@ -63,9 +64,9 @@ class Engine {
     process.env[SERVERLESS_CD_KEY] = SERVERLESS_CD_VALUE;
     const { inputs, cwd = process.cwd(), logConfig = {} } = options;
     this.options.logConfig = logConfig;
+    // 记录上下文信息
     this.context.cwd = cwd;
     this.context.inputs = inputs as {};
-    this.context.secrets = inputs?.secrets;
     this.doArtTemplateVariable();
     this.doUnsetEnvs();
   }
@@ -84,6 +85,7 @@ class Engine {
     artTemplate.defaults.imports.toJSON = (value: any) => {
       return typeof value === 'object' ? `"${JSON.stringify(value, null, 2)}"` : value;
     };
+    artTemplate.defaults.imports.hashFile = hashFile;
   }
   private async doInit() {
     const { events } = this.options;
@@ -322,14 +324,13 @@ class Engine {
   }
   private getFilterContext() {
     const { inputs = {} } = this.options;
-    const { env = {}, secrets = {} } = this.context;
+    const { env = {} } = this.context;
+    // secrets, cloudSecrets, git 等
     return {
       ...inputs,
       status: this.context.status,
       steps: this.record.steps,
       env: { ...inputs.env, ...env },
-      secrets,
-      git: inputs.git,
       inputs,
     };
   }

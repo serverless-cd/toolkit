@@ -4,12 +4,12 @@ const debug = require('@serverless-cd/debug')('serverless-cd:tracker');
 
 
 const tracker = async (data: Record<string, any> = {}) => {
-  const { jwt = process.env.JWT, ...rest } = data;
-  if (!jwt) {
+  const { jwt_token = process.env.JWT_TOKEN, ...rest } = data;
+  if (!jwt_token) {
     debug('jwt is empty');
     return;
   };
-  const url = get(process.env, 'SERVERLESS_CD_TRACKER_URL', 'https://app.serverless-cd.cn/api/common/tracker')
+  const url = get(process.env, 'SERVERLESS_CD_ENDPOINT', 'https://app.serverless-cd.cn/api/common/tracker')
   debug(`tracker url: ${url}`);
   debug(`tracker data: ${JSON.stringify(rest)}`);
   try {
@@ -17,7 +17,7 @@ const tracker = async (data: Record<string, any> = {}) => {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        Cookie: `jwt=${jwt}`,
+        Cookie: `jwt=${jwt_token}`,
       },
       timeout: 30000,
       data: JSON.stringify(rest),

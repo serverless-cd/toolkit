@@ -10,8 +10,7 @@ export async function run(
   logger: any,
 ): Promise<Record<string, any>> {
   // 注意，实际开发中不要写入敏感信息，此处只是为了方便调试
-  logger.info(`inputs :${JSON.stringify(inputs)}`);
-  logger.info(`context :${JSON.stringify(context)}`);
+  logger.info(`config :${JSON.stringify({ inputs, context })}`);
   const newIputs = getInputs(inputs, context);
   logger.info(`newIputs :${JSON.stringify(newIputs)}`);
   return { success: true };

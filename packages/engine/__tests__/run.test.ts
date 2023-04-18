@@ -39,9 +39,21 @@ test('shell 指令支持多个指令执行 >  ', async () => {
   expect(get(res, 'status')).toBe('success');
 });
 
-test.only('环境变量测试', async () => {
+test('环境变量测试', async () => {
   const steps = [{ run: `echo hello` }];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res = await engine.start();
   expect(process.env[SERVERLESS_CD_KEY]).toBe(SERVERLESS_CD_VALUE);
 });
+
+
+test.only('post run add runStepCount', async () => {
+  const steps = [
+    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+    { run: 'echo ${{steps.xuse.outputs.success}}' },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res: IContext | undefined = await engine.start();
+  expect(res.status).toBe('success')
+});
+
