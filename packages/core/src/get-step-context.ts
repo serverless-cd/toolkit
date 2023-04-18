@@ -9,7 +9,7 @@ function getStepContext(context: Record<string, any>) {
         return { run: step }
     }
     if (step.type === 'postRun') {
-        return { run: find(context.steps, { stepCount: step.runstepCount }), postRun: step }
+        return { run: find(context.steps, { stepCount: step.runStepCount }), postRun: step }
     }
     return { run: step }
 }
