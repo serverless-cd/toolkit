@@ -45,3 +45,15 @@ test('环境变量测试', async () => {
   const res = await engine.start();
   expect(process.env[SERVERLESS_CD_KEY]).toBe(SERVERLESS_CD_VALUE);
 });
+
+
+test.only('post run add runStepCount', async () => {
+  const steps = [
+    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+    { run: 'echo ${{steps.xuse.outputs.success}}' },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res: IContext | undefined = await engine.start();
+  expect(res.status).toBe('success')
+});
+
