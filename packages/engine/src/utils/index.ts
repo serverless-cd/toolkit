@@ -6,7 +6,7 @@ import { PLUGIN_INSTALL_PATH } from '../constants';
 import flatted from 'flatted';
 import crypto from 'crypto'
 const pkg = require('../../package.json');
-const { uniqueId, get, omit } = lodash;
+const { uniqueId, get, omit, map } = lodash;
 
 const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
@@ -66,14 +66,13 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
           ...pluginItem,
           type: 'postRun',
           name: `Post Run ${originPlugin}`,
-          stepCount: uniqueId(),
           runStepCount: item.stepCount,
         } as IPluginOptions);
       }
     }
     runArray.push(item);
   }
-  return [...runArray, ...postArray]
+  return [...runArray, ...map(postArray, (item) => ({ ...item, stepCount: uniqueId() }))];
 }
 
 export function getProcessTime(time: number) {
