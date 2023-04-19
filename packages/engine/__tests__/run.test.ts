@@ -47,7 +47,7 @@ test('环境变量测试', async () => {
 });
 
 
-test.only('post run add runStepCount', async () => {
+test('post run add runStepCount', async () => {
   const steps = [
     { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
     { run: 'echo ${{steps.xuse.outputs.success}}' },
