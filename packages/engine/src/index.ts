@@ -240,11 +240,12 @@ class Engine {
     }
     const secrets = inputs?.secrets ? values(inputs.secrets) : [];
     const cloudSecrets = inputs?.cloudSecrets ? values(inputs.cloudSecrets) : [];
+    const newSecrets = [...secrets, ...cloudSecrets];
     const gitToken = get(inputs, 'git.token');
     return new EngineLogger({
       file: logPrefix && path.join(logPrefix, filePath),
       level: logLevel,
-      secrets: gitToken ? [...secrets, ...cloudSecrets, gitToken] : secrets,
+      secrets: gitToken ? [newSecrets, gitToken] : newSecrets,
     });
   }
   private async doOss(filePath: string) {
