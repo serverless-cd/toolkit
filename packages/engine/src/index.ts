@@ -85,7 +85,10 @@ class Engine {
     artTemplate.defaults.imports.toJSON = (value: any) => {
       return typeof value === 'object' ? `"${JSON.stringify(value, null, 2)}"` : value;
     };
-    artTemplate.defaults.imports.hashFile = hashFile;
+    artTemplate.defaults.imports.hashFile = (filePath: string) => {
+      const newPath = path.isAbsolute(filePath) ? filePath : path.join(this.context.cwd, filePath);
+      return hashFile(newPath);
+    }
   }
   private async doInit() {
     const { events } = this.options;
