@@ -1,55 +1,15 @@
-import { EngineLogger, artTemplate, lodash } from '@serverless-cd/core';
+import { EngineLogger, getArtTemplate, lodash } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import { command } from 'execa';
-import {
-  IStepOptions,
-  IRunOptions,
-  IPluginOptions,
-  IRecord,
-  IStatus,
-  IEngineOptions,
-  IContext,
-  ILogConfig,
-  STEP_STATUS,
-  ISteps,
-  STEP_IF,
-} from './types';
 import * as path from 'path';
-import {
-  parsePlugin,
-  getProcessTime,
-  getDefaultInitLog,
-  getLogPath,
-  getPluginRequirePath,
-  stringify,
-  hashFile
-} from './utils';
-import {
-  INIT_STEP_COUNT,
-  INIT_STEP_NAME,
-  COMPLETED_STEP_COUNT,
-  DEFAULT_COMPLETED_LOG,
-  SERVERLESS_CD_KEY,
-  SERVERLESS_CD_VALUE,
-} from './constants';
+import { IStepOptions, IRunOptions, IPluginOptions, IRecord, IStatus, IEngineOptions, IContext, ILogConfig, STEP_STATUS, ISteps, STEP_IF } from './types';
+import { parsePlugin, getProcessTime, getDefaultInitLog, getLogPath, getPluginRequirePath, stringify } from './utils';
+import { INIT_STEP_COUNT, INIT_STEP_NAME, COMPLETED_STEP_COUNT, DEFAULT_COMPLETED_LOG, SERVERLESS_CD_KEY, SERVERLESS_CD_VALUE } from './constants';
+
+
 export { IStepOptions, IContext } from './types';
 
-const {
-  isEmpty,
-  get,
-  each,
-  replace,
-  map,
-  find,
-  isFunction,
-  values,
-  has,
-  concat,
-  includes,
-  startsWith,
-  endsWith,
-} = lodash;
-
+const { isEmpty, get, each, replace, map, find, isFunction, values, has, concat } = lodash;
 const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
 class Engine {
@@ -67,7 +27,6 @@ class Engine {
     // 记录上下文信息
     this.context.cwd = cwd;
     this.context.inputs = inputs as {};
-    this.doArtTemplateVariable();
     this.doUnsetEnvs();
   }
   private async doUnsetEnvs() {
@@ -76,18 +35,6 @@ class Engine {
       each(unsetEnvs, (item) => {
         delete process.env[item];
       });
-    }
-  }
-  private doArtTemplateVariable() {
-    artTemplate.defaults.imports.contains = includes;
-    artTemplate.defaults.imports.startsWith = startsWith;
-    artTemplate.defaults.imports.endsWith = endsWith;
-    artTemplate.defaults.imports.toJSON = (value: any) => {
-      return typeof value === 'object' ? `"${JSON.stringify(value, null, 2)}"` : value;
-    };
-    artTemplate.defaults.imports.hashFile = (filePath: string) => {
-      const newPath = path.isAbsolute(filePath) ? filePath : path.join(this.context.cwd, filePath);
-      return hashFile(newPath);
     }
   }
   private async doInit() {
@@ -459,6 +406,7 @@ class Engine {
     return newEnv;
   }
   private doArtTemplateCompile(value: string) {
+    const artTemplate = getArtTemplate(this.context);
     const newVal = replace(value, /\${{/g, '{{');
     return artTemplate.compile(newVal)(this.getFilterContext());
   }
