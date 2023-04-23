@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@alicloud/pop-core": "^1.7.12",
     "@types/ali-oss": "^6.16.4",
     "@types/fs-extra": "^9.0.13",
     "@types/js-yaml": "^4.0.5",
