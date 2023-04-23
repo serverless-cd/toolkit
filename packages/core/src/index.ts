@@ -10,3 +10,4 @@ export { default as fs } from 'fs-extra';
 export { default as lodash } from 'lodash';
 export { default as jsYaml } from 'js-yaml';
 export { default as getArtTemplate } from './get-art-template';
+export * from './get-credentials';
