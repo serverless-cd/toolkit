@@ -113,7 +113,7 @@ test('post run step', () => {
         "stepCount": "2",
         "type": "postRun",
         "name": "Post Run /workspace/cd/toolkit/packages/engine/__tests__/fixtures/app",
-        "runstepCount": "1",
+        "runStepCount": "1",
         "status": "running"
       }
     ],

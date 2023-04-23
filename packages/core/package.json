@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/core",
-  "version": "0.0.20",
+  "version": "0.0.23",
   "description": "sevrerless-cd核心包",
   "main": "./lib/index.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@alicloud/pop-core": "^1.7.12",
     "@types/ali-oss": "^6.16.4",
     "@types/fs-extra": "^9.0.13",
     "@types/js-yaml": "^4.0.5",
@@ -28,5 +29,8 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
-  "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495"
+  "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495",
+  "devDependencies": {
+    "dotenv": "^16.0.3"
+  }
 }

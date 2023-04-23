@@ -1,8 +1,9 @@
 import { isEmpty, replace } from 'lodash';
-import artTemplate from './art-template';
+import getArtTemplate from './get-art-template';
 
 function getInputs(inputs: Record<string, any>, context: Record<string, any>) {
   if (isEmpty(inputs)) return;
+  const artTemplate = getArtTemplate(context);
   function deepCopy(obj: any) {
     let result: any = obj.constructor === Array ? [] : {};
     if (typeof obj === 'object') {
