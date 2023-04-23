@@ -21,7 +21,7 @@ test('getCredentials accountId 存在', async () => {
   });
 });
 
-test.only('getCredentials accountId 不存在', async () => {
+test('getCredentials accountId 不存在', async () => {
   const res = await getCredentials(
     {
       accessKeyId: process.env.ACCESS_KEY_ID,
@@ -30,6 +30,6 @@ test.only('getCredentials accountId 不存在', async () => {
     {}
   );
   console.log(res);
-  expect(res.accountId).toEqual(process.env.ACCOUNT_ID);
+  expect(res?.accountId).toEqual(process.env.ACCOUNT_ID);
 });
 
