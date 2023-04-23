@@ -9,7 +9,8 @@ const tracker = async (data: Record<string, any> = {}) => {
     debug('jwt is empty');
     return;
   };
-  const url = get(process.env, 'SERVERLESS_CD_ENDPOINT', 'https://app.serverless-cd.cn/api/common/tracker')
+  const url = `${get(process.env, 'SERVERLESS_CD_ENDPOINT', 'https://app.serverless-cd.cn')}/api/common/tracker`;
+
   debug(`tracker url: ${url}`);
   debug(`tracker data: ${JSON.stringify(rest)}`);
   try {
@@ -19,6 +20,7 @@ const tracker = async (data: Record<string, any> = {}) => {
         'content-type': 'application/json',
         Cookie: `jwt=${jwt_token}`,
       },
+      rejectUnauthorized: false,
       timeout: 30000,
       data: JSON.stringify(rest),
     });
