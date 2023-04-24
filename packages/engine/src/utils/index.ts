@@ -4,9 +4,8 @@ import { command } from 'execa';
 import * as path from 'path';
 import { PLUGIN_INSTALL_PATH } from '../constants';
 import flatted from 'flatted';
-import { isEmpty } from 'lodash';
 const pkg = require('../../package.json');
-const { uniqueId, get, omit, map } = lodash;
+const { uniqueId, get, omit, map, isEmpty, split, first, replace, values } = lodash;
 
 const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
@@ -21,11 +20,22 @@ export function getDefaultInitLog() {
 export function getPluginRequirePath(val: string) {
   if (fs.existsSync(val)) return val;
   const prefix = getPluginPrefixPath(val);
-  return path.join(prefix, 'node_modules', val);
+  const [user, plugin] = split(val, '/');
+  const [name] = split(plugin, '@');
+  return path.join(prefix, 'node_modules', user, name);
 }
 export function getPluginPrefixPath(val: string) {
-  const [user, name] = val.split('/');
+  const [user, name] = split(val, '/');
   return path.join(PLUGIN_INSTALL_PATH, user, name);
+}
+
+function getPluginInfo(val: string, packageJsonPath: string) {
+  const [user, plugin] = split(val, '/');
+  const [name, version] = split(plugin, '@');
+  if (version) return val;
+  const packageJson = require(packageJsonPath);
+  const newVersion = values(packageJson.dependencies);
+  return `${user}/${name}@${replace(first(newVersion), '^', '')}`;
 }
 
 export async function parsePlugin(steps: IStepOptions[], that: any) {
@@ -56,7 +66,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
         const cp = command(cmd, { cwd: pluginPrefixPath });
         that.childProcess.push(cp);
         await that.onFinish(cp);
-        that.logger.info(`install plugin ${pluginItem.plugin} success`);
+        that.logger.info(`install plugin ${getPluginInfo(pluginItem.plugin, packageJsonPath)} success`);
       }
       const app = require(getPluginRequirePath(pluginItem.plugin));
       pluginItem.type = 'run';
