@@ -79,6 +79,10 @@ class Engine {
   }
   async start(): Promise<IContext> {
     const { steps } = await this.doInit();
+    if (isEmpty(steps)) {
+      await this.doCompleted();
+      return this.context;
+    }
     this.context.steps = map(steps as ISteps[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
@@ -232,8 +236,6 @@ class Engine {
   }
   private recordContext(item: IStepOptions, options: Record<string, any>) {
     const { status, error, outputs, name, process_time } = options;
-    const { events } = this.options;
-
     this.context.stepCount = item.stepCount as string;
 
     this.context.steps = map(this.context.steps, (obj) => {

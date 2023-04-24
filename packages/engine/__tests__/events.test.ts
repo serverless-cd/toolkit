@@ -337,15 +337,8 @@ test.only('测试onInit获取yaml格式不正确，日志上报问题', async ()
     },
   });
   const res = await engine.start();
-  const data = map(res?.steps, (item: any) => ({
-    run: item.run || item.name,
-    status: item.status,
-  }));
-  expect(data).toEqual([
-    { run: 'Set up task', status: 'failure' },
-    { run: 'echo "hello"', status: 'skipped' },
-    { run: 'echo "world"', status: 'skipped' },
-  ]);
+  console.log(res);
+  expect(res.error.toString()).toMatch('Error: serverless-pipeline-error.yaml format is incorrect: bad indentation of a mapping entry');
 });
 
 test('测试context completed(task status)', async () => {
