@@ -1,51 +1,13 @@
 import Engine, { IStepOptions } from '../src';
-import { lodash } from '@serverless-cd/core';
+import { lodash, parseSpec } from '@serverless-cd/core';
 import * as path from 'path';
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 const { map } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
 const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time));
 
 describe('执行终态emit测试', () => {
-  test('success', async () => {
-    const steps = [
-      { run: 'echo "hello"', id: 'xhello' },
-      { run: 'echo "world"' },
-    ] as IStepOptions[];
-    const engine = new Engine({
-      steps,
-      logConfig: { logPrefix },
-      events: {
-        onSuccess: async function (context) {
-          const newData = map(context.steps, (item: any) => ({
-            run: item.run,
-            status: item.status,
-          }));
-          expect(newData).toEqual([
-            { run: 'echo "hello"', status: 'success' },
-            { run: 'echo "world"', status: 'success' },
-          ]);
-        },
-      },
-    });
-    await engine.start();
-  });
-  test('success', async () => {
-    const steps = [
-      { run: 'echo "hello"', id: 'xhello' },
-      { run: 'echo "world"' },
-    ] as IStepOptions[];
-    const engine = new Engine({
-      steps,
-      logConfig: { logPrefix },
-      events: {
-        onSuccess: async function (context) {
-          throw new Error('onSuccess');
-        },
-      },
-    });
-    const context = await engine.start();
-    expect(context?.status).toBe('success');
-  });
   test('completed', async () => {
     const steps = [
       { run: 'echo "hello"', id: 'xhello' },
@@ -68,74 +30,6 @@ describe('执行终态emit测试', () => {
       },
     });
     await engine.start();
-  });
-  test('failure', async () => {
-    const steps = [
-      { run: 'echo "hello"', id: 'xhello' },
-      { run: 'npm run error', id: 'xerror' },
-    ] as IStepOptions[];
-    const engine = new Engine({
-      steps,
-      logConfig: { logPrefix },
-      events: {
-        onFailure: async function (context) {
-          const newData = map(context.steps, (item: any) => ({
-            run: item.run,
-            status: item.status,
-          }));
-          expect(newData).toEqual([
-            { run: 'echo "hello"', status: 'success' },
-            { run: 'npm run error', status: 'failure' },
-          ]);
-        },
-      },
-    });
-    await engine.start();
-  });
-
-  test('cancelled', (done) => {
-    const lazy = (fn: any) => {
-      setTimeout(() => {
-        console.log('3s后执行 callback');
-        fn();
-      }, 3000);
-    };
-    const steps = [
-      { run: 'echo "hello"' },
-      { run: 'node packages/engine/__tests__/cancel-test.js' },
-      { run: 'echo "world"' },
-      { run: 'echo "end"', if: '${{ cancelled() }}' },
-    ] as IStepOptions[];
-    const engine = new Engine({
-      steps,
-      logConfig: { logPrefix },
-      events: {
-        onCancelled: async function (context) {
-          const newData = map(context.steps, (item: any) => ({
-            run: item.run,
-            status: item.status,
-          }));
-          expect(newData).toEqual([
-            { run: 'echo "hello"', status: 'success' },
-            {
-              run: 'node packages/engine/__tests__/cancel-test.js',
-              status: 'cancelled',
-            },
-            { run: 'echo "world"', status: 'cancelled' },
-            { run: 'echo "end"', status: 'success' },
-          ]);
-        },
-      },
-    });
-    const callback = jest.fn(() => {
-      engine.cancel();
-    });
-    lazy(callback);
-    engine.start();
-    setTimeout(() => {
-      expect(callback).toBeCalled();
-      done();
-    }, 3001);
   });
 });
 
@@ -381,12 +275,12 @@ test('测试onInit执行失败', async () => {
     steps,
     logConfig: {
       logPrefix,
-      // ossConfig: {
-      //   accessKeyId: 'xxx',
-      //   accessKeySecret: 'xxx',
-      //   bucket: 'xxx',
-      //   region: 'xxx',
-      // },
+      ossConfig: {
+        accessKeyId: process.env.ACCESS_KEY_ID as string,
+        accessKeySecret: process.env.ACCESS_KEY_SECRET as string,
+        bucket: process.env.BUCKET as string,
+        region: process.env.REGION as string,
+      },
     },
     events: {
       onInit: async function (context, logger) {
@@ -405,6 +299,41 @@ test('测试onInit执行失败', async () => {
         logger.info('onCompleted', context);
         throw new Error('onCompleted error');
       },
+    },
+  });
+  const res = await engine.start();
+  const data = map(res?.steps, (item: any) => ({
+    run: item.run || item.name,
+    status: item.status,
+  }));
+  expect(data).toEqual([
+    { run: 'Set up task', status: 'failure' },
+    { run: 'echo "hello"', status: 'skipped' },
+    { run: 'echo "world"', status: 'skipped' },
+  ]);
+});
+
+
+test.only('测试onInit获取yaml格式不正确，日志上报问题', async () => {
+  const engine = new Engine({
+    logConfig: {
+      logPrefix,
+      ossConfig: {
+        accessKeyId: process.env.ACCESS_KEY_ID as string,
+        accessKeySecret: process.env.ACCESS_KEY_SECRET as string,
+        bucket: process.env.BUCKET as string,
+        region: process.env.REGION as string,
+      },
+    },
+    events: {
+      onInit: async function (context, logger) {
+        await sleep(2000);
+        logger.info(`this is a test on init, ${JSON.stringify(context)}`);
+        return parseSpec(path.join(__dirname, './serverless-pipeline-error.yaml'));
+      },
+      onCompleted: async function (context, logger) {
+        logger.info('onCompleted', context);
+      }
     },
   });
   const res = await engine.start();

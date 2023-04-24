@@ -4,6 +4,7 @@ import { command } from 'execa';
 import * as path from 'path';
 import { PLUGIN_INSTALL_PATH } from '../constants';
 import flatted from 'flatted';
+import { isEmpty } from 'lodash';
 const pkg = require('../../package.json');
 const { uniqueId, get, omit, map } = lodash;
 
@@ -28,6 +29,7 @@ export function getPluginPrefixPath(val: string) {
 }
 
 export async function parsePlugin(steps: IStepOptions[], that: any) {
+  if (isEmpty(steps)) return [];
   const postArray = [] as IPluginOptions[];
   const runArray = [] as IStepOptions[];
   for (const item of steps) {

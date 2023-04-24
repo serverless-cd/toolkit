@@ -60,6 +60,7 @@ class Engine {
       await this.doOss(filePath);
       return { ...res, steps };
     } catch (error) {
+      debug(`onInit error: ${error}`);
       this.outputErrorLog(error as Error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
       const process_time = getProcessTime(startTime);
@@ -78,10 +79,6 @@ class Engine {
   }
   async start(): Promise<IContext> {
     const { steps } = await this.doInit();
-
-    if (isEmpty(steps)) {
-      throw new Error('steps is empty, please check your config');
-    }
     this.context.steps = map(steps as ISteps[], (item) => {
       item.status = STEP_STATUS.PENING;
       return item;
