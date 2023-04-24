@@ -364,7 +364,7 @@ class Engine {
     if (!isEmpty(customLogger)) {
       return this.logger.debug(error);
     }
-    process.env['CLI_VERSION'] ? this.logger.debug(error) : this.logger.error(error)
+    process.env['CLI_VERSION'] ? this.logger.debug(error) : this.logger.error(error.stack)
   }
   private async doSrc(item: IStepOptions) {
     const runItem = item as IRunOptions;
