@@ -11,9 +11,6 @@ export interface IEngineOptions {
 interface IEvent {
   onPreRun?: (data: Record<string, any>, context: IContext, logger: any) => Promise<void>;
   onPostRun?: (data: Record<string, any>, context: IContext, logger: any) => Promise<void>;
-  onSuccess?: (context: IContext, logger: any) => Promise<void>;
-  onFailure?: (context: IContext, logger: any) => Promise<void>;
-  onCancelled?: (context: IContext, logger: any) => Promise<void>;
   onCompleted?: (context: IContext, logger: any) => Promise<void>;
   onInit?: (context: IContext, logger: any) => Promise<any>;
 }

@@ -20,6 +20,6 @@ steps:
   - run: ls -al
   - run: echo '${{env.name}}-${{hashFile("./package-lock.json")}}'
     path: './'
-  - plugin: '@serverless-cd/cache'
-    inputs:
-      key: ${{hashFile('./package-lock.json')}}
+  # - plugin: '@serverless-cd/cache'
+  #   inputs:
+  #     key: ${{hashFile('./package-lock.json')}}

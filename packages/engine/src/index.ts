@@ -60,6 +60,7 @@ class Engine {
       await this.doOss(filePath);
       return { ...res, steps };
     } catch (error) {
+      debug(`onInit error: ${error}`);
       this.outputErrorLog(error as Error);
       this.context.status = this.record.status = STEP_STATUS.FAILURE;
       const process_time = getProcessTime(startTime);
@@ -78,9 +79,10 @@ class Engine {
   }
   async start(): Promise<IContext> {
     const { steps } = await this.doInit();
-
     if (isEmpty(steps)) {
-      throw new Error('steps is empty, please check your config');
+      this.recordContext(this.record.initData as IStepOptions)
+      await this.doCompleted();
+      return this.context;
     }
     this.context.steps = map(steps as ISteps[], (item) => {
       item.status = STEP_STATUS.PENING;
@@ -233,10 +235,8 @@ class Engine {
       this.outputErrorLog(error as Error);
     }
   }
-  private recordContext(item: IStepOptions, options: Record<string, any>) {
+  private recordContext(item: IStepOptions, options: Record<string, any> = {}) {
     const { status, error, outputs, name, process_time } = options;
-    const { events } = this.options;
-
     this.context.stepCount = item.stepCount as string;
 
     this.context.steps = map(this.context.steps, (obj) => {
@@ -364,7 +364,7 @@ class Engine {
     if (!isEmpty(customLogger)) {
       return this.logger.debug(error);
     }
-    process.env['CLI_VERSION'] ? this.logger.debug(error) : this.logger.error(error)
+    process.env['CLI_VERSION'] ? this.logger.debug(error) : this.logger.error(error.stack)
   }
   private async doSrc(item: IStepOptions) {
     const runItem = item as IRunOptions;

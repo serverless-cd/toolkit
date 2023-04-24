@@ -14,6 +14,7 @@ test('yaml文件内容格式不正确', () => {
   try {
     parseSpec(path.join(__dirname, TEMPLATE_YAML));
   } catch (e) {
+    console.log(e);
     expect((e as Error).toString()).toMatch(`Error: ${TEMPLATE_YAML} format is incorrect`);
   }
 });

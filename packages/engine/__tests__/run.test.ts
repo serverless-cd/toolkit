@@ -57,3 +57,22 @@ test('post run add runStepCount', async () => {
   expect(res.status).toBe('success')
 });
 
+test('plugin支持指定版本', async () => {
+  const steps = [
+    { plugin: '@serverless-cd/cache@0.0.8' },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res: IContext | undefined = await engine.start();
+  expect(res.status).toBe('success')
+});
+
+test('plugin安装最新版本', async () => {
+  const steps = [
+    { plugin: '@serverless-cd/cache' },
+  ] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res: IContext | undefined = await engine.start();
+  expect(res.status).toBe('success')
+});
+
+

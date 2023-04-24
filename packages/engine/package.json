@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/engine",
-  "version": "0.0.37",
+  "version": "0.0.40",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
@@ -22,5 +22,8 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
-  "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495"
+  "gitHead": "28376f61799849faef6efda2fc8b7a7156e50495",
+  "devDependencies": {
+    "dotenv": "^16.0.3"
+  }
 }
