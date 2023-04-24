@@ -80,6 +80,7 @@ class Engine {
   async start(): Promise<IContext> {
     const { steps } = await this.doInit();
     if (isEmpty(steps)) {
+      this.recordContext(this.record.initData as IStepOptions)
       await this.doCompleted();
       return this.context;
     }
@@ -234,7 +235,7 @@ class Engine {
       this.outputErrorLog(error as Error);
     }
   }
-  private recordContext(item: IStepOptions, options: Record<string, any>) {
+  private recordContext(item: IStepOptions, options: Record<string, any> = {}) {
     const { status, error, outputs, name, process_time } = options;
     this.context.stepCount = item.stepCount as string;
 
