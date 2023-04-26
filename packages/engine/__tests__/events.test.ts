@@ -329,7 +329,7 @@ test.only('测试onInit获取yaml格式不正确，日志上报问题', async ()
       onInit: async function (context, logger) {
         await sleep(2000);
         logger.info(`this is a test on init, ${JSON.stringify(context)}`);
-        return parseSpec(path.join(__dirname, './serverless-pipeline-error.yaml'));
+        return parseSpec(path.join(__dirname, 'mock', './serverless-pipeline-error.yaml'));
       },
       onCompleted: async function (context, logger) {
         logger.info('onCompleted', context);
