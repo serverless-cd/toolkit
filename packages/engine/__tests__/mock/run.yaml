@@ -1,0 +1,25 @@
+steps:
+  - run: |
+      echo "Setup Serverless Devs ing..."
+      # 打开调试模式，将命令输出
+      set -x
+      ls -al
+      # aliyun cloud authentication infos.
+      access_key_id=${{ sts.accessKeyId || "dummy-ak" }}
+      access_key_secret=${{ sts.accessKeySecret || "dummy-sk" }}
+      security_token=${{ sts.securityToken || "dummy-token" }}
+      uid=${{ uid || "dummy-uid" }}
+      # account info alias
+      alias=my-account
+      s --version
+      if [[ $? -ne 0 ]]; then
+        echo "Serverless Devs is not installed."
+        exit 1
+      fi
+      s config add --AccessKeyID "${access_key_id}" --AccessKeySecret "${access_key_secret}" \
+      --AccountID "${uid}" --SecurityToken "${security_token}" --access "${alias}" -f
+      if [[ $? -ne 0 ]]; then
+        echo "Failed to setup Serverless Devs."
+        exit 1
+      fi
+      echo "Setup Serverless Devs success."

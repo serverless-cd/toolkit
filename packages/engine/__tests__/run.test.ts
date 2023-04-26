@@ -1,6 +1,6 @@
 import Engine, { IStepOptions, IContext } from '../src';
 import { SERVERLESS_CD_KEY, SERVERLESS_CD_VALUE } from '../src/constants';
-import { lodash } from '@serverless-cd/core';
+import { lodash, parseSpec } from '@serverless-cd/core';
 import * as path from 'path';
 const { get, find } = lodash;
 const logPrefix = path.join(__dirname, 'logs');
@@ -46,7 +46,6 @@ test('环境变量测试', async () => {
   expect(process.env[SERVERLESS_CD_KEY]).toBe(SERVERLESS_CD_VALUE);
 });
 
-
 test('post run add runStepCount', async () => {
   const steps = [
     { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
@@ -54,25 +53,47 @@ test('post run add runStepCount', async () => {
   ] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res: IContext | undefined = await engine.start();
-  expect(res.status).toBe('success')
+  expect(res.status).toBe('success');
 });
 
 test('plugin支持指定版本', async () => {
-  const steps = [
-    { plugin: '@serverless-cd/cache@0.0.8' },
-  ] as IStepOptions[];
+  const steps = [{ plugin: '@serverless-cd/cache@0.0.8' }] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res: IContext | undefined = await engine.start();
-  expect(res.status).toBe('success')
+  expect(res.status).toBe('success');
 });
 
 test('plugin安装最新版本', async () => {
-  const steps = [
-    { plugin: '@serverless-cd/cache' },
-  ] as IStepOptions[];
+  const steps = [{ plugin: '@serverless-cd/cache' }] as IStepOptions[];
   const engine = new Engine({ steps, logConfig: { logPrefix } });
   const res: IContext | undefined = await engine.start();
-  expect(res.status).toBe('success')
+  expect(res.status).toBe('success');
 });
 
+test.only('测试postRun多个case', async () => {
+  const steps = [{ plugin: '@serverless-cd/cache', name: 'A' }, { plugin: '@serverless-cd/cache', name: 'B' }, { run: 'npm run error' }] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res: IContext | undefined = await engine.start();
+  console.log(res);
+  expect(res.status).toBe('failure');
+});
 
+test('run 包含多个脚本', async () => {
+  const engine = new Engine({
+    logConfig: { logPrefix },
+    inputs: {
+      sts: {
+        accessKeyId: 'accessKeyId',
+        accessKeySecret: 'accessKeySecret',
+        securityToken: 'securityToken',
+      }
+    },
+    events: {
+      onInit: async (ctx) => {
+        return parseSpec(path.join(__dirname, 'mock', './run.yaml'));
+      },
+    },
+  });
+  const res: IContext | undefined = await engine.start();
+  expect(res.status).toBe('success');
+});
