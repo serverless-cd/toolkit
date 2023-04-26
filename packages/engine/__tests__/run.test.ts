@@ -70,7 +70,15 @@ test('plugin安装最新版本', async () => {
   expect(res.status).toBe('success');
 });
 
-test.only('run 包含多个脚本', async () => {
+test.only('测试postRun多个case', async () => {
+  const steps = [{ plugin: '@serverless-cd/cache', name: 'A' }, { plugin: '@serverless-cd/cache', name: 'B' }, { run: 'npm run error' }] as IStepOptions[];
+  const engine = new Engine({ steps, logConfig: { logPrefix } });
+  const res: IContext | undefined = await engine.start();
+  console.log(res);
+  expect(res.status).toBe('failure');
+});
+
+test('run 包含多个脚本', async () => {
   const engine = new Engine({
     logConfig: { logPrefix },
     inputs: {

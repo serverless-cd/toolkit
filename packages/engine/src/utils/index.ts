@@ -3,9 +3,10 @@ import { fs, lodash } from '@serverless-cd/core';
 import { command } from 'execa';
 import * as path from 'path';
 import { PLUGIN_INSTALL_PATH } from '../constants';
+import { STEP_IF } from '../types'
 import flatted from 'flatted';
 const pkg = require('../../package.json');
-const { uniqueId, get, omit, map, isEmpty, split, first, replace, values } = lodash;
+const { uniqueId, get, omit, map, isEmpty, split, first, replace, values, includes } = lodash;
 
 const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
@@ -40,6 +41,7 @@ function getPluginInfo(val: string, packageJsonPath: string) {
 
 export async function parsePlugin(steps: IStepOptions[], that: any) {
   if (isEmpty(steps)) return [];
+  const installedPlugins = []
   const postArray = [] as IPluginOptions[];
   const runArray = [] as IStepOptions[];
   for (const item of steps) {
@@ -53,7 +55,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
       // 本地路径时，不需要安装依赖
       if (fs.existsSync(newPlugin)) {
         pluginItem.plugin = newPlugin;
-      } else {
+      } else if (!includes(installedPlugins, pluginItem.plugin)) {
         that.logger.info(`install plugin ${pluginItem.plugin}...`);
         const pluginPrefixPath = getPluginPrefixPath(pluginItem.plugin);
         fs.ensureDirSync(pluginPrefixPath);
@@ -66,6 +68,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
         const cp = command(cmd, { cwd: pluginPrefixPath });
         that.childProcess.push(cp);
         await that.onFinish(cp);
+        installedPlugins.push(pluginItem.plugin);
         that.logger.info(`install plugin ${getPluginInfo(pluginItem.plugin, packageJsonPath)} success`);
       }
       const app = require(getPluginRequirePath(pluginItem.plugin));
@@ -73,10 +76,11 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
       // log显示的时候，仅需要展示最初的plugin值
       pluginItem.name = pluginItem.name || `Run ${originPlugin}`;
       if (app.postRun) {
-        postArray.push({
+        postArray.unshift({
           ...pluginItem,
           type: 'postRun',
-          name: `Post Run ${originPlugin}`,
+          name: `Post Run ${get(pluginItem, 'name', originPlugin)}`,
+          if: STEP_IF.ALWAYS,
           runStepCount: item.stepCount,
         } as IPluginOptions);
       }
