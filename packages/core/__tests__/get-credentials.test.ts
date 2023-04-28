@@ -33,3 +33,45 @@ test('getCredentials accountId 不存在', async () => {
   expect(res?.accountId).toEqual(process.env.ACCOUNT_ID);
 });
 
+test.only('getCredentials sts', async () => {
+  const res = await getCredentials(
+    {},
+    {
+      sts: {
+        accessKeyId: '123',
+        accessKeySecret: '456',
+        securityToken: '789',
+        accountId: '123456'
+      }
+    }
+  );
+  console.log(res);
+  expect(res).toEqual({
+    accessKeyId: '123',
+    accessKeySecret: '456',
+    securityToken: '789',
+    accountId: '123456'
+  });
+});
+
+test.only('getCredentials sts with uid', async () => {
+  const res = await getCredentials(
+    {},
+    {
+      uid: '123456',
+      sts: {
+        accessKeyId: '123',
+        accessKeySecret: '456',
+        securityToken: '789',
+      }
+    }
+  );
+  console.log(res);
+  expect(res).toEqual({
+    accessKeyId: '123',
+    accessKeySecret: '456',
+    securityToken: '789',
+    accountId: '123456'
+  });
+});
+

@@ -16,8 +16,8 @@ steps:
         echo "Serverless Devs is not installed."
         exit 1
       fi
-      s config add --AccessKeyID "${access_key_id}" --AccessKeySecret "${access_key_secret}" \
-      --AccountID "${uid}" --SecurityToken "${security_token}" --access "${alias}" -f
+      s config add --AccessKeyID "${access_key_id}" --NewAccessKeySecret "${access_key_secret}" \
+      --AccountID "${uid}" --NewSecurityToken "${security_token}" --access "${alias}" -f
       if [[ $? -ne 0 ]]; then
         echo "Failed to setup Serverless Devs."
         exit 1
