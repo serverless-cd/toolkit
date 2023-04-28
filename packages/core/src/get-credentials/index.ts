@@ -39,7 +39,9 @@ class Credentials {
 
         const newSts = get(this.context, 'sts')
         if (!isEmpty(newSts)) {
-            return this.format(this.transformKey(newSts));
+            const formatSts = this.transformKey(newSts)
+            formatSts.ACCOUNTID = formatSts.ACCOUNTID || get(this.context, 'uid')
+            return this.format(formatSts);
         }
 
         const newCloudSecrets = get(this.context, 'inputs.cloudSecrets')
