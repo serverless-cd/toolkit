@@ -25,6 +25,7 @@ import {
   IGetRepoIdOutput,
 } from '../types/output';
 import CodeupBase from './codeup-base';
+import { CustomError } from '../util';
 
 const debug = require('@serverless-cd/debug')('serverless-cd:git-provider');
 const { ROAClient } = require('@alicloud/pop-core');
@@ -294,8 +295,13 @@ export default class Codeup extends CodeupBase {
     }
     try {
       return await this.client.request(method, url, params, JSON.stringify(data), headers, options);
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      debug(err);
+      const code = _.get(err, 'code');
+      const status = _.get(err, 'statusCode') as unknown as number;
+      const data = _.get(err, 'result', {} as any);
+      _.set(data, 'message', _.get(data, 'Message'));
+      throw new CustomError(status, data, code);
     }
   }
   getRefCommit(params: any): Promise<ICommitOutput> {

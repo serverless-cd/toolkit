@@ -77,7 +77,7 @@ test.only('list branches', async () => {
   }
 });
 
-test.only('get user', async () => {
+test('get user', async () => {
   const provider = git('github', {
     access_token,
   });

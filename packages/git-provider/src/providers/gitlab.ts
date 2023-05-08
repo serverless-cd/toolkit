@@ -34,6 +34,7 @@ import {
   IUserOutput,
 } from '../types/output';
 import Base from './base';
+import { CustomError } from '../util';
 
 const debug = require('@serverless-cd/debug')('serverless-cd:git-provider');
 const PARAMS = {
@@ -249,12 +250,19 @@ export default class Gitlab extends Base {
   async request(path: string, method: string, params: Object): Promise<any> {
     const p = _.defaults(params, { private_token: this.access_token });
 
-    console.log('endpoint: ', `${this.endpoint}${path}`);
-    return await axios({
-      method,
-      url: `${this.endpoint}${path}`,
-      params: p,
-    });
+    console.log(`endpoint: ${this.endpoint}${path}`);
+    try {
+      return await axios({
+        method,
+        url: `${this.endpoint}${path}`,
+        params: p,
+      });
+    } catch (err) {
+      debug(err);
+      const status = _.get(err, 'response.status') as unknown as number;
+      const data = _.get(err, 'response.data', {});
+      throw new CustomError(status, data);
+    }
   }
 
   listRepos(): Promise<IRepoOutput[]> {
