@@ -20,6 +20,7 @@ export interface ILogConfig {
   logLevel?: LoggerLevel;
   ossConfig?: IOssConfig;
   customLogger?: any;
+  eol?: string;
 }
 export interface IRunOptions {
   run: string;
