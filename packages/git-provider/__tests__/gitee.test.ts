@@ -33,7 +33,7 @@ test.only('list branches', async () => {
   }
 });
 
-test.only('get user', async () => {
+test('get user', async () => {
   const provider = git('gitee', { access_token });
   const result = await provider.user();
   console.log('result: ', result);

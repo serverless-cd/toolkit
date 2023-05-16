@@ -35,7 +35,7 @@ import {
   ICheckRepoEmptyOutput,
 } from '../types/output';
 import { IWebhookParams } from '../types/gitee';
-import CodeupBase from './codeup-base';
+import { CustomError } from '../util';
 
 const debug = require('@serverless-cd/debug')('serverless-cd:git-provider');
 const V5 = 'https://gitee.com/api/v5';
@@ -352,12 +352,18 @@ export default class Gitee extends Base {
   }
 
   async requestV5(path: string, method: string, params: Object): Promise<any> {
-    const p = _.defaults(params, { access_token: this.access_token });
-    return await axios({
-      method,
-      url: `${V5}${path}`,
-      params: p,
-    });
+    try {
+      const p = _.defaults(params, { access_token: this.access_token });
+      return await axios({
+        method,
+        url: `${V5}${path}`,
+        params: p,
+      });
+    } catch (err) {
+      const status = _.get(err, 'response.status') as unknown as number;
+      const data = _.get(err, 'response.data', {});
+      throw new CustomError(status, data);
+    }
   }
 
   private async requestList(url: string, params: any): Promise<any[]> {
