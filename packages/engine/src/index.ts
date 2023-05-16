@@ -184,7 +184,7 @@ class Engine {
   }
   private getLogger(filePath: string) {
     const logConfig = this.options.logConfig as ILogConfig;
-    const { customLogger, logPrefix, logLevel } = logConfig;
+    const { customLogger, logPrefix, logLevel, eol } = logConfig;
     const { inputs } = this.options;
     if (customLogger) {
       debug('use custom logger');
@@ -197,6 +197,7 @@ class Engine {
     return new EngineLogger({
       file: logPrefix && path.join(logPrefix, filePath),
       level: logLevel,
+      eol: eol || '',
       secrets: gitToken ? [newSecrets, gitToken] : newSecrets,
     });
   }

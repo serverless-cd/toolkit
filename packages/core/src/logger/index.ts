@@ -84,16 +84,18 @@ interface IProps {
   file?: string;
   level?: LoggerLevel;
   secrets?: string[];
+  eol?: string; // 文件结尾
 }
 class EngineLogger extends Logger {
   constructor(props: IProps) {
-    const { file, level = 'INFO', secrets } = props;
+    const { file, level = 'INFO', secrets, eol } = props;
     super({});
     this.set(
       'console',
       new _ConsoleTransport({
         secrets,
         level,
+        eol,
       }),
     );
     file &&
@@ -103,6 +105,7 @@ class EngineLogger extends Logger {
           secrets,
           file,
           level,
+          eol,
         }),
       );
   }
