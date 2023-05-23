@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/core",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "sevrerless-cd核心包",
   "main": "./lib/index.js",
   "scripts": {
