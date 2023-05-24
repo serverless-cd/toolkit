@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/engine",
-  "version": "0.0.44",
+  "version": "0.0.45-beta.1",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {

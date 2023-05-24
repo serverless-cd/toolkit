@@ -2,7 +2,7 @@ import { IStepOptions, IPluginOptions } from '../types';
 import { fs, lodash } from '@serverless-cd/core';
 import { command } from 'execa';
 import * as path from 'path';
-import { PLUGIN_INSTALL_PATH } from '../constants';
+import { INIT_STEP_COUNT, PLUGIN_INSTALL_PATH } from '../constants';
 import { STEP_IF } from '../types'
 import flatted from 'flatted';
 const pkg = require('../../package.json');
@@ -67,7 +67,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
         debug(`install plugin: ${cmd}`);
         const cp = command(cmd, { cwd: pluginPrefixPath });
         that.childProcess.push(cp);
-        await that.onFinish(cp);
+        await that.onFinish(cp, INIT_STEP_COUNT);
         installedPlugins.push(pluginItem.plugin);
         that.logger.info(`install plugin ${getPluginInfo(pluginItem.plugin, packageJsonPath)} success`);
       }

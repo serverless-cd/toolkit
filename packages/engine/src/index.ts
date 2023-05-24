@@ -2,6 +2,7 @@ import { EngineLogger, getArtTemplate, lodash } from '@serverless-cd/core';
 import { createMachine, interpret } from 'xstate';
 import { command } from 'execa';
 import * as path from 'path';
+import os from 'os';
 import { IStepOptions, IRunOptions, IPluginOptions, IRecord, IStatus, IEngineOptions, IContext, ILogConfig, STEP_STATUS, ISteps, STEP_IF } from './types';
 import { parsePlugin, getProcessTime, getDefaultInitLog, getLogPath, getPluginRequirePath, stringify } from './utils';
 import { INIT_STEP_COUNT, INIT_STEP_NAME, COMPLETED_STEP_COUNT, DEFAULT_COMPLETED_LOG, SERVERLESS_CD_KEY, SERVERLESS_CD_VALUE } from './constants';
@@ -182,7 +183,7 @@ class Engine {
       stepService.send('INIT');
     });
   }
-  private getLogger(filePath: string) {
+  private getLogger(filePath: string, itemLogConfig?: any) {
     const logConfig = this.options.logConfig as ILogConfig;
     const { customLogger, logPrefix, logLevel, eol } = logConfig;
     const { inputs } = this.options;
@@ -197,7 +198,7 @@ class Engine {
     return new EngineLogger({
       file: logPrefix && path.join(logPrefix, filePath),
       level: logLevel,
-      eol: eol || '',
+      eol: lodash.get(itemLogConfig, 'eol', eol),
       secrets: gitToken ? [newSecrets, gitToken] : newSecrets,
     });
   }
@@ -379,7 +380,7 @@ class Engine {
       runItem.run = this.doArtTemplateCompile(runItem.run);
       const cp = command(runItem.run, { cwd: execPath, env: this.parseEnv(runItem), shell: true });
       this.childProcess.push(cp);
-      const res = await this.onFinish(cp);
+      const res = await this.onFinish(cp, runItem.stepCount as string);
       return res;
     }
     // plugin
@@ -467,18 +468,26 @@ class Engine {
     this.logger.debug(msg);
     this.doWarn();
   }
-  private onFinish(cp: any) {
+  private onFinish(cp: any, stepCount: string) {
     return new Promise((resolve, reject) => {
+      const logger = this.getLogger(getLogPath(stepCount), { eol: '' });
+
       const stdout: Buffer[] = [];
       const stderr: Buffer[] = [];
       cp.stdout.on('data', (chunk: Buffer) => {
-        this.logger.info(chunk.toString());
+        logger.info(chunk.toString());
         stdout.push(chunk);
       });
 
       cp.stderr.on('data', (chunk: Buffer) => {
-        this.logger.info(chunk.toString());
+        logger.info(chunk.toString());
         stderr.push(chunk);
+      });
+
+      cp.on('finish', () => {
+        const eol = lodash.get(this.options, 'logConfig.eol', os.EOL);
+        logger.info(eol);
+        logger.close();
       });
 
       cp.on('exit', (code: number) => {
