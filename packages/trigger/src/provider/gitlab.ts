@@ -45,7 +45,7 @@ export default class Gitlab extends BaseEvent {
     }
     return generateErrorResult(`Unsupported event type: ${eventType}`);
   }
-  private verifySecret(secret: string | undefined): boolean {
+  verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-gitlab-token', '');
     if (isEmpty(secret) && isEmpty(signature)) {
       return true;

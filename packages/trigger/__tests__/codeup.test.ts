@@ -1,4 +1,4 @@
-import verifyLegitimacy, { IPrTypes, getProvider } from '../src';
+import verifyLegitimacy, {IPrTypes, getProvider, verifySignature} from '../src';
 import {
   pushWithBranch,
   pushWithTag,
@@ -304,4 +304,10 @@ test('codeup webhook error with pr merged', async () => {
   const res = await verifyLegitimacy(eventConfig, prWithMerged);
   console.log(res);
   expect(res?.success).toEqual(false);
+});
+
+test('codeup webhook signature verification success', async () => {
+  const res = await verifySignature("shl123", prWithMerged);
+  console.log(res);
+  expect(res).toEqual(true);
 });

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { IPayload, ITriggers, IProvider, IPrefix, IPrInfo } from '../type';
+import { IPayload, ITriggers, IProvider, IPrefix, IPrInfo, IGiteeTrigger } from '../type';
 import { generateSuccessResult, generateErrorResult } from '../utils';
 import { ITrigger, IPushInfo, IBranches } from '../type';
 import { get, isEmpty, isPlainObject, isArray, each } from 'lodash';
@@ -31,6 +31,7 @@ export default abstract class BaseEvent {
   }
 
   abstract verify(): Promise<any>;
+  abstract verifySecret(secret: string | undefined | IGiteeTrigger): boolean;
 
   doPr(trigger: ITrigger, prInfo: IPrInfo) {
     console.log(`get trigger value: ${JSON.stringify(trigger)}`);

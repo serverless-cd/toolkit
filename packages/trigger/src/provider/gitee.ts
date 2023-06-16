@@ -11,7 +11,15 @@ export default class Gitee extends BaseEvent {
       throw new Error(`No ${this.provider} configuration found`);
     }
     const gitee = _gitee as IGiteeTrigger;
-    const verifySecretStatus = this.verifySecret(gitee);
+    const secret = get(gitee, 'secret', '');
+    let verifySecretStatus = false;
+
+    if (secret) {
+      verifySecretStatus = this.verifySecret(secret)
+    } else {
+      verifySecretStatus = this.verifyPassword(gitee)
+    }
+
     if (verifySecretStatus) {
       console.log('verify secret or password success');
     } else {
@@ -66,19 +74,20 @@ export default class Gitee extends BaseEvent {
     console.log('check type error');
     return { success: false, message, type: newAction };
   }
-  private verifySecret(gitee: IGiteeTrigger): boolean {
+  verifySecret(secret:string | undefined): boolean {
     const signature = get(this.headers, 'x-gitee-token', '');
-    const secret = get(gitee, 'secret', '');
-    if (secret) {
-      console.log('verify secret status...');
-      const timestamp = get(this.headers, 'x-gitee-timestamp', '');
-      const str = crypto
-        .createHmac('sha256', secret)
+    console.log('verify secret status...');
+    const timestamp = get(this.headers, 'x-gitee-timestamp', '');
+    const str = crypto
+        .createHmac('sha256', secret as string)
         .update(`${timestamp}\n${secret}`)
         .digest()
         .toString('base64');
       return str === signature;
-    }
+  }
+
+  private verifyPassword(gitee: IGiteeTrigger): boolean {
+    const signature = get(this.headers, 'x-gitee-token', '');
     const password = get(gitee, 'password', '');
     if (password) {
       console.log('verify password status...');

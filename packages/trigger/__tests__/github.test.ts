@@ -1,4 +1,4 @@
-import verifyLegitimacy, { IPrTypes, getProvider } from '../src';
+import verifyLegitimacy, {IPrTypes, getProvider, verifySignature} from '../src';
 import {
   pushWithBranch,
   pushWithTag,
@@ -8,6 +8,7 @@ import {
   prWithMerged,
   releaseWithPublished,
 } from './mock/github';
+import {pushWithBranchBySecret} from "./mock/gitee";
 
 test.only('getProvider 测试', async () => {
   const provider = getProvider(pushWithBranch);
@@ -368,4 +369,10 @@ test('github webhook release 测试返回值', async () => {
   const res = await verifyLegitimacy(eventConfig, releaseWithPublished);
   console.log(res);
   expect(res).toEqual({ success: false, message: 'Unsupported event type: release' });
+});
+
+test('codeup webhook signature verification success', async () => {
+  const res = await verifySignature("shihuali123", pushWithBranchBySecret);
+  console.log(res);
+  expect(res).toEqual(true);
 });

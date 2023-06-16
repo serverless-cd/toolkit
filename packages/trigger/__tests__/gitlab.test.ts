@@ -1,4 +1,4 @@
-import verifyLegitimacy, { IPrTypes, getProvider } from '../src';
+import verifyLegitimacy, {IPrTypes, getProvider, verifySignature} from '../src';
 import {
   pushWithBranch,
   pushWithBranch15,
@@ -10,6 +10,7 @@ import {
   prWithMerged1,
   DataWithNoUserAgent,
 } from './mock/gitlab';
+import {pushWithBranchBySecret} from "./mock/gitee";
 
 test('getProvider 测试', async () => {
   const provider = getProvider(pushWithBranch);
@@ -424,4 +425,10 @@ test('gitlab new case webhook success with pr merged', async () => {
       },
     },
   });
+});
+
+test('codeup webhook signature verification success', async () => {
+  const res = await verifySignature("shl123", prWithReopened);
+  console.log(res);
+  expect(res).toEqual(true);
 });

@@ -1,4 +1,4 @@
-import verifyLegitimacy, { IPrTypes, getProvider } from '../src';
+import verifyLegitimacy, {IPrTypes, getProvider, verifySignature} from '../src';
 import {
   pushWithBranch,
   pushWithBranchBySecret,
@@ -335,4 +335,10 @@ test('gitee webhook error with pr merged', async () => {
   const res = await verifyLegitimacy(eventConfig, prWithMerged);
   console.log(res);
   expect(res?.success).toEqual(false);
+});
+
+test('codeup webhook signature verification success', async () => {
+  const res = await verifySignature("shihuali123", pushWithBranchBySecret);
+  console.log(res);
+  expect(res).toEqual(true);
 });
