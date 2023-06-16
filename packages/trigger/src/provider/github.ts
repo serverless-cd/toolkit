@@ -68,7 +68,7 @@ export default class Github extends BaseEvent {
     console.log('check type error');
     return { success: false, message, type };
   }
-  private verifySecret(secret: string | undefined): boolean {
+  verifySecret(secret: string | undefined): boolean {
     const signature = get(this.headers, 'x-hub-signature', '');
     if (isEmpty(secret) && isEmpty(signature)) {
       return true;
