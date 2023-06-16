@@ -48,7 +48,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}} 
       - name: trigger publish
-        run: npm publish
+        run: | 
+          npm install
+          npm run build
+          npm publish
         if: ${{ contains(github.ref, 'trigger')}}
         working-directory: ./packages/trigger
         env:
