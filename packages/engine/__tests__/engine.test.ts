@@ -263,3 +263,23 @@ test.skip('测试plugin安装逻辑', async () => {
     { status: 'failure', name: 'Run @serverless-cd/ding-talk' },
   ]);
 });
+
+test.only('s plan -t ./src/s.container.yaml --local -o json >> plan.out', async () => {
+  const steps = [
+    {
+      run: "s plan -t ./src/s.container.yaml --local -o json >> plan.out",
+    },
+    {
+      run: "echo s plan finished."
+    },
+    {
+      run: "cat plan.out"
+    }
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix },
+  });
+  const context = await engine.start();
+  expect(context?.error.message).toMatch('code 1')
+});
