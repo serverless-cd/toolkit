@@ -248,7 +248,7 @@ export default class Gitlab extends Base {
   }
 
   async request(path: string, method: string, params: Object): Promise<any> {
-    const p = _.defaults(params, { private_token: this.access_token });
+    const p = _.assign(params, { private_token: this.access_token, accessToken: this.access_token });
 
     console.log(`endpoint: ${this.endpoint}${path}`);
     try {
