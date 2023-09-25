@@ -378,7 +378,7 @@ class Engine {
       execPath = path.isAbsolute(execPath) ? execPath : path.join(this.context.cwd, execPath);
       this.logName(item);
       runItem.run = this.doArtTemplateCompile(runItem.run);
-      const cp = await command(runItem.run, { cwd: execPath, env: this.parseEnv(runItem), shell: true });
+      const cp = command(runItem.run, { cwd: execPath, env: this.parseEnv(runItem), shell: true });
       this.childProcess.push(cp);
       const res = await this.onFinish(cp, runItem.stepCount as string);
       return res;
