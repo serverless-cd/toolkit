@@ -243,7 +243,7 @@ test('inputs测试 env', async () => {
   ]);
 });
 
-test.skip('测试plugin安装逻辑', async () => {
+test.only('测试plugin安装逻辑', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { plugin: '@serverless-cd/ding-talk', id: 'ding' },

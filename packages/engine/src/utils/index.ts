@@ -54,7 +54,11 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
         : path.join(that.context.cwd, pluginItem.plugin);
       // 本地路径时，不需要安装依赖
       if (fs.existsSync(newPlugin)) {
+        that.logger.info(`use local plugin ${pluginItem.plugin}...`)
         pluginItem.plugin = newPlugin;
+      } else if (fs.existsSync(getPluginRequirePath(pluginItem.plugin))) {
+        that.logger.info(`plugin ${pluginItem.plugin} has been installed`)
+        pluginItem.plugin = getPluginRequirePath(pluginItem.plugin);
       } else if (!includes(installedPlugins, pluginItem.plugin)) {
         that.logger.info(`install plugin ${pluginItem.plugin}...`);
         const pluginPrefixPath = getPluginPrefixPath(pluginItem.plugin);
