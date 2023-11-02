@@ -120,6 +120,21 @@ test('run env 测试', async () => {
   expect(res?.status).toBe('success');
 });
 
+test.only('plugin env 测试', async () => {
+  const steps = [
+    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    cwd: __dirname,
+    inputs: { env: { name: 'xiaohong' } },
+  });
+  const res: IContext | undefined = await engine.start();
+  expect(res?.status).toBe('success');
+});
+
 test('cancel测试', (done) => {
   const lazy = (fn: any) => {
     setTimeout(() => {
@@ -243,7 +258,7 @@ test('inputs测试 env', async () => {
   ]);
 });
 
-test.only('测试plugin安装逻辑', async () => {
+test('测试plugin安装逻辑', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { plugin: '@serverless-cd/ding-talk', id: 'ding' },

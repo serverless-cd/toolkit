@@ -9,6 +9,7 @@ export async function run(
   context: Record<string, any>,
   logger: any,
 ): Promise<Record<string, any>> {
+  console.log(process.env.name, 'process.env.name')
   // 注意，实际开发中不要写入敏感信息，此处只是为了方便调试
   logger.info(`config :${JSON.stringify({ inputs, context })}`);
   const newIputs = getInputs(inputs, context);

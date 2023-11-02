@@ -385,6 +385,10 @@ class Engine {
     }
     // plugin
     if (pluginItem.plugin) {
+      const newEnv = this.parseEnv(runItem);
+      for (const key in newEnv) {
+        process.env[key] = newEnv[key];
+      }
       debug(`plugin: ${pluginItem.plugin}`);
       this.logName(item);
       // onInit时，会安装plugin依赖
@@ -405,6 +409,7 @@ class Engine {
       const val = newEnv[key];
       newEnv[key] = this.doArtTemplateCompile(val);
     }
+
     return newEnv;
   }
   private doArtTemplateCompile(value: string) {
