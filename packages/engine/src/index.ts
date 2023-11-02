@@ -407,7 +407,7 @@ class Engine {
     const newEnv = { ...inputs?.env, ...item.env };
     for (const key in newEnv) {
       const val = newEnv[key];
-      newEnv[key] = this.doArtTemplateCompile(val);
+      newEnv[key] = typeof val === 'string' && val.length > 0 ? this.doArtTemplateCompile(val) : val;
     }
 
     return newEnv;
