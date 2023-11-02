@@ -1,6 +1,6 @@
 {
   "name": "@serverless-cd/engine",
-  "version": "0.0.52-beta.1",
+  "version": "0.0.52-beta.2",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
@@ -9,6 +9,9 @@
     "prepub": "npm i && npm run build",
     "pub": "npm publish"
   },
+  "files": [
+    "lib"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
