@@ -1,4 +1,4 @@
-import Engine, { IStepOptions, IContext } from '../src';
+import Engine, { IStepOptions, IContext } from '../lib';
 import { lodash } from '@serverless-cd/core';
 import * as path from 'path';
 const { get, map } = lodash;
@@ -115,6 +115,21 @@ test('run env 测试', async () => {
     logConfig: { logPrefix, logLevel: 'DEBUG' },
     cwd: __dirname,
     inputs: { secrets: { name: 'xiaohong' } },
+  });
+  const res: IContext | undefined = await engine.start();
+  expect(res?.status).toBe('success');
+});
+
+test('plugin env 测试', async () => {
+  const steps = [
+    { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
+
+  ] as IStepOptions[];
+  const engine = new Engine({
+    steps,
+    logConfig: { logPrefix, logLevel: 'DEBUG' },
+    cwd: __dirname,
+    inputs: { env: { name: 'xiaohong' } },
   });
   const res: IContext | undefined = await engine.start();
   expect(res?.status).toBe('success');

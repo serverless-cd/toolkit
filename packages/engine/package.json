@@ -1,19 +1,23 @@
 {
   "name": "@serverless-cd/engine",
-  "version": "0.0.51",
+  "version": "0.0.54",
   "description": "sevrerless-cd engine lib",
   "main": "./lib/index.js",
   "scripts": {
-    "build": "tsc",
     "watch": "tsc -w",
+    "build": "tsc && cp -r src/daemon/*.js lib/daemon",
     "prepub": "npm i && npm run build",
     "pub": "npm publish"
   },
+  "files": [
+    "lib"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@serverless-cd/core": "^0.0.26",
     "@serverless-cd/debug": "^4.3.4",
+    "axios": "^1.6.2",
     "execa": "^5.1.1",
     "flatted": "^3.2.7",
     "xstate": "^4.33.0"
