@@ -43,6 +43,7 @@ export interface IPluginOptions {
   'continue-on-error'?: boolean;
   inputs?: Record<string, any>;
   type?: 'run' | 'postRun'; //内部处理 用于区分是run还是postRun
+  info?: string; // name@version
 }
 
 export type IStepOptions = IRunOptions | IPluginOptions;
@@ -97,4 +98,10 @@ export interface IContext {
   completed: boolean; // 记录task是否执行完成
   inputs: Record<string, any>; // 记录inputs的输入(魔法变量)
   error: Error; // 记录step的错误信息
+}
+
+
+export enum EReportType {
+  command = 'command',
+  exception = 'exception'
 }

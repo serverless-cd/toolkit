@@ -1,4 +1,4 @@
-import Engine, { IStepOptions, IContext } from '../src';
+import Engine, { IStepOptions, IContext } from '../lib';
 import { lodash } from '@serverless-cd/core';
 import * as path from 'path';
 const { get, map } = lodash;
@@ -120,7 +120,7 @@ test('run env 测试', async () => {
   expect(res?.status).toBe('success');
 });
 
-test.only('plugin env 测试', async () => {
+test('plugin env 测试', async () => {
   const steps = [
     { plugin: path.join(__dirname, 'fixtures', 'app'), id: 'xuse', inputs: { milliseconds: 10 } },
 
@@ -258,7 +258,7 @@ test('inputs测试 env', async () => {
   ]);
 });
 
-test('测试plugin安装逻辑', async () => {
+test.only('测试plugin安装逻辑', async () => {
   const steps = [
     { run: 'echo "hello"', id: 'xhello' },
     { plugin: '@serverless-cd/ding-talk', id: 'ding' },

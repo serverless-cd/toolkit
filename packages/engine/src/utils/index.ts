@@ -6,12 +6,16 @@ import { INIT_STEP_COUNT, PLUGIN_INSTALL_PATH } from '../constants';
 import { STEP_IF } from '../types'
 import flatted from 'flatted';
 const pkg = require('../../package.json');
-const { uniqueId, get, omit, map, isEmpty, split, first, replace, values, includes } = lodash;
+const { uniqueId, get, omit, map, isEmpty, split, includes } = lodash;
 
 const debug = require('@serverless-cd/debug')('serverless-cd:engine');
 
 export function getLogPath(filePath: string) {
   return `step_${filePath}.log`;
+}
+
+export function getUserAgent() {
+  return `Engine:${pkg.version}`;
 }
 
 export function getDefaultInitLog() {
@@ -30,15 +34,13 @@ export function getPluginPrefixPath(val: string) {
   return path.join(PLUGIN_INSTALL_PATH, user, name);
 }
 
-function getPluginInfo(val: string, packageJsonPath: string) {
-  const [user, plugin] = split(val, '/');
-  const [name, version] = split(plugin, '@');
-  if (version) return val;
-  const packageJson = require(packageJsonPath);
-  const newVersion = values(packageJson.dependencies);
-  return `${user}/${name}@${replace(first(newVersion), '^', '')}`;
+function getPkgInfo(bashPath: string) {
+  const packagePath = path.join(bashPath, 'package.json');
+  if (fs.existsSync(packagePath)) {
+    const pkg = require(packagePath);
+    return `${pkg['name']}@${pkg['version']}`;
+  }
 }
-
 export async function parsePlugin(steps: IStepOptions[], that: any) {
   if (isEmpty(steps)) return [];
   const installedPlugins = []
@@ -59,6 +61,7 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
       } else if (fs.existsSync(getPluginRequirePath(pluginItem.plugin))) {
         that.logger.info(`plugin ${pluginItem.plugin} has been installed`)
         pluginItem.plugin = getPluginRequirePath(pluginItem.plugin);
+        pluginItem.info = getPkgInfo(pluginItem.plugin);
       } else if (!includes(installedPlugins, pluginItem.plugin)) {
         that.logger.info(`install plugin ${pluginItem.plugin}...`);
         const pluginPrefixPath = getPluginPrefixPath(pluginItem.plugin);
@@ -73,7 +76,8 @@ export async function parsePlugin(steps: IStepOptions[], that: any) {
         that.childProcess.push(cp);
         await that.onFinish(cp, INIT_STEP_COUNT);
         installedPlugins.push(pluginItem.plugin);
-        that.logger.info(`install plugin ${getPluginInfo(pluginItem.plugin, packageJsonPath)} success`);
+        pluginItem.info = getPkgInfo(getPluginRequirePath(pluginItem.plugin));
+        that.logger.info(`install plugin ${pluginItem.info} success`);
       }
       const app = require(getPluginRequirePath(pluginItem.plugin));
       pluginItem.type = 'run';

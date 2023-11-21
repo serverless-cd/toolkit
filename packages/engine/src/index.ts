@@ -3,10 +3,11 @@ import { createMachine, interpret } from 'xstate';
 import { command } from 'execa';
 import * as path from 'path';
 import os from 'os';
-import { IStepOptions, IRunOptions, IPluginOptions, IRecord, IStatus, IEngineOptions, IContext, ILogConfig, STEP_STATUS, ISteps, STEP_IF } from './types';
-import { parsePlugin, getProcessTime, getDefaultInitLog, getLogPath, getPluginRequirePath, stringify } from './utils';
+import { IStepOptions, IRunOptions, IPluginOptions, IRecord, IStatus, IEngineOptions, IContext, ILogConfig, STEP_STATUS, ISteps, STEP_IF, EReportType } from './types';
+import { parsePlugin, getProcessTime, getDefaultInitLog, getLogPath, getPluginRequirePath, stringify, getUserAgent } from './utils';
 import { INIT_STEP_COUNT, INIT_STEP_NAME, COMPLETED_STEP_COUNT, DEFAULT_COMPLETED_LOG, SERVERLESS_CD_KEY, SERVERLESS_CD_VALUE } from './constants';
-
+import execDaemon from './exec-daemon';
+import { filter, join } from 'lodash';
 
 export { IStepOptions, IContext } from './types';
 
@@ -107,6 +108,9 @@ class Engine {
                   : this.record.status;
               this.context.status = status;
               await this.doCompleted();
+              if (status === STEP_STATUS.SUCCESS) {
+                this.report();
+              }
               debug('engine end');
               resolve(this.context);
             },
@@ -182,6 +186,11 @@ class Engine {
         .start();
       stepService.send('INIT');
     });
+  }
+  private report() {
+    const pluginSteps = filter(this.context.steps, o => has(o, 'plugin'))
+    const plugin = map(pluginSteps, o => get(o, 'info'))
+    execDaemon('report.js', { type: EReportType.command, userAgent: getUserAgent(), plugin: join(plugin, ',') });
   }
   private getLogger(filePath: string, itemLogConfig?: any) {
     const logConfig = this.options.logConfig as ILogConfig;
@@ -397,9 +406,15 @@ class Engine {
       const newInputs = get(pluginItem, 'inputs', {});
       debug(`plugin inputs: ${stringify(newInputs)}`);
       debug(`plugin context: ${stringify(newContext)}`);
-      return pluginItem.type === 'run'
-        ? await app.run(newInputs, newContext, this.logger)
-        : await app.postRun(newInputs, newContext, this.logger);
+      try {
+        return pluginItem.type === 'run'
+          ? await app.run(newInputs, newContext, this.logger)
+          : await app.postRun(newInputs, newContext, this.logger);
+      } catch (err) {
+        const error = err as Error;
+        execDaemon('report.js', { type: EReportType.exception, userAgent: getUserAgent(), plugin: pluginItem.info, message: error.message });
+        throw error;
+      }
     }
   }
   private parseEnv(item: IRunOptions) {
